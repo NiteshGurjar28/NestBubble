@@ -11,6 +11,12 @@
               <h2>Uber Bookings</h2>
               <form class="d-flex" method="get" action="/uber-booking">
                 <input type="text" name="q" value="<%= filters?.q || '' %>" class="form-control me-2" placeholder="Search by ID, product, address" />
+                <select name="guestId" class="form-select me-2" style="min-width: 220px">
+                  <option value="">All Guests</option>
+                  <% (guestOptions || []).forEach(g => { %>
+                    <option value="<%= g._id %>" <%= (filters?.guestId == g._id) ? 'selected' : '' %>><%= g.firstName %> <%= g.lastName %> (<%= g.count %>)</option>
+                  <% }) %>
+                </select>
                 <select name="status" class="form-select me-2" style="min-width: 160px">
                   <option value="">All Status</option>
                   <% ['processing','accepted','arriving','in_progress','completed','cancelled','no_drivers_available','driver_cancelled','rider_cancelled'].forEach(s => { %>
@@ -46,6 +52,20 @@
                         <i class="bx bx-heart <%= b.liked ? 'text-danger' : 'text-muted' %>"></i>
                       </button>
                     </div>
+                    <div class="mt-2 d-flex align-items-center justify-content-between">
+                      <div class="small text-muted">Guest</div>
+                      <div>
+                        <% if (b?.guestId?._id) { %>
+                          <a href="/guest/<%= b.guestId._id %>/show" class="text-decoration-none">
+                            <i class="bx bx-user me-1"></i>
+                            <%= b.guestId.firstName %> <%= b.guestId.lastName %>
+                          </a>
+                        <% } else { %>
+                          <span class="text-muted">-</span>
+                        <% } %>
+                      </div>
+                    </div>
+
                     <div class="mt-3">
                       <div class="small text-muted">Product</div>
                       <div><%= b?.rideDetails?.productName || b.uberProductId %></div>
@@ -60,7 +80,10 @@
                     </div>
                     <div class="mt-3 d-flex justify-content-between align-items-center">
                       <a href="/uber-booking/<%= b._id %>/show" class="btn btn-outline-primary btn-sm">View Details</a>
-                      <div class="text-muted small"><%= new Date(b.createdAt).toLocaleString('en-IN') %></div>
+                      <div class="text-muted small text-end">
+                        <div>Requested</div>
+                        <div><%= new Date(b.createdAt).toLocaleString('en-IN') %></div>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -73,15 +96,15 @@
                 <% if (pagination?.totalPages > 1) { %>
                   <% const curr = pagination.currentPage; const total = pagination.totalPages; %>
                   <li class="page-item <%= curr === 1 ? 'disabled' : '' %>">
-                    <a class="page-link" href="?page=<%= curr - 1 %>&limit=<%= pagination.itemsPerPage %>&status=<%= filters?.status || '' %>&liked=<%= filters?.liked || '' %>&q=<%= filters?.q || '' %>">Previous</a>
+                    <a class="page-link" href="?page=<%= curr - 1 %>&limit=<%= pagination.itemsPerPage %>&status=<%= filters?.status || '' %>&liked=<%= filters?.liked || '' %>&guestId=<%= filters?.guestId || '' %>&q=<%= filters?.q || '' %>">Previous</a>
                   </li>
                   <% for (let i = 1; i <= total; i++) { %>
                     <li class="page-item <%= i === curr ? 'active' : '' %>">
-                      <a class="page-link" href="?page=<%= i %>&limit=<%= pagination.itemsPerPage %>&status=<%= filters?.status || '' %>&liked=<%= filters?.liked || '' %>&q=<%= filters?.q || '' %>"><%= i %></a>
+                      <a class="page-link" href="?page=<%= i %>&limit=<%= pagination.itemsPerPage %>&status=<%= filters?.status || '' %>&liked=<%= filters?.liked || '' %>&guestId=<%= filters?.guestId || '' %>&q=<%= filters?.q || '' %>"><%= i %></a>
                     </li>
                   <% } %>
                   <li class="page-item <%= curr === total ? 'disabled' : '' %>">
-                    <a class="page-link" href="?page=<%= curr + 1 %>&limit=<%= pagination.itemsPerPage %>&status=<%= filters?.status || '' %>&liked=<%= filters?.liked || '' %>&q=<%= filters?.q || '' %>">Next</a>
+                    <a class="page-link" href="?page=<%= curr + 1 %>&limit=<%= pagination.itemsPerPage %>&status=<%= filters?.status || '' %>&liked=<%= filters?.liked || '' %>&guestId=<%= filters?.guestId || '' %>&q=<%= filters?.q || '' %>">Next</a>
                   </li>
                 <% } %>
               </ul>
