@@ -7407,16 +7407,7 @@ const showUberBookingDetails = asyncHandler(async (req, res) => {
   });
 });
 
-const toggleUberBookingLiked = asyncHandler(async (req, res) => {
-  const { id } = req.params;
-  const booking = await UberBooking.findById(id);
-  if (!booking) {
-    return res.status(404).json({ success: false, message: "Booking not found" });
-  }
-  booking.liked = !booking.liked;
-  await booking.save();
-  return res.json({ success: true, liked: booking.liked });
-});
+
 
 export {
   showDashboard,
@@ -7557,8 +7548,7 @@ export {
   razorpayWebhook,
   testPaymentEvent,
   testPaymentProperty,
-  // Uber Booking Admin
   listUberBookings,
   showUberBookingDetails,
-  toggleUberBookingLiked,
+
 };

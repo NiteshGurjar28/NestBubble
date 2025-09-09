@@ -19,9 +19,6 @@
                     <h5 class="mb-1">Booking #<%= booking?.bookingId %></h5>
                     <span class="badge bg-secondary text-uppercase"><%= booking?.status %></span>
                   </div>
-                  <button id="likeBtn" data-id="<%= booking?._id %>" class="btn btn-sm btn-light" title="Toggle like">
-                    <i id="likeIcon" class="bx bx-heart <%= booking?.liked ? 'text-danger' : 'text-muted' %>"></i>
-                  </button>
                 </div>
 
                 <div class="row mt-4">
@@ -81,29 +78,6 @@
     <div class="layout-overlay layout-menu-toggle"></div>
   </div>
 
-  <script>
-    const likeBtn = document.getElementById('likeBtn');
-    if (likeBtn) {
-      likeBtn.addEventListener('click', async () => {
-        const id = likeBtn.getAttribute('data-id');
-        try {
-          const resp = await fetch(`/uber-booking/${id}/liked`, { method: 'PATCH' });
-          const data = await resp.json();
-          if (data?.success) {
-            const icon = document.getElementById('likeIcon');
-            if (data.liked) {
-              icon.classList.add('text-danger');
-              icon.classList.remove('text-muted');
-            } else {
-              icon.classList.remove('text-danger');
-              icon.classList.add('text-muted');
-            }
-          }
-        } catch (e) {
-          console.error('Toggle like failed', e);
-        }
-      });
-    }
-  </script>
+
 </body>
 
