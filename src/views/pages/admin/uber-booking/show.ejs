@@ -1,0 +1,109 @@
+<!-- Uber Booking - Admin Details -->
+<body>
+  <div class="layout-wrapper layout-content-navbar">
+    <div class="layout-container">
+      <%- include('../../../partials/sideBar') %>
+      <div class="layout-page">
+        <%- include('../../../partials/header') %>
+        <div class="content-wrapper">
+          <div class="admin-container">
+            <div class="admin-header d-flex justify-content-between align-items-center">
+              <h2>Uber Booking Details</h2>
+              <a href="/uber-booking" class="btn btn-secondary">Back</a>
+            </div>
+
+            <div class="card mt-3">
+              <div class="card-body">
+                <div class="d-flex justify-content-between align-items-start">
+                  <div>
+                    <h5 class="mb-1">Booking #<%= booking?.bookingId %></h5>
+                    <span class="badge bg-secondary text-uppercase"><%= booking?.status %></span>
+                  </div>
+                  <button id="likeBtn" data-id="<%= booking?._id %>" class="btn btn-sm btn-light" title="Toggle like">
+                    <i id="likeIcon" class="bx bx-heart <%= booking?.liked ? 'text-danger' : 'text-muted' %>"></i>
+                  </button>
+                </div>
+
+                <div class="row mt-4">
+                  <div class="col-md-6">
+                    <h6>Ride</h6>
+                    <div class="mb-2"><strong>Product:</strong> <%= booking?.rideDetails?.productName || booking?.uberProductId %></div>
+                    <div class="mb-2"><strong>Pickup:</strong> <%= booking?.pickupLocation?.address %></div>
+                    <div class="mb-2"><strong>Dropoff:</strong> <%= booking?.dropoffLocation?.address %></div>
+                    <div class="mb-2"><strong>Requested At:</strong> <%= new Date(booking?.metadata?.requestTime || booking?.createdAt).toLocaleString('en-IN') %></div>
+                  </div>
+                  <div class="col-md-6">
+                    <h6>Guest</h6>
+                    <div class="mb-2"><strong>Name:</strong> <%= booking?.guestId ? (booking.guestId.firstName + ' ' + booking.guestId.lastName) : '-' %></div>
+                    <div class="mb-2"><strong>Email:</strong> <%= booking?.guestId?.email || '-' %></div>
+                    <div class="mb-2"><strong>Mobile:</strong> <%= booking?.guestId?.mobile || '-' %></div>
+                  </div>
+                </div>
+
+                <hr />
+
+                <div class="row">
+                  <div class="col-md-6">
+                    <h6>Driver</h6>
+                    <div class="mb-2"><strong>Name:</strong> <%= booking?.driverInfo?.name || '-' %></div>
+                    <div class="mb-2"><strong>Phone:</strong> <%= booking?.driverInfo?.phoneNumber || '-' %></div>
+                    <div class="mb-2"><strong>ETA:</strong> <%= booking?.driverInfo?.eta ? Math.round(booking.driverInfo.eta / 60) + ' min' : '-' %></div>
+                    <div class="mb-2"><strong>Vehicle:</strong> <%= booking?.driverInfo?.vehicleInfo ? (booking.driverInfo.vehicleInfo.make + ' ' + booking.driverInfo.vehicleInfo.model) : '-' %></div>
+                    <div class="mb-2"><strong>Plate:</strong> <%= booking?.driverInfo?.vehicleInfo?.licensePlate || '-' %></div>
+                  </div>
+                  <div class="col-md-6">
+                    <h6>Trip</h6>
+                    <div class="mb-2"><strong>Start:</strong> <%= booking?.tripInfo?.startTime ? new Date(booking.tripInfo.startTime).toLocaleString('en-IN') : '-' %></div>
+                    <div class="mb-2"><strong>End:</strong> <%= booking?.tripInfo?.endTime ? new Date(booking.tripInfo.endTime).toLocaleString('en-IN') : '-' %></div>
+                    <div class="mb-2"><strong>Distance:</strong> <%= booking?.tripInfo?.actualDistance ? (booking.tripInfo.actualDistance/1000).toFixed(2) + ' km' : '-' %></div>
+                    <div class="mb-2"><strong>Fare:</strong> <%= booking?.tripInfo?.actualFare ? (booking.tripInfo.actualFare.amount + ' ' + booking.tripInfo.actualFare.currency) : '-' %></div>
+                  </div>
+                </div>
+
+                <hr />
+
+                <div>
+                  <h6>Notes</h6>
+                  <pre class="mb-0" style="white-space: pre-wrap"><%= booking?.metadata?.notes || '-' %></pre>
+                  <% if (booking?.metadata?.deeplink) { %>
+                    <div class="mt-2"><a href="<%= booking.metadata.deeplink %>" target="_blank" class="btn btn-sm btn-primary">Open Uber</a></div>
+                  <% } %>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <%- include('../../../partials/footer') %>
+          <div class="content-backdrop fade"></div>
+        </div>
+      </div>
+    </div>
+    <div class="layout-overlay layout-menu-toggle"></div>
+  </div>
+
+  <script>
+    const likeBtn = document.getElementById('likeBtn');
+    if (likeBtn) {
+      likeBtn.addEventListener('click', async () => {
+        const id = likeBtn.getAttribute('data-id');
+        try {
+          const resp = await fetch(`/uber-booking/${id}/liked`, { method: 'PATCH' });
+          const data = await resp.json();
+          if (data?.success) {
+            const icon = document.getElementById('likeIcon');
+            if (data.liked) {
+              icon.classList.add('text-danger');
+              icon.classList.remove('text-muted');
+            } else {
+              icon.classList.remove('text-danger');
+              icon.classList.add('text-muted');
+            }
+          }
+        } catch (e) {
+          console.error('Toggle like failed', e);
+        }
+      });
+    }
+  </script>
+</body>
+

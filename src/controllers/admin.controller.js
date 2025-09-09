@@ -38,6 +38,7 @@ import { Newsletter, ComingSoon } from "../models/Newsletter.model.js";
 import { Permission, AdminRoles } from "../models/Permission.model.js";
 import { HelpCenter } from "../models/HelpCenter.model.js";
 import { SupportFaq } from "../models/Support.js";
+import { UberBooking } from "../models/UberBooking.model.js";
 import { createNotification } from "../utils/notification.helper.js";
 import { seedPropertyCalendar,  repriceFutureCalendarWindow} from "../utils/calendar.js";
 import { createActivityLog, eventComplete, propertyComplete} from "../utils/activityLog.helper.js";
@@ -7341,6 +7342,82 @@ const testPaymentProperty = asyncHandler(async (req, res) => {
 
 ///// ---------------  Webhook Implementation End-------------------------//
 
+// --------------- Uber Booking Admin Module ------------------ //
+const listUberBookings = asyncHandler(async (req, res) => {
+  const {
+    page = 1,
+    limit = 12,
+    status = "",
+    liked = "",
+    q = ""
+  } = req.query;
+
+  const pageNumber = parseInt(page);
+  const limitNumber = parseInt(limit);
+
+  const filter = {};
+  if (status) filter.status = status;
+  if (liked !== "") filter.liked = liked === "true";
+  if (q) {
+    filter.$or = [
+      { bookingId: new RegExp(q, "i") },
+      { "rideDetails.productName": new RegExp(q, "i") },
+      { "pickupLocation.address": new RegExp(q, "i") },
+      { "dropoffLocation.address": new RegExp(q, "i") },
+    ];
+  }
+
+  const [bookings, total] = await Promise.all([
+    UberBooking.find(filter)
+      .sort({ createdAt: -1 })
+      .skip((pageNumber - 1) * limitNumber)
+      .limit(limitNumber)
+      .populate("guestId", "firstName lastName email mobile")
+      .lean(),
+    UberBooking.countDocuments(filter),
+  ]);
+
+  return res.render("pages/admin/uber-booking/index", {
+    sidebar: "uberBooking",
+    bookings,
+    pagination: {
+      total,
+      totalPages: Math.ceil(total / limitNumber),
+      currentPage: pageNumber,
+      itemsPerPage: limitNumber,
+    },
+    filters: { status, liked, q },
+  });
+});
+
+const showUberBookingDetails = asyncHandler(async (req, res) => {
+  const { id } = req.params;
+
+  const booking = await UberBooking.findById(id)
+    .populate("guestId", "firstName lastName email mobile")
+    .lean();
+
+  if (!booking) {
+    return res.status(404).render("errors", { message: "Uber booking not found" });
+  }
+
+  return res.render("pages/admin/uber-booking/show", {
+    sidebar: "uberBooking",
+    booking,
+  });
+});
+
+const toggleUberBookingLiked = asyncHandler(async (req, res) => {
+  const { id } = req.params;
+  const booking = await UberBooking.findById(id);
+  if (!booking) {
+    return res.status(404).json({ success: false, message: "Booking not found" });
+  }
+  booking.liked = !booking.liked;
+  await booking.save();
+  return res.json({ success: true, liked: booking.liked });
+});
+
 export {
   showDashboard,
   showLoginPage,
@@ -7480,4 +7557,8 @@ export {
   razorpayWebhook,
   testPaymentEvent,
   testPaymentProperty,
+  // Uber Booking Admin
+  listUberBookings,
+  showUberBookingDetails,
+  toggleUberBookingLiked,
 };

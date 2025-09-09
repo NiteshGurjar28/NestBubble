@@ -235,6 +235,16 @@
         <% } %>
 
 
+        <% if(adminPerms.includes('uber-booking-list')) { %>
+          <li class="menu-item <%= sidebar === 'uberBooking' ? 'active open' : '' %>">
+            <a href="/uber-booking" class="menu-link">
+              <i class="menu-icon tf-icons bx bx-car"></i>
+              <div class="text-truncate">Uber Bookings</div>
+            </a>
+          </li>
+        <% } %>
+
+
         <%  const showAmenityMenu = adminPerms?.some(perm => ['amenity-list', 'amenity-request-list'].includes(perm)); %>
 
         <% if (showAmenityMenu) { %>

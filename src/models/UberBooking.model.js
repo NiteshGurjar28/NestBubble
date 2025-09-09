@@ -156,6 +156,12 @@ const uberBookingSchema = new mongoose.Schema(
       cancellationTime: Date,
       cancellationFee: Number,
     },
+    // Admin liked toggle
+    liked: {
+      type: Boolean,
+      default: false,
+      index: true,
+    },
     // Additional metadata
     metadata: {
       requestTime: {
@@ -178,6 +184,7 @@ uberBookingSchema.plugin(mongooseAggregatePaginate);
 uberBookingSchema.index({ guestId: 1, createdAt: -1 });
 uberBookingSchema.index({ status: 1 });
 uberBookingSchema.index({ "pickupLocation.coordinates.latitude": 1, "pickupLocation.coordinates.longitude": 1 });
+uberBookingSchema.index({ liked: 1, createdAt: -1 });
 
 // Virtual for formatted booking ID
 uberBookingSchema.virtual("formattedBookingId").get(function () {
