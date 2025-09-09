@@ -1,0 +1,283 @@
+<body>
+    <div class="layout-wrapper layout-content-navbar">
+        <div class="layout-container">
+            <%- include('../../../partials/sideBar') %>
+            <div class="layout-page">
+                <%- include('../../../partials/header') %>
+                <div class="content-wrapper">
+                    <div class="admin-container">
+                        <div class="admin-header">
+                            <h2>Setting</h2>
+                        </div>
+
+                        <div class="row g-4 mb-4">
+                            <div class="col-md-12 col-lg-12">
+                                <div class="stats-card">
+                                    <div class="card-body">
+                                        <form id="settingsForm" enctype="multipart/form-data">
+                                            <input type="hidden" name="existingLogo" value="<%= settings?.logo || '' %>">
+                                            <div class="row">
+                                                <div class="mb-3 col-md-6">
+                                                    <label for="email" class="form-label">Email</label>
+                                                    <input class="form-control" type="email" id="email" name="email" 
+                                                        value="<%= settings?.email || '' %>">
+                                                </div>
+                                                <div class="mb-3 col-md-6">
+                                                    <label for="phone" class="form-label">Phone</label>
+                                                    <input class="form-control" type="text" id="phone" name="phone" 
+                                                        value="<%= settings?.phone || '' %>">
+                                                </div>
+                                            </div>
+
+                                            <div class="mb-3">
+                                                <label for="autocomplete" class="form-label">Search Address</label>
+                                                <input class="form-control" type="hidden" id="autocomplete" placeholder="Enter a location">
+                                            </div>
+                                            <div class="mb-3">
+                                                <label for="address" class="form-label">Address</label>
+                                                <textarea class="form-control" id="address" name="address" rows="2"><%= settings?.address || '' %></textarea>
+                                            </div>
+                                            <div class="mb-3">
+                                                <div id="map" style="height: 300px; width: 100%;"></div>
+                                            </div>
+                                            <input type="hidden" id="lat" name="location[lat]" value="<%= settings?.location?.lat || '' %>">
+                                            <input type="hidden" id="lng" name="location[lng]" value="<%= settings?.location?.lng || '' %>">
+
+                                            <div class="mb-3">
+                                                <label for="logo" class="form-label">Logo</label>
+                                                <input class="form-control" type="file" id="logo" name="image" accept="image/*">
+                                                <% if (settings?.logo) { %>
+                                                <div class="mt-2">
+                                                    <img src="<%= settings.logo %>" alt="Logo" style="max-height: 100px;">
+                                                    <div class="form-text">Current logo</div>
+                                                </div>
+                                                <% } %>
+                                            </div>
+
+                                            <h5 class="my-4">Fees</h5>
+                                            <div class="row">
+                                                <div class="mb-3 col-md-6">
+                                                    <label for="property" class="form-label">Property (%)</label>
+                                                    <input class="form-control" type="number" id="property" name="fees[property]" 
+                                                        value="<%= settings?.fees?.property || 0 %>" min="0" max="100">
+                                                </div>
+                                                <div class="mb-3 col-md-6">
+                                                    <label for="event" class="form-label">Event (%)</label>
+                                                    <input class="form-control" type="number" id="event" name="fees[event]" 
+                                                        value="<%= settings?.fees?.event || 0 %>" min="0" max="100">
+                                                </div>
+                                            </div>
+
+                                            <h5 class="my-4">Social Media</h5>
+                                            <div class="row">
+                                                <div class="mb-3 col-md-6">
+                                                    <label for="facebook" class="form-label">Facebook URL</label>
+                                                    <input class="form-control" type="text" id="facebook" name="socialMedia[facebook]" 
+                                                        value="<%= settings?.socialMedia?.facebook || '' %>">
+                                                </div>
+                                                <div class="mb-3 col-md-6">
+                                                    <label for="twitter" class="form-label">Twitter URL</label>
+                                                    <input class="form-control" type="text" id="twitter" name="socialMedia[twitter]" 
+                                                        value="<%= settings?.socialMedia?.twitter || '' %>">
+                                                </div>
+                                                <div class="mb-3 col-md-6">
+                                                    <label for="instagram" class="form-label">Instagram URL</label>
+                                                    <input class="form-control" type="text" id="instagram" name="socialMedia[instagram]" 
+                                                        value="<%= settings?.socialMedia?.instagram || '' %>">
+                                                </div>
+                                                <div class="mb-3 col-md-6">
+                                                    <label for="linkedin" class="form-label">LinkedIn URL</label>
+                                                    <input class="form-control" type="text" id="linkedin" name="socialMedia[linkedin]" 
+                                                        value="<%= settings?.socialMedia?.linkedin || '' %>">
+                                                </div>
+                                            </div>
+
+                                            <h5 class="my-4">SEO Settings</h5>
+                                            <div class="mb-3">
+                                                <label for="metaTitle" class="form-label">Meta Title</label>
+                                                <input class="form-control" type="text" id="metaTitle" name="seo[metaTitle]" 
+                                                    value="<%= settings?.seo?.metaTitle || '' %>">
+                                            </div>
+                                            <div class="mb-3">
+                                                <label for="metaDescription" class="form-label">Meta Description</label>
+                                                <textarea class="form-control" id="metaDescription" name="seo[metaDescription]" rows="2"><%= settings?.seo?.metaDescription || '' %></textarea>
+                                            </div>
+                                            <div class="mb-3">
+                                                <label for="keywords" class="form-label">Keywords</label>
+                                                <input class="form-control" type="text" id="keywords" name="seo[keywords]" 
+                                                    value="<%= settings?.seo?.keywords || '' %>">
+                                                <div class="form-text">Separate keywords with commas</div>
+                                            </div>
+
+                                            <div class="mt-4">
+                                                <button type="submit" class="btn btn-primary me-2" id="saveSettingsBtn">
+                                                    <span class="spinner-border spinner-border-sm d-none" role="status"></span>
+                                                    Save Settings
+                                                </button>
+                                                <button type="reset" class="btn btn-outline-secondary">Reset</button>
+                                            </div>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <%- include('../../../partials/footer') %>
+                    <div class="content-backdrop fade"></div>
+                </div>
+            </div>
+        </div>
+        <div class="layout-overlay layout-menu-toggle"></div>
+    </div>
+
+    <!-- Load Google Maps API -->
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyC--y7FdTXwrqQkp9_pe2hCwnzQQRunbtI&libraries=places&callback=initMap" async defer></script>
+
+    <script>
+    // Define initMap globally
+    window.initMap = function() {
+        // Ensure DOM is ready before initializing map
+        $(document).ready(function() {
+            let map;
+            let marker;
+            let autocomplete;
+
+            // Initialize map
+            map = new google.maps.Map(document.getElementById("map"), {
+                center: { lat: 26.9124336, lng: 75.7872709 }, // Default to India
+                zoom: 5,
+            });
+
+            // Initialize autocomplete
+            autocomplete = new google.maps.places.Autocomplete(
+                document.getElementById("autocomplete"),
+                {
+                    types: ["geocode"],
+                    componentRestrictions: { country: "in" }, // Restrict to India
+                }
+            );
+
+            // Add marker
+            marker = new google.maps.Marker({
+                map: map,
+                draggable: true,
+            });
+
+            // Listen for place selection
+            autocomplete.addListener("place_changed", () => {
+                const place = autocomplete.getPlace();
+                if (!place.geometry) {
+                    Swal.fire({
+                        title: 'Error!',
+                        text: "No details available for input: '" + place.name + "'",
+                        icon: 'error',
+                        confirmButtonText: 'OK'
+                    });
+                    return;
+                }
+
+                // Update form fields
+                document.getElementById("address").value = place.formatted_address;
+                document.getElementById("lat").value = place.geometry.location.lat();
+                document.getElementById("lng").value = place.geometry.location.lng();
+
+                // Update map
+                map.setCenter(place.geometry.location);
+                map.setZoom(15);
+                marker.setPosition(place.geometry.location);
+            });
+
+            // Listen for marker drag
+            marker.addListener("dragend", () => {
+                const position = marker.getPosition();
+                document.getElementById("lat").value = position.lat();
+                document.getElementById("lng").value = position.lng();
+
+                // Reverse geocode to get address
+                new google.maps.Geocoder()
+                    .geocode({ location: position })
+                    .then((response) => {
+                        if (response.results[0]) {
+                            document.getElementById("autocomplete").value = response.results[0].formatted_address;
+                            document.getElementById("address").value = response.results[0].formatted_address;
+                        }
+                    });
+            });
+
+            // Allow clicking on map to set location
+            map.addListener("click", (event) => {
+                marker.setPosition(event.latLng);
+                document.getElementById("lat").value = event.latLng.lat();
+                document.getElementById("lng").value = event.latLng.lng();
+
+                // Reverse geocode
+                new google.maps.Geocoder()
+                    .geocode({ location: event.latLng })
+                    .then((response) => {
+                        if (response.results[0]) {
+                            document.getElementById("autocomplete").value = response.results[0].formatted_address;
+                            document.getElementById("address").value = response.results[0].formatted_address;
+                        }
+                    });
+            });
+
+            // Initialize with existing values if any
+            <% if (settings?.location?.lat && settings?.location?.lng) { %>
+                const initialCoords = {
+                    lat: <%= settings.location.lat %>,
+                    lng: <%= settings.location.lng %>
+                };
+                map.setCenter(initialCoords);
+                map.setZoom(15);
+                marker.setPosition(initialCoords);
+                document.getElementById("autocomplete").value = '<%= settings.address || '' %>';
+                document.getElementById("address").value = '<%= settings.address || '' %>';
+            <% } %>
+        });
+    };
+
+    $(document).ready(function() {
+        // Settings form submission
+        $('#settingsForm').on('submit', function(e) {
+            e.preventDefault();
+            const btn = $('#saveSettingsBtn');
+            btn.prop('disabled', true);
+            btn.find('.spinner-border').removeClass('d-none');
+
+            // Create FormData object for file upload
+            const formData = new FormData(this);
+
+            $.ajax({
+                url: '/setting',
+                method: 'POST',
+                data: formData,
+                processData: false, // Important for file upload
+                contentType: false, // Important for file upload
+                success: function(response) {
+                    Swal.fire({
+                        title: 'Success!',
+                        text: 'Settings updated successfully',
+                        icon: 'success',
+                        confirmButtonText: 'OK'
+                    }).then(() => {
+                        location.reload();
+                    });
+                },
+                error: function(xhr) {
+                    Swal.fire({
+                        title: 'Error!',
+                        text: xhr.responseJSON?.message || 'Failed to update settings',
+                        icon: 'error',
+                        confirmButtonText: 'OK'
+                    });
+                },
+                complete: function() {
+                    btn.prop('disabled', false);
+                    btn.find('.spinner-border').addClass('d-none');
+                }
+            });
+        });
+    });
+    </script>
+</body>

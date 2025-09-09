@@ -1,0 +1,47 @@
+<div class="list-group-item">
+  <div class="d-flex justify-content-between align-items-center">
+    <span><%= suggest.question %></span>
+    <div>
+      <% if (currentDepth < maxDepth) { %>
+        <button class="btn btn-sm btn-outline-primary toggle-suggest" 
+                data-bs-toggle="collapse" 
+                data-bs-target="#suggestions-<%= suggest._id %>">
+          <i class="bx bx-chevron-down"></i> Suggestions
+        </button>
+      <% } %>
+      <button class="btn btn-sm btn-outline-warning edit-suggest ms-1" 
+              data-id="<%= suggest._id %>"
+              data-question="<%= suggest.question %>"
+              data-answer="<%= suggest.answer %>">
+        <i class="bx bx-edit"></i>
+      </button>
+      <button class="btn btn-sm btn-outline-danger remove-suggest ms-1" 
+              data-id="<%= suggest._id %>">
+        <i class="bx bx-trash"></i>
+      </button>
+    </div>
+  </div>
+  
+  <% if (currentDepth < maxDepth) { %>
+    <div class="collapse mt-2" id="suggestions-<%= suggest._id %>">
+      <% if (suggest.suggestQuestions && suggest.suggestQuestions.length > 0) { %>
+        <div class="list-group list-group-flush">
+          <% suggest?.suggestQuestions.forEach(nested => { %>
+            <%- include('suggestion-item', {
+              suggest: nested,
+              currentDepth: currentDepth + 1,
+              maxDepth
+            }) %>
+          <% }); %>
+        </div>
+      <% } else { %>
+        <div class="alert alert-light">No suggestions yet</div>
+      <% } %>
+      
+      <button class="btn btn-sm btn-outline-primary mt-2 add-nested-suggest" 
+              data-parent-id="<%= suggest._id %>">
+        <i class="bx bx-plus"></i> Add Suggestions
+      </button>
+    </div>
+  <% } %>
+</div>

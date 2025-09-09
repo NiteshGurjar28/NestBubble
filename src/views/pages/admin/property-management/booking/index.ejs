@@ -1,0 +1,331 @@
+<!-- Bootstrap 4 -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"></script>
+
+<body>
+    <div class="layout-wrapper layout-content-navbar">
+        <div class="layout-container">
+            <%- include('../../../../partials/sideBar') %>
+            <div class="layout-page">
+                <%- include('../../../../partials/header') %>
+                <div class="content-wrapper">
+                    <div class="admin-container">
+                        <div class="admin-header">
+                            <h2>All Bookings </h2>
+                        </div>
+
+                        <div class="row g-4 mb-4">
+                            <div class="col-md-12 col-lg-12">
+                                <div class="card shadow mb-4">
+                                    <div class="card-header py-3 d-flex justify-content-between align-items-center">
+                                        <h6 class="m-0 font-weight-bold text-primary">All Bookings</h6>
+                                        <div class="dropdown no-arrow">
+                                            <a class="dropdown-toggle" href="#" role="button" id="filterDropdown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                                <i class="fas fa-filter fa-sm fa-fw text-gray-400"></i> Filters
+                                            </a>
+                                            <div class="dropdown-menu dropdown-menu-right filter-dropdown" aria-labelledby="filterDropdown">
+                                                <form id="bookingFilterForm">
+                                                    <div class="form-group">
+                                                        <label for="statusFilter">Status</label>
+                                                        <select class="form-control" id="statusFilter">
+                                                            <option value="all">All Status</option>
+                                                            <option value="confirmed">Confirmed</option>
+                                                            <option value="completed">Completed</option>
+                                                            <option value="pending">Pending</option>
+                                                            <option value="cancelled">Cancelled</option>
+                                                        </select>
+                                                    </div>
+                                                    <div class="form-group">
+                                                        <label for="dateRangeFilter">Date Range</label>
+                                                        <select class="form-control" id="dateRangeFilter">
+                                                            <option value="all">All Dates</option>
+                                                            <option value="today">Today</option>
+                                                            <option value="this_week">This Week</option>
+                                                            <option value="this_month">This Month</option>
+                                                            <option value="next_month">Next Month</option>
+                                                        </select>
+                                                    </div>
+                                                    <!-- <div class="form-group">
+                                                        <label for="propertyTypeFilter">Property Type</label>
+                                                        <select class="form-control" id="propertyTypeFilter">
+                                                            <option value="all">All Types</option>
+                                                            <% if (propertyTypes.length > 0) { %>
+                                                                <% propertyTypes.forEach(type => { %>
+                                                                    <option value="<%= type?._id %>"><%= type?.name %></option>
+                                                                <% }); %>
+                                                            <% } %>
+                                                        </select>
+                                                    </div> -->
+                                                    <button type="submit" class="btn btn-primary btn-block mt-3">
+                                                        <i class="fas fa-filter mr-2"></i> Apply Filters
+                                                    </button>
+                                                </form>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="loading-spinner" id="loadingSpinner">
+                                            <div class="spinner-border text-primary" role="status">
+                                                <span class="sr-only">Loading...</span>
+                                            </div>
+                                            <p class="mt-2">Loading bookings...</p>
+                                        </div>
+                                        <div class="row" id="bookingList">
+                                            <!-- Bookings will be loaded here via AJAX -->
+                                        </div>
+                                        <div class="empty-state d-none" id="emptyState">
+                                            <i class="far fa-calendar-times fa-4x text-muted mb-3"></i>
+                                            <h4>No Bookings Found</h4>
+                                            <p class="text-muted">No bookings match your current filters.</p>
+                                        </div>
+                                        <nav aria-label="Booking pagination" class="mt-4" id="paginationContainer">
+                                            <ul class="pagination justify-content-center" id="pagination">
+                                                <!-- Pagination will be loaded here via AJAX -->
+                                            </ul>
+                                        </nav>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                  <%- include('../../../../partials/footer') %>
+                  <div class="content-backdrop fade"></div>
+                </div>
+            </div>
+        </div>
+        <div class="layout-overlay layout-menu-toggle"></div>
+    </div> 
+
+    <script>
+    $(document).ready(function() {
+        // Initial load of bookings
+        loadBookings();
+        
+        // Handle filter form submission
+        $('#bookingFilterForm').on('submit', function(e) {
+            e.preventDefault();
+            loadBookings();
+            $('.dropdown-menu').removeClass('show'); // Close dropdown after applying filters
+        });
+        
+        // Function to load bookings via AJAX
+        function loadBookings(page = 1) {
+            const status = $('#statusFilter').val();
+            const propertyId = $('#propertyId').val();
+            const dateRange = $('#dateRangeFilter').val();
+            const propertyType = $('#propertyTypeFilter').val();
+            
+            $('#loadingSpinner').show();
+            $('#bookingList').html('');
+            $('#emptyState').addClass('d-none');
+            
+            $.ajax({
+                url: '/property/bookings/filter',
+                type: 'GET',
+                data: {
+                    status: status,
+                    dateRange: dateRange,
+                    propertyType: propertyType,
+                    page: page
+                },
+                success: function(response) {
+                    $('#loadingSpinner').hide();
+                    
+                    if (response.bookings && response.bookings.length > 0) {
+                        renderBookings(response.bookings);
+                        renderPagination(response.totalPages, page);
+                    } else {
+                        $('#emptyState').removeClass('d-none');
+                        $('#paginationContainer').hide();
+                    }
+                },
+                error: function(xhr, status, error) {
+                    $('#loadingSpinner').hide();
+                    $('#emptyState').removeClass('d-none').find('h4').text('Error Loading Bookings');
+                    console.error('Error fetching bookings:', error);
+                }
+            });
+        }
+        
+        // Function to render bookings
+        function renderBookings(bookings) {
+            let html = '';
+            
+            bookings.forEach(booking => {
+                let statusClass = '';
+                let statusIcon = '';
+                
+            switch (booking.status) {
+                case 'confirmed':
+                    statusClass = 'status-confirmed';
+                    statusIcon = 'fa-check-circle';
+                    break;
+                case 'completed':
+                    statusClass = 'status-completed';
+                    statusIcon = 'fa-check-double';
+                    break;
+                case 'pending':
+                    statusClass = 'status-pending';
+                    statusIcon = 'fa-clock';
+                    break;
+                case 'cancelled':
+                    statusClass = 'status-cancelled';
+                    statusIcon = 'fa-ban';
+                    break;
+                default:
+                    statusClass = '';
+                    statusIcon = '';
+                    break;
+            }
+
+                
+                html += `
+                <div class="col-lg-6 mb-4">
+                    <div class="card h-100">
+                        <div class="row no-gutters">
+                            <div class="col-md-5 position-relative">
+                                <img src="${booking?.propertyImage?.url || 'https://unsplash.it/400/200'}" class="property-img" alt="Property Image">
+                                <span class="booking-status ${statusClass}">
+                                    <i class="fas ${statusIcon} me-1"></i>${booking.status.charAt(0).toUpperCase() + booking.status.slice(1)}
+                                </span>
+                            </div>
+                            <div class="col-md-7">
+                                <div class="card-body">
+                                    <h5 class="card-title">${booking.propertyName}</h5>
+                                    <p class="card-text text-muted mb-2">
+                                        <i class="fas fa-map-marker-alt me-2"></i>${booking?.propertyLocation?.street}, ${booking?.propertyLocation?.landmark}
+                                    </p>
+                                    <div class="d-flex flex-wrap mb-2">
+                                        <span class="date-badge">
+                                            <i class="far fa-calendar-alt me-1"></i>${formatDate(booking.bookingDates.startDate)}
+                                        </span>
+                                        <span class="date-badge">
+                                            <i class="far fa-calendar-alt me-1"></i>${formatDate(booking.bookingDates.endDate)}
+                                        </span>
+                                        <span class="date-badge">
+                                            <i class="fas fa-moon me-1"></i>${booking.totalNights} nights
+                                        </span>
+                                    </div>
+                                    <div class="d-flex justify-content-between align-items-center mb-2">
+                                        <div>
+                                            <span class="me-3">
+                                                <i class="fas fa-user me-1"></i>${booking.adults} Adults
+                                            </span>
+                                            ${booking.children > 0 ? `<span class="me-3"><i class="fas fa-child me-1"></i>${booking.children} Children</span>` : ''}
+                                            ${booking.infants > 0 ? `<span><i class="fas fa-baby me-1"></i>${booking.infants} Infants</span>` : ''}
+                                        </div>
+                                        <div class="price-highlight">${formatPrice(booking.totalAmount)}</div>
+                                    </div>
+                                    <div class="d-flex justify-content-between align-items-center mt-3">
+                                        <a href="/property/booking/${booking._id}/show" class="btn btn-outline-primary btn-sm">
+                                            <i class="fas fa-eye me-1"></i>View Details
+                                        </a>
+                                        <a href="/guest/${booking.guestId}/show" class="d-flex align-items-center text-decoration-none text-dark">
+                                            <img src="${booking?.guestProfileImage || '/images/default-avatar.jpg'}" 
+                                                alt="${booking?.guestName}" 
+                                                class="rounded-circle me-2" 
+                                                width="40" 
+                                                height="40"
+                                                style="object-fit: cover;">
+                                            <span class="user-name">${booking.guestName}</span>
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                `;
+            });
+            
+            $('#bookingList').html(html);
+            $('#paginationContainer').show();
+            
+        }
+        
+        // Function to render pagination
+        function renderPagination(totalPages, currentPage) {
+            let html = '';
+            const maxVisiblePages = 5; // Maximum pages to show around current page
+            
+            if (totalPages > 1) {
+                // Previous button
+                html += `<li class="page-item ${currentPage === 1 ? 'disabled' : ''}">
+                            <a class="page-link" href="#" data-page="${currentPage - 1}">Previous</a>
+                        </li>`;
+                
+                // Always show first page
+                html += `<li class="page-item ${currentPage === 1 ? 'active' : ''}">
+                            <a class="page-link" href="#" data-page="1">1</a>
+                        </li>`;
+                
+                // Show ellipsis if current page is far from start
+                if (currentPage > maxVisiblePages - 1) {
+                    html += `<li class="page-item disabled">
+                                <span class="page-link">...</span>
+                            </li>`;
+                }
+                
+                // Calculate start and end pages to show
+                let startPage = Math.max(2, currentPage - Math.floor(maxVisiblePages / 2));
+                let endPage = Math.min(totalPages - 1, currentPage + Math.floor(maxVisiblePages / 2));
+                
+                // Adjust if we're near the start or end
+                if (currentPage <= maxVisiblePages - 1) {
+                    endPage = maxVisiblePages;
+                }
+                if (currentPage >= totalPages - Math.floor(maxVisiblePages / 2)) {
+                    startPage = totalPages - maxVisiblePages + 1;
+                }
+                
+                // Show page numbers around current page
+                for (let i = startPage; i <= endPage; i++) {
+                    if (i > 1 && i < totalPages) { // Skip if it's first or last page (we show them separately)
+                        html += `<li class="page-item ${i === currentPage ? 'active' : ''}">
+                                    <a class="page-link" href="#" data-page="${i}">${i}</a>
+                                </li>`;
+                    }
+                }
+                
+                // Show ellipsis if current page is far from end
+                if (currentPage < totalPages - Math.floor(maxVisiblePages / 2)) {
+                    html += `<li class="page-item disabled">
+                                <span class="page-link">...</span>
+                            </li>`;
+                }
+                
+                // Always show last page if there's more than 1 page
+                if (totalPages > 1) {
+                    html += `<li class="page-item ${currentPage === totalPages ? 'active' : ''}">
+                                <a class="page-link" href="#" data-page="${totalPages}">${totalPages}</a>
+                            </li>`;
+                }
+                
+                // Next button
+                html += `<li class="page-item ${currentPage === totalPages ? 'disabled' : ''}">
+                            <a class="page-link" href="#" data-page="${currentPage + 1}">Next</a>
+                        </li>`;
+            }
+            
+            $('#pagination').html(html);
+            
+            // Attach pagination click handlers
+            $('.page-link').on('click', function(e) {
+                e.preventDefault();
+                const page = $(this).data('page');
+                if (!$(this).parent().hasClass('disabled')) {
+                    loadBookings(page);
+                }
+            });
+        }
+        // Function to format date
+        function formatDate(dateString) {
+            const options = { year: 'numeric', month: 'short', day: 'numeric' };
+            return new Date(dateString).toLocaleDateString('en-IN', options);
+        }
+        
+        
+    });
+    </script>
+</body>

@@ -1,0 +1,433 @@
+<!-- View - host.ejs -->
+<body>
+    <div class="layout-wrapper layout-content-navbar">
+        <div class="layout-container">
+            <%- include('../../../partials/sideBar') %>
+            <div class="layout-page">
+                <%- include('../../../partials/header') %>
+                <div class="content-wrapper">
+                    <div class="admin-container">
+                        <div class="admin-header">
+                            <h2>Host List</h2>
+                            <button class="btn btn-primary position-relative" data-bs-toggle="collapse" data-bs-target="#filterPanel">
+                                <i class="bx bx-filter-alt"></i> Filters
+                                <% const hasActiveFilters = Object.keys(filterValues).some(key => 
+                                    key !== 'page' && key !== 'limit' && filterValues[key] !== '' && filterValues[key] !== undefined
+                                ); %>
+                                <% if (hasActiveFilters) { %>
+                                <span class="position-absolute top-0 start-100 translate-middle p-1 bg-danger border border-light rounded-circle">
+                                    <span class="visually-hidden">Active filters</span>
+                                </span>
+                                <% } %>
+                            </button>
+                        </div>
+
+                        <!-- Filter Panel -->
+                        <div class="card mb-4 collapse" id="filterPanel">
+                            <div class="card-body">
+                                <form id="hostFilterForm" method="GET" action="/host">
+                                    <div class="row">
+                                        <div class="col-md-3">
+                                            <div class="form-group">
+                                                <label>Search Hosts</label>
+                                                <input type="text" class="form-control" name="search" 
+                                                    value="<%= filterValues.search || '' %>" 
+                                                    placeholder="Name, email, mobile, Id">
+                                            </div>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <div class="form-group">
+                                                <label>Address Search</label>
+                                                <input type="text" class="form-control" name="addressSearch" 
+                                                    value="<%= filterValues.addressSearch || '' %>" 
+                                                    placeholder="Street, city, state, postal code">
+                                            </div>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <div class="form-group">
+                                                <label>KYC Document Search</label>
+                                                <input type="text" class="form-control" name="kycSearch" 
+                                                    value="<%= filterValues.kycSearch || '' %>" 
+                                                    placeholder="Aadhar or PAN number">
+                                            </div>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <div class="form-group">
+                                                <label>Verified</label>
+                                                <select class="form-control" name="verified">
+                                                <option value="">All</option>
+                                                <option value="true" <%= filterValues.verified === 'true' ? 'selected' : '' %>>Verified</option>
+                                                <option value="false" <%= filterValues.verified === 'false' ? 'selected' : '' %>>Not Verified</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="row mt-3">
+                                        <div class="col-md-3">
+                                            <div class="form-group">
+                                                <label>KYC Status</label>
+                                                <select class="form-control" name="kycStatus">
+                                                    <option value="">All</option>
+                                                    <option value="true" <%= filterValues.kycStatus === 'true' ? 'selected' : '' %>>Completed</option>
+                                                    <option value="false" <%= filterValues.kycStatus === 'false' ? 'selected' : '' %>>Pending</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <div class="form-group">
+                                                <label>Status</label>
+                                                <select class="form-control" name="status">
+                                                    <option value="">All</option>
+                                                    <option value="active" <%= filterValues.status === 'active' ? 'selected' : '' %>>Active</option>
+                                                    <option value="inactive" <%= filterValues.status === 'inactive' ? 'selected' : '' %>>Inactive</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <div class="form-group">
+                                                <label>Property Search</label>
+                                                <input type="text" class="form-control" name="propertySearch" 
+                                                    value="<%= filterValues.propertySearch || '' %>" 
+                                                    placeholder="Property name, city, ID">
+                                            </div>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <div class="form-group">
+                                                <label>Event Search</label>
+                                                <input type="text" class="form-control" name="eventSearch" 
+                                                    value="<%= filterValues.eventSearch || '' %>" 
+                                                    placeholder="Event title, date, location">
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="row mt-3">
+                                        <div class="col-md-12 text-end">
+                                            <a href="/host" class="btn btn-secondary">Reset All</a>
+                                            <button type="submit" class="btn btn-primary">Apply Filters</button>
+                                        </div>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+
+                        <!-- Hosts Table -->
+                        <div class="card">
+                            <div class="card-body">
+                                <div class="table-responsive">
+                                    <table class="table table-hover">
+                                        <thead class="table-light">
+                                            <tr>
+                                            <th>#ID</th>
+                                            <th>Host</th>
+                                            <th>Contact</th>
+                                            <th>KYC Details</th>
+                                            <th>Properties</th>
+                                            <th>Events</th>
+                                            <th>Status</th>
+                                            <th>Joined</th>
+                                            <th>Actions</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <% if (hosts.length === 0) { %>
+                                            <tr>
+                                                <td colspan="9" class="text-center py-4">No hosts found matching your filters</td>
+                                            </tr>
+                                            <% } %>
+                                            
+                                            <% hosts.forEach((host, index) => { %>
+                                            <tr>
+                                            <td><%= host.userId  %>   </td>
+                                            <td>
+                                                <div class="d-flex align-items-center">
+                                                    <div class="position-relative">
+                                                        <% if (host.profileImage) { %>
+                                                            <img src="<%= host.profileImage %>" 
+                                                                class="rounded-circle me-2" 
+                                                                width="40" height="40" 
+                                                                alt="<%= host.firstName %>"
+                                                                onerror="this.onerror=null;this.src='/temp/default-user.png'">
+                                                        <% } else { %>
+                                                            <div class="avatar-placeholder rounded-circle me-2">
+                                                                <img src="/temp/default-user.png" 
+                                                                class="rounded-circle me-2" 
+                                                                width="40" height="40" 
+                                                                alt="<%= host.firstName %>">
+                                                            </div>
+                                                        <% } %>
+                                                        <% if (host.hostVerified) { %>
+                                                            <span class="position-absolute bottom-0 end-0  rounded-circle p-1">
+                                                                <i class="fas fa-check-circle text-primary fa-lg fw-bold"></i>
+                                                            </span>
+                                                        <% } %>
+                                                    </div>
+                                                    <div>
+                                                        <div class="fw-bold">
+                                                            <%= host.firstName %> <%= host.lastName %>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <div><%= host.mobile || 'N/A' %></div>
+                                                <small class="text-muted"><%= host.email %></small>
+                                            </td>
+                                            <td>
+                                            <div class="dropdown">
+                                                <button class="btn btn-link p-0" type="button" data-bs-toggle="collapse" 
+                                                        data-bs-target="#kycInfo-<%= host._id %>">
+                                                View KYC
+                                                </button>
+                                            </div>
+                                            <div class="collapse" id="kycInfo-<%= host._id %>">
+                                                <div class="card card-body mt-2">
+                                                    <% if(adminPerms.includes('host-kyc-status')) { %>
+                                                        <div class="d-flex justify-content-between align-items-center mb-2">
+                                                            <span class="kyc-status-badge badge <%= host.kycStatus ? 'bg-success' : 'bg-warning' %>"
+                                                                style="cursor: pointer;"
+                                                                data-host-id="<%= host._id %>"
+                                                                data-current-status="<%= host.kycStatus %>">
+                                                            <%= host.kycStatus ? 'Completed' : 'Pending' %>
+                                                            </span>
+                                                        </div>
+                                                    <% } %>
+
+                                                    <% if(adminPerms.includes('host-document')) { %>
+                                                        <% if (host?.kyc?.aadharNumber) { %>
+                                                                <div class="mb-2">
+                                                                <h6>Aadhar: <%= host?.kyc?.aadharNumber %></h6>
+                                                                <div class="d-flex">
+                                                                    <a href="<%= host?.kyc?.aadharFrontImage %>" target="_blank" class="me-2">
+                                                                    <img src="<%= host?.kyc?.aadharFrontImage %>" style="width: 100px; height: auto;">
+                                                                    </a>
+                                                                    <a href="<%= host?.kyc?.aadharBackImage %>" target="_blank">
+                                                                    <img src="<%= host?.kyc?.aadharBackImage %>" style="width: 100px; height: auto;">
+                                                                    </a>
+                                                                </div>
+                                                            </div>
+                                                        <% } %>
+                                                        
+                                                        <% if (host?.kyc?.panNumber) { %>
+                                                            <div>
+                                                                <h6>PAN: <%= host?.kyc?.panNumber %></h6>
+                                                                <a href="<%= host?.kyc?.panImage %>" target="_blank">
+                                                                    <img src="<%= host?.kyc?.panImage %>" style="width: 100px; height: auto;">
+                                                                </a>
+                                                            </div>
+                                                        <% } %>
+                                                    <% } %>
+                                                </div>
+                                            </div>
+                                            </td>
+                                            <td>
+                                                <div class="dropdown">
+                                                    <button class="btn btn-link p-0" type="button" data-bs-toggle="collapse" 
+                                                            data-bs-target="#properties-<%= host._id %>">
+                                                        <span class="badge bg-primary"><%= host.propertyCount %></span>
+                                                    </button>
+                                                </div>
+                                                <div class="collapse" id="properties-<%= host._id %>">
+                                                    <div class="card card-body mt-2">
+                                                        <% if (host.propertyCount > 0) { %>
+                                                        <% host.properties.forEach(property => { %>
+                                                            <div class="d-flex align-items-center mb-2">
+                                                            <img src="<%= property.images[0]?.url || '/default-property.jpg' %>" 
+                                                                style="width: 50px; height: 50px; object-fit: cover;" 
+                                                                class="rounded me-2">
+                                                            <div>
+                                                                <a href="/property/<%= property._id %>/show" class="fw-bold">
+                                                                <%= property.name %>
+                                                                </a>
+                                                                <div class="text-muted small">
+                                                                <%= property.address.city %>, <%= property.address.state %>
+                                                                </div>
+                                                            </div>
+                                                            </div>
+                                                        <% }) %>
+                                                        <% } else { %>
+                                                        <div class="text-muted">No properties found</div>
+                                                        <% } %>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <div class="dropdown">
+                                                <button class="btn btn-link p-0" type="button" data-bs-toggle="collapse" 
+                                                        data-bs-target="#events-<%= host._id %>">
+                                                    <span class="badge bg-info"><%= host.eventCount %></span>
+                                                </button>
+                                                </div>
+                                                <div class="collapse" id="events-<%= host._id %>">
+                                                    <div class="card card-body mt-2">
+                                                        <% if (host.eventCount > 0) { %>
+                                                        <% host.events.forEach(event => { %>
+                                                            <div class="mb-2">
+                                                                <a href="/event/<%= event._id %>/show" class="fw-bold">
+                                                                    <%= event.title %>
+                                                                </a>
+                                                                <div class="text-muted small">
+                                                                    <%= new Date(event.startDate).toLocaleDateString() %> - 
+                                                                    <%= event.location.city %>
+                                                                </div>
+                                                            </div>
+                                                        <% }) %>
+                                                        <% } else { %>
+                                                        <div class="text-muted">No events found</div>
+                                                        <% } %>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <% if(adminPerms.includes('host-status')) { %>
+                                                    <div class="form-check form-switch d-inline-block">
+                                                    <input class="form-check-input status-toggle" 
+                                                        type="checkbox" 
+                                                        data-id="<%= host._id %>"
+                                                        <%= host.isActive ? 'checked' : '' %>>
+                                                    </div>
+                                                <% } %>
+                                            </td>
+                                                <td><%= formatDate(host.createdAt) %></td>
+                                                <td>
+                                                    <% if(adminPerms.includes('host-show')) { %>
+                                                        <a href="/host/<%= host._id %>/show" class="btn btn-sm btn-icon btn-outline-primary">
+                                                            <i class="bx bx-show"></i>
+                                                        </a>
+                                                    <% } %>
+                                                </td>
+                                            </tr>
+                                            <% }) %>
+                                        </tbody>
+                                    </table>
+                                </div>
+
+                                <!-- Pagination -->
+                                <% if (totalPages > 1) { %>
+                                <nav aria-label="Page navigation" class="mt-4">
+                                    <ul class="pagination justify-content-center">
+                                        <% if (currentPage > 1) { %>
+                                            <li class="page-item">
+                                                <a class="page-link" 
+                                                    href="/host?<%= new URLSearchParams({...filterValues, page: currentPage - 1}) %>">
+                                                    Previous
+                                                </a>
+                                            </li>
+                                        <% } %>
+                                        
+                                        <% for (let i = 1; i <= totalPages; i++) { %>
+                                            <li class="page-item <%= currentPage === i ? 'active' : '' %>">
+                                                <a class="page-link" 
+                                                    href="/host?<%= new URLSearchParams({...filterValues, page: i}) %>">
+                                                    <%= i %>
+                                                </a>
+                                            </li>
+                                        <% } %>
+                                        
+                                        <% if (currentPage < totalPages) { %>
+                                            <li class="page-item">
+                                                <a class="page-link" 
+                                                    href="/host?<%= new URLSearchParams({...filterValues, page: currentPage + 1}) %>">
+                                                    Next
+                                                </a>
+                                            </li>
+                                        <% } %>
+                                    </ul>
+                                </nav>
+                                <% } %>
+                            </div>
+                        </div>
+                    </div>
+
+                    <%- include('../../../partials/footer') %>
+                    <div class="content-backdrop fade"></div>
+                </div>
+            </div>
+        </div>
+        <div class="layout-overlay layout-menu-toggle"></div>
+    </div> 
+
+    <script>
+    $(document).ready(function() {
+        // Status toggle handler
+        $('.status-toggle').change(function() {
+            const hostId = $(this).data('id');
+            const isActive = $(this).is(':checked');
+            
+            $.ajax({
+                url: `/host/${hostId}/status`,
+                method: 'PUT',
+                data: { isActive },
+                success: function(response) {
+                    if (response.success) {
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Success',
+                            text: response.message,
+                            timer: 1500,
+                            showConfirmButton: false
+                        });
+                    }
+                },
+                error: function(xhr) {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: xhr.responseJSON?.message || 'Failed to update status'
+                    });
+                    $(this).prop('checked', !isActive); // Revert toggle on error
+                }
+            });
+        });
+    
+         $(document).on('click', '.kyc-status-badge', function() {
+            const hostId = $(this).data('host-id');
+            const currentStatus = $(this).data('current-status');
+            const hostName = $(this).closest('tr').find('.fw-bold').text().trim();
+            
+            const newStatus = !currentStatus;
+            const actionText = newStatus ? 'Completed' : 'Pending';
+            
+            Swal.fire({
+            title: `${actionText.toUpperCase()} KYC Verification?`,
+            html: `Are you sure you want to <strong>${actionText}</strong> KYC`,
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonText: `Yes, ${actionText}`,
+            cancelButtonText: 'Cancel',
+            confirmButtonColor: newStatus ? '#28a745' : '#dc3545'
+            }).then((result) => {
+            if (result.isConfirmed) {
+                $.ajax({
+                url: `/host/${hostId}/toggle-kyc`,
+                method: 'PUT',
+                success: function(response) {
+                    if (response.success) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Success',
+                        text: response.message,
+                        timer: 1500,
+                        showConfirmButton: false
+                    }).then(() => {
+                        // Update the UI immediately
+                        const badge = $(`.kyc-status-badge[data-host-id="${hostId}"]`);
+                        badge.toggleClass('bg-success bg-warning');
+                        badge.text(newStatus ? 'Completed' : 'Pending');
+                        badge.data('current-status', newStatus);
+                    });
+                    }
+                },
+                error: function(xhr) {
+                    Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: xhr.responseJSON?.message || 'Failed to update KYC status'
+                    });
+                }
+                });
+            }
+            });
+        });
+    });
+    </script>
+</body>

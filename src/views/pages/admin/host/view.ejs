@@ -1,0 +1,1162 @@
+
+<body>
+    <div class="layout-wrapper layout-content-navbar">
+        <div class="layout-container">
+            <%- include('../../../partials/sideBar') %>
+            <div class="layout-page">
+                <%- include('../../../partials/header') %>
+                <div class="content-wrapper">
+                    <div class="admin-container">
+                        <div class="admin-header">
+                        <h2>Host Details</h2>
+                            <a href="/host" class="btn btn-gradient">Back</a>
+                        </div>
+
+                        <div class="row">
+                            <!-- Left Column - Profile Info -->
+                            <div class="col-md-4">
+                                <!-- Profile Card (same as before) -->
+
+                                    <div class="card shadow-sm mb-4">
+                                        <!-- Background Image Section -->
+                                        <div class="card-header p-0" style="height: 120px; overflow: hidden;">
+                                            <% if (host.backgroundImage) { %>
+                                                <img src="<%= host.backgroundImage %>" 
+                                                    class="img-fluid w-100 h-100 object-fit-cover"
+                                                    alt="Profile background">
+                                            <% } else { %>
+                                                <div class="w-100 h-100" 
+                                                    style="background: linear-gradient(135deg, #6e8efb, #a777e3);">
+                                                </div>
+                                            <% } %>
+                                        </div>
+                                        
+                                        <div class="card-body text-center" style="margin-top: -75px;">
+                                            <!-- Profile Image Section -->
+                                            <div class="position-relative" style="z-index: 1;">
+                                                <% if (host.profileImage) { %>
+                                                   <img src="<%= host.profileImage %>" 
+                                                        class="rounded-circle mb-3 border border-4 border-white shadow-sm"
+                                                        width="150" height="150"
+                                                        style="object-fit: cover;"
+                                                        alt="Profile Image"
+                                                        onerror="this.onerror=null;this.src='/temp/default-user.png'">
+                                                <% } else { %>
+                                                    <img src="/temp/default-user.png" 
+                                                        class="rounded-circle mb-3 border border-4 border-white shadow-sm"
+                                                        width="150" height="150"
+                                                        style="object-fit: cover;"
+                                                        alt="Profile Image">
+                                                <% } %>
+                                            </div>
+                                            
+                                            <h4 class="mt-2"><%= host.firstName %> <%= host.lastName %></h4>
+                                            <p class="text-muted mb-1">
+                                                <i class="fas fa-user-tag me-2"></i> Host
+                                            </p>
+                                            <div class="rating-stars">
+                                                <i class="fas fa-star text-warning"></i>
+                                                <span class="rating-value ms-2"><%= host?.eventRating.toFixed(1) ?? 0.0  %></span>
+                                            </div>
+                                            <% if(adminPerms.includes('host-status')) { %>
+                                                    <div class="d-flex justify-content-center gap-2 mt-3">
+                                                        <div class="form-check form-switch">
+                                                            <input class="form-check-input status-toggle" 
+                                                                type="checkbox" 
+                                                                data-id="<%= host._id %>"
+                                                                <%= host.isActive ? 'checked' : '' %>>
+                                                            <label class="form-check-label">
+                                                                <%= host.isActive ? 'Active' : 'Blocked' %>
+                                                            </label>
+                                                        </div>
+                                                    </div>
+                                                <% } %>
+                                        </div>
+                                    </div>
+
+                                                                    <div class="card shadow-sm mb-4">
+                                        <div class="card-header bg-light d-flex justify-content-between">
+                                            <h6 class="mb-0">Basic Information</h6>
+                                            <!-- <a href="/host/<%= host._id %>/edit" class="btn btn-sm btn-primary">
+                                                <i class="fas fa-edit"></i> Edit
+                                            </a> -->
+                                        </div>
+                                        <div class="card-body">
+                                            <div class="row mt-3">
+                                                <div class="col-md-6">
+                                                    <p><strong>First Name:</strong> <%= host.firstName %></p>
+                                                    <p><strong>Last Name:</strong> <%= host.lastName %></p>
+                                                    <p><strong>Account Verified:</strong>
+                                                        <% if(adminPerms.includes('host-verify-status')) { %>
+                                                            <button class="btn btn-sm btn-<%= host.hostVerified ? 'success' : 'warning' %>" 
+                                                                    id="verifyToggleBtn"
+                                                                    data-host-id="<%= host._id %>"
+                                                                    data-verifiedhost="<%= host.hostVerified ? 'true' : 'false' %>">
+                                                                <%= host.hostVerified ? 'Verified' : 'Not Verified' %>
+                                                            </button>
+                                                        <% } else{ %>
+                                                            <button class="btn btn-sm btn-<%= host.hostVerified ? 'success' : 'warning' %>">
+                                                                <%= host.hostVerified ? 'Verified' : 'Not Verified' %>
+                                                            </button>
+                                                        <% } %>
+                                                    </p>
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <p><strong>Roles:</strong>
+                                                        <% host.roles.forEach(role => { %>
+                                                            <span class="badge bg-info me-1"> <%= role.charAt(0).toUpperCase() + role.slice(1) %></span>
+                                                        <% }); %>
+                                                    </p>
+                                                    <p><strong>Active Role:</strong>
+                                                        <span class="badge bg-primary"><%= host.activeRole === 'host' ? 'Host' : 'Guest' %></span>
+                                                    </p>
+                                                    <p><strong>Terms Accepted:</strong>
+                                                        <% if(host.acceptedTerms){  %>
+                                                                <i class="fas fa-check-circle text-success fa-lg fw-bold"></i>
+                                                        <% }else {  %>
+                                                            <i class="fas fa-times-circle text-danger fa-lg"></i>
+                                                        <% }  %>
+                                                    </p>
+                                                </div>
+                                                <div class="col-md-12">
+                                                    <% if (host.address) { %>
+                                                        <p><strong>Address:</strong> <%= host.address?.street %></p> 
+                                                            <p><%= host.address?.city %>, <%= host.address?.state %></p>
+                                                            <p>Postal Code: <%= host.address?.postalCode %></p>
+                                                        <% } else { %>
+                                                            <p class="text-muted">No address information available</p>
+                                                        <% } %>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+
+                                    <!-- Contact Card -->
+                                    <div class="card shadow-sm">
+                                        <div class="card-header bg-light">
+                                            <h6 class="mb-0">Contact Information</h6>
+                                        </div>
+                                        <div class="card-body">
+                                            <ul class="list-group list-group-flush">
+                                                <li class="list-group-item px-0">
+                                                    <i class="fas fa-mobile-alt me-2 text-primary"></i>
+                                                     <%= host.countryCode %> <%= host.mobile || 'Not provided' %>
+                                                </li>
+                                                <li class="list-group-item px-0">
+                                                    <i class="fas fa-envelope me-2 text-primary"></i>
+                                                    <%= host.email || 'Not provided' %>
+                                                </li>
+                                                <li class="list-group-item px-0">
+                                                    <i class="fas fa-calendar-alt me-2 text-primary"></i>
+                                                    Joined: <%= formatDate(host.createdAt) %>
+                                                </li>
+                                                <li class="list-group-item px-0">
+                                                    <i class="fas fa-sign-in-alt me-2 text-primary"></i>
+                                                    Last Login: <%= formatDate(host.lastLogin) || 'Never' %>
+                                                </li>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                
+
+                            </div>
+
+                            <!-- Right Column - Details -->
+                            <div class="col-md-8">
+                                <div class="card shadow-sm mb-4">
+                                    <div class="card-header bg-light">
+                                        <h6 class="mb-0">Host Statistics</h6>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="stats-grid">
+                                            <div class="stat-item">
+                                                <div class="stat-icon bg-primary-light">
+                                                    <i class="fas fa-home text-primary"></i>
+                                                </div>
+                                                <div>
+                                                    <h6 class="mb-0">Properties</h6>
+                                                    <p class="mb-0"><%= hostStats.totalProperties %></p>
+                                                </div>
+                                            </div>
+                                            <div class="stat-item">
+                                                <div class="stat-icon bg-success-light">
+                                                    <i class="fas fa-calendar-check text-success"></i>
+                                                </div>
+                                                <div>
+                                                    <h6 class="mb-0">Events</h6>
+                                                    <p class="mb-0"><%= hostStats.totalEvents %></p>
+                                                </div>
+                                            </div>
+                                            <div class="stat-item">
+                                                <div class="stat-icon bg-warning-light">
+                                                    <i class="fas fa-book text-warning"></i>
+                                                </div>
+                                                <div>
+                                                    <h6 class="mb-0">Bookings</h6>
+                                                    <p class="mb-0"><%= hostStats.totalBookings %></p>
+                                                </div>
+                                            </div>
+                                            <div class="stat-item">
+                                                <div class="stat-icon bg-info-light">
+                                                    <i class="fas fa-ticket-alt text-info"></i>
+                                                </div>
+                                                <div>
+                                                    <h6 class="mb-0">Event Bookings</h6>
+                                                    <p class="mb-0"><%= hostStats.totalEventBookings %></p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="card shadow-sm mb-4">
+                                    <div class="card-header bg-light">
+                                        <ul class="nav nav-tabs card-header-tabs" id="hostTabs" role="tablist">
+                                            <% if(adminPerms.includes('host-document')) { %>
+                                                <li class="nav-item">
+                                                    <a class="nav-link active" id="document-tab" data-bs-toggle="tab" href="#document">Document</a>
+                                                </li>
+                                            <% } %>
+                                            <% if(adminPerms.includes('host-property')) { %>
+                                                <li class="nav-item">
+                                                    <a class="nav-link" id="properties-tab" data-bs-toggle="tab" href="#properties">Properties</a>
+                                                </li>
+                                            <% } %>
+                                            <% if(adminPerms.includes('host-event')) { %>
+                                                <li class="nav-item">
+                                                    <a class="nav-link" id="events-tab" data-bs-toggle="tab" href="#events">Events</a>
+                                                </li>
+                                            <% } %>
+                                            <%  const showHostBooking = adminPerms?.some(perm => ['host-property-booking', 'host-event-booking'].includes(perm)); %>
+                                            <% if(showHostBooking){ %>
+                                                <li class="nav-item">
+                                                    <a class="nav-link" id="bookings-tab" data-bs-toggle="tab" href="#bookings">Bookings</a>
+                                                </li>
+                                            <% } %>
+                                            <% if(adminPerms.includes('host-earnings')) { %>
+                                                <li class="nav-item">
+                                                    <a class="nav-link" id="earnings-tab" data-bs-toggle="tab" href="#earnings">Earnings</a>
+                                                </li>
+                                            <% } %>
+                                        </ul>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="tab-content" id="hostTabsContent">
+
+                                            <!-- Document Tab -->
+                                            <% if(adminPerms.includes('host-document')) { %>
+                                                <div class="tab-pane fade show active" id="document" role="tabpanel">
+                                                    <% if (host.kyc) { %>
+                                                        <div class="card shadow-sm">
+                                                            <div class="card-header">
+                                                                <h6 class="mb-0">KYC Documents</h6>
+                                                            </div>
+                                                            <div class="card-body mt-3">
+                                                                <div class="row">
+                                                                    <div class="col-md-6 mb-3">
+                                                                        <h6>Aadhaar Card</h6>
+                                                                        <p>Number: <%= host.kyc?.aadharNumber || 'Not provided' %></p>
+                                                                        <!-- <p>Status: 
+                                                                            <span class="badge bg-<%= host.kyc?.aadharVerified ? 'success' : 'secondary' %>">
+                                                                                <%= host.kyc?.aadharVerified ? 'Verified' : 'Not Verified' %>
+                                                                            </span>
+                                                                        </p> -->
+                                                                        <div class="d-flex gap-2">
+                                                                            <% if (host.kyc?.aadharFrontImage) { %>
+                                                                                <a href="<%= host.kyc?.aadharFrontImage %>" 
+                                                                                target="_blank" 
+                                                                                class="btn btn-sm btn-outline-primary">
+                                                                                    View Front
+                                                                                </a>
+                                                                            <% } %>
+                                                                            <% if (host.kyc?.aadharBackImage) { %>
+                                                                                <a href="<%= host.kyc?.aadharBackImage %>" 
+                                                                                target="_blank" 
+                                                                                class="btn btn-sm btn-outline-primary">
+                                                                                    View Back
+                                                                                </a>
+                                                                            <% } %>
+                                                                        </div>
+                                                                    </div>
+                                                                    <div class="col-md-6">
+                                                                        <h6>PAN Card</h6>
+                                                                        <p>Number: <%= host.kyc?.panNumber || 'Not provided' %></p>
+                                                                        <!-- <p>Status: 
+                                                                            <span class="badge bg-<%= host.kyc?.panVerified ? 'success' : 'secondary' %>">
+                                                                                <%= host.kyc?.panVerified ? 'Verified' : 'Not Verified' %>
+                                                                            </span>
+                                                                        </p> -->
+                                                                        <% if (host.kyc?.panImage) { %>
+                                                                            <a href="<%= host.kyc?.panImage %>" 
+                                                                            target="_blank" 
+                                                                            class="btn btn-sm btn-outline-primary">
+                                                                                View PAN
+                                                                            </a>
+                                                                        <% } %>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    <% } %>
+                                                </div>
+                                            <% } %>
+
+                                            <!-- Properties Tab -->
+                                            <div class="tab-pane fade show" id="properties" role="tabpanel">
+                                                <% if (properties.length > 0) { %>
+                                                <div class="table-responsive">
+                                                    <table class="table table-hover" id="propertyTable">
+                                                        <thead>
+                                                            <tr>
+                                                                <th>ID</th>
+                                                                <th>Property</th>
+                                                                <th>Status</th>
+                                                                <th>Admin Status</th>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody>
+                                                            <% properties.forEach(property => { %>
+                                                            <tr>
+                                                                <td>
+                                                                    <a href="/property/<%= property._id %>/show"><%= property.propertyUID %></a>
+                                                                </td>
+                                                                <td>
+                                                                    <div class="d-flex align-items-center">
+                                                                        <% const featuredImage = property.images.find(img => img.isFeatured) || property.images[0] %>
+                                                                        <% if (featuredImage) { %>
+                                                                            <img src="<%= featuredImage.url %>" 
+                                                                                class="rounded me-3" 
+                                                                                width="50" height="50"
+                                                                                style="object-fit: cover;">
+                                                                        <% } %>
+                                                                        <div>
+                                                                        <strong><%= property.name %></strong>
+                                                                        </div>
+                                                                    </div>
+                                                                </td>
+                                                                <td>
+                                                                    <span class="badge bg-<%= 
+                                                                            property.status === 'active' ? 'success' : 
+                                                                            property.status === 'pending' ? 'warning' : 'secondary' 
+                                                                        %>">
+                                                                        <%= property.status.charAt(0).toUpperCase() + property.status.slice(1) %>
+                                                                    </span>
+                                                                </td>
+                                                                <td>
+                                                                    <% if (property.adminApprovalStatus === 'pending') { %>
+                                                                        <a href="javascript:void(0)" 
+                                                                            class="badge bg-secondary pending-approval-btn" 
+                                                                            data-property-id="<%= property._id %>"
+                                                                            onclick="showApprovalPopup('<%= property._id %>')">
+                                                                            <%= property.adminApprovalStatus.charAt(0).toUpperCase() + property.adminApprovalStatus.slice(1) %>
+                                                                        </a>
+                                                                    <% } else { %>
+                                                                        <span class="badge <%= property.adminApprovalStatus === 'approved' ? 'bg-success' : 'bg-danger' %>">
+                                                                        <%= property.adminApprovalStatus.charAt(0).toUpperCase() + property.adminApprovalStatus.slice(1) %>
+                                                                        </span>
+                                                                    <% } %>
+                                                                </td>
+                                                            </tr>
+                                                            <% }); %>
+                                                        </tbody>
+                                                    </table>
+                                                </div>
+                                                <% } else { %>
+                                                <div class="text-center py-4">
+                                                    <i class="fas fa-home fa-3x text-muted mb-3"></i>
+                                                    <h5>No Properties Found</h5>
+                                                    <p class="text-muted">This host hasn't listed any properties yet.</p>
+                                                </div>
+                                                <% } %>
+                                            </div>
+
+                                            <!-- Events Tab -->
+                                            <div class="tab-pane fade" id="events" role="tabpanel">
+                                                <% if (events.length > 0) { %>
+                                                    <div class="table-responsive">
+                                                        <table class="table table-hover" id="eventTable">
+                                                            <thead>
+                                                                <tr>
+                                                                    <th>S.No</th>
+                                                                    <th>Event</th>
+                                                                    <th>Category</th>
+                                                                    <th>Type</th>
+                                                                    <th>Status</th>
+                                                                    <th>Date</th>
+                                                                    <th>Price</th>
+                                                                </tr>
+                                                            </thead>
+                                                            <tbody>
+                                                                <% events.forEach((event, index) => { %>
+                                                                    <tr>
+                                                                        <td><%= index+1 %></td>
+                                                                        <td>
+                                                                            <div class="d-flex align-items-center">
+                                                                                <% const featuredImage = event.images.find(img => img.isFeatured) || event.images[0] %>
+                                                                                <% if (featuredImage) { %>
+                                                                                    <img src="<%= featuredImage.url %>" 
+                                                                                        class="rounded me-3" 
+                                                                                        width="50" height="50"
+                                                                                        style="object-fit: cover;">
+                                                                                <% } %>
+                                                                                <div>
+                                                                                    <strong><a href="/event/<%= event._id %>/show"><%= event.title %></a></strong>
+                                                                                </div>
+                                                                            </div>
+                                                                        </td>
+                                                                        <td><%= event.categoryId.name %></td>
+                                                                        <td>
+                                                                            <span class="badge bg-<%= event.eventType === 'public' ? 'success' : event.eventType === 'private' ? 'danger' : 'info' %> me-2">
+                                                                                <%= event.eventType.charAt(0).toUpperCase() + event.eventType.slice(1) %>
+                                                                            </span>
+                                                                        </td>
+                                                                        <td>
+                                                                            <span class="badge bg-<%= 
+                                                                                event.status === 'completed' ? 'success' : 
+                                                                                event.status === 'upcoming' ? 'info' : 
+                                                                                event.status === 'cancelled' ? 'danger' : 'warning' 
+                                                                            %>">
+                                                                                <%= event.status.charAt(0).toUpperCase() + event.status.slice(1) %>
+                                                                            </span>
+                                                                        </td>
+                                                                        <td>
+                                                                            <%=  formatDate(event.startDate, { format: 'full' }) %> - <%=  formatDate(event.endDate, { format: 'full' }) %>
+                                                                        </td>
+                                                                        <td> <%= formatPrice(event.price)  %> </td>
+                                                                    </tr>
+                                                                <% }); %>
+                                                        </tbody>
+                                                        </table>
+                                                    </div>
+                                                <% } else { %>
+                                                <div class="text-center py-4">
+                                                    <i class="fas fa-calendar-alt fa-3x text-muted mb-3"></i>
+                                                    <h5>No Events Found</h5>
+                                                    <p class="text-muted">This host hasn't created any events yet.</p>
+                                                </div>
+                                                <% } %>
+                                            </div>
+
+                                            <!-- Bookings Tab -->
+                                            <div class="tab-pane fade" id="bookings" role="tabpanel">
+                                                <ul class="nav nav-pills mb-3" id="bookings-tab" role="tablist">
+                                                    <% if(adminPerms.includes('host-property-booking')) { %>
+                                                        <li class="nav-item" role="presentation">
+                                                            <button class="nav-link active" id="property-bookings-tab" data-bs-toggle="pill" data-bs-target="#property-bookings" type="button">Property Bookings</button>
+                                                        </li>
+                                                    <% } %>
+                                                    <% if(adminPerms.includes('host-event-booking')) { %>
+                                                        <li class="nav-item" role="presentation">
+                                                            <button class="nav-link" id="event-bookings-tab" data-bs-toggle="pill" data-bs-target="#event-bookings" type="button">Event Bookings</button>
+                                                        </li>
+                                                    <% } %>
+                                                </ul>
+                                                
+                                                <div class="tab-content" id="bookings-tabContent">
+                                                    <% if(adminPerms.includes('host-property-booking')) { %>
+                                                        <!-- Property Bookings -->
+                                                        <div class="tab-pane fade show active" id="property-bookings" role="tabpanel">
+                                                            <% if (propertyBookings.length > 0) { %>
+                                                            <div class="table-responsive">
+                                                                <table class="table table-hover" id="propertyBookingTable">
+                                                                    <thead>
+                                                                        <tr>
+                                                                        <th>Booking ID</th>
+                                                                        <th>Guest</th>
+                                                                        <th>Property</th>
+                                                                        <th>Dates</th>
+                                                                        <th>Amount</th>
+                                                                        <th>Status</th>
+                                                                        </tr>
+                                                                    </thead>
+                                                                    <tbody>
+                                                                        <% propertyBookings.forEach(booking => { %>
+                                                                        <tr>
+                                                                            <td><a href="/property/booking/<%= booking?._id %>/show"><%= booking?.bookingId %></a></td>
+                                                                            <td>
+                                                                            <div class="d-flex align-items-center">
+                                                                                <% if (booking?.guestId?.profileImage) { %>
+                                                                                <img src="<%= booking?.guestId?.profileImage %>" 
+                                                                                    class="rounded-circle me-2" 
+                                                                                    width="30" height="30"
+                                                                                    style="object-fit: cover;">
+                                                                                <% } %>
+                                                                                <span><a href="/guest/<%= booking?.guestId?._id %>/show"><%= booking?.guestId?.firstName %> <%= booking?.guestId?.lastName %></a></span>
+                                                                            </div>
+                                                                            </td>
+                                                                            <td><a href="/property/<%= booking?.propertyId?._id %>/show"><%= booking?.propertyId?.name %></a></td>
+                                                                            <td>
+                                                                            <%= formatDate(booking?.bookingDates?.startDate) %> - 
+                                                                            <%= formatDate(booking?.bookingDates?.endDate) %>
+
+                                                                            </td>
+                                                                            <td><%= formatPrice(booking.amountBreakdown.finalAmount) %></td>
+                                                                            <td>
+                                                                            <span class="badge bg-<%= 
+                                                                                booking.status === 'confirmed' ? 'info' : 
+                                                                                booking.status === 'completed' ? 'success' : 
+                                                                                booking.status === 'cancelled' ? 'danger' : 'warning' 
+                                                                            %>">
+                                                                                <%= booking.status.charAt(0).toUpperCase() + booking.status.slice(1) %>
+                                                                            </span>
+                                                                            </td>
+                                                                        </tr>
+                                                                        <% }); %>
+                                                                    </tbody>
+                                                                </table>
+                                                            </div>
+                                                            <% } else { %>
+                                                            <div class="text-center py-4">
+                                                                <i class="fas fa-home fa-3x text-muted mb-3"></i>
+                                                                <h5>No Property Bookings</h5>
+                                                                <p class="text-muted">This host doesn't have any property bookings yet.</p>
+                                                            </div>
+                                                            <% } %>
+                                                        </div>
+                                                    <% } %>
+                                                    
+                                                    <% if(adminPerms.includes('host-event-booking')) { %>
+                                                        <!-- Event Bookings -->
+                                                        <div class="tab-pane fade" id="event-bookings" role="tabpanel">
+                                                            <% if (eventBookings.length > 0) { %>
+                                                            <div class="table-responsive">
+                                                                <table class="table table-hover" id="eventBookingTable">
+                                                                    <thead>
+                                                                        <tr>
+                                                                            <th>Booking ID</th>
+                                                                            <th>Guest</th>
+                                                                            <th>Event</th>
+                                                                            <th>Date</th>
+                                                                            <th>Amount</th>
+                                                                            <th>Status</th>
+                                                                        </tr>
+                                                                    </thead>
+                                                                    <tbody>
+                                                                        <% eventBookings.forEach(booking => { %>
+                                                                        <tr>
+                                                                            <td><a href="/event/<%= booking.event._id %>/member"><%= booking.bookingId  %></a></td>
+                                                                            <td>
+                                                                            <div class="d-flex align-items-center">
+                                                                            <% if (booking.guest.profileImage) { %>
+                                                                                <img src="<%= booking.guest.profileImage %>" 
+                                                                                    class="rounded-circle me-2" 
+                                                                                    width="30" height="30"
+                                                                                    style="object-fit: cover;">
+                                                                                <% } %>
+                                                                            <span>
+                                                                                <% if(booking.bookingBy.role == 'admin'){ %>
+                                                                                    <%= booking.guest.firstName %> <%= booking.guest.lastName %> (Admin)
+                                                                                <% } else{ %>
+                                                                                    <a href="/guest/<%= booking.guest._id %>/show"><%= booking.guest.firstName %> <%= booking.guest.lastName %></a>
+                                                                                <% } %>
+                                                                            </span>
+                                                                            </div>
+                                                                            </td>
+                                                                            <td><%= booking.event.title %></td>
+                                                                            <td><%= formatDate(booking.bookingDate) %></td>
+                                                                            <td><%= formatPrice(booking.paymentDetails.totalAmount) %></td>
+                                                                            <td>
+                                                                            <span class="badge bg-<%= 
+                                                                                booking.status === 'completed' ? 'success' : 
+                                                                                booking.status === 'confirmed' ? 'info' : 
+                                                                                booking.status === 'cancelled' ? 'danger' : 'warning' 
+                                                                            %>">
+                                                                                <%= booking.status.charAt(0).toUpperCase() + booking.status.slice(1) %>
+                                                                            </span>
+                                                                            </td>
+                                                                        </tr>
+                                                                        <% }); %>
+                                                                    </tbody>
+                                                                </table>
+                                                            </div>
+                                                            <% } else { %>
+                                                            <div class="text-center py-4">
+                                                                <i class="fas fa-ticket-alt fa-3x text-muted mb-3"></i>
+                                                                <h5>No Event Bookings</h5>
+                                                                <p class="text-muted">This host doesn't have any event bookings yet.</p>
+                                                            </div>
+                                                            <% } %>
+                                                        </div>
+                                                    <% } %>
+                                                </div>
+                                            </div>
+
+                                            <!-- earnings Summary Tab -->
+                                            <% if(adminPerms.includes('host-earnings')) { %>
+                                            <div class="tab-pane fade" id="earnings" role="tabpanel">
+
+                                                <!-- Wallet Summary Card -->
+                                                <div class="card mb-4" style="border-radius: 12px; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08); border: none;">
+                                                    <div class="card-header text-white" style="background: linear-gradient(135deg, #46cfc3, #2471b7); border-radius: 12px 12px 0 0;">
+                                                        <div class="d-flex justify-content-between align-items-center">
+                                                            <div>
+                                                            <h4 class="mb-1 text-white">Wallet Balance</h4>
+                                                            <p class="mb-0">Available for withdrawal</p>
+                                                            </div>
+                                                            <i class="fas fa-wallet fa-2x opacity-75"></i>
+                                                        </div>
+                                                    </div>
+                                                    <div class="card-body mt-4">
+                                                        <div class="row">
+                                                            <!-- Hold Balance -->
+                                                            <div class="col-md-6 mb-3 mb-md-0">
+                                                                <div class="d-flex align-items-center">
+                                                                    <div class="me-3">
+                                                                    <p class="text-muted mb-0">Hold Balance</p>
+                                                                    <h2 id="hold-balance" class="text-danger mb-0" 
+                                                                        style="font-size: 2.5rem; font-weight: 700;">₹0.00</h2>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+
+                                                            <!-- Available Balance -->
+                                                            <div class="col-md-6 mb-3 mb-md-0">
+                                                                <div class="d-flex align-items-center">
+                                                                    <div class="me-3">
+                                                                    <p class="text-muted mb-0">Available Balance</p>
+                                                                    <h2 id="wallet-balance" class="text-success mb-0" 
+                                                                        style="font-size: 2.5rem; font-weight: 700;">₹0.00</h2>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+
+                                                            <!-- Total Earnings -->
+                                                            <div class="col-md-6">
+                                                                <div class="d-flex align-items-center">
+                                                                    <div class="me-3">
+                                                                    <p class="text-muted mb-0">Total Earnings</p>
+                                                                    <h2 id="wallet-total" class="text-primary mb-0" 
+                                                                        style="font-size: 2.5rem; font-weight: 700;">₹0.00</h2>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+
+                                                            <!-- Platform Commission -->
+                                                            <div class="col-md-6">
+                                                                <div class="d-flex align-items-center">
+                                                                    <div class="me-3">
+                                                                    <p class="text-muted mb-0">Platform Commission</p>
+                                                                    <h2 id="platform-total" class="text-warning mb-0" 
+                                                                        style="font-size: 2.5rem; font-weight: 700;">₹0.00</h2>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+
+                                                </div>
+
+                                                <!-- Transaction List -->
+                                                <div class="card" style="border-radius: 12px; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08); border: none;">
+                                                    <div class="card-body">
+                                                        <div class="d-flex justify-content-between align-items-center mb-4">
+                                                            <h5 class="mb-0">Transaction History</h5>
+                                                        </div>
+                                                        <!-- Transaction List -->
+                                                        <div id="transaction-list" class="transaction-list"></div>
+
+                                                        <!-- Pagination -->
+                                                        <nav aria-label="Transaction pagination" class="mt-4">
+                                                            <ul id="pagination" class="pagination justify-content-center"></ul>
+                                                        </nav>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <% } %>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="layout-overlay layout-menu-toggle"></div>
+    </div> 
+
+</body>
+
+<style>
+    /* Custom styles for the guest details page */
+    .stats-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1rem;
+    }
+    
+    .stat-item {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        padding: 0.75rem;
+        border-radius: 0.5rem;
+        background-color: #f8f9fa;
+    }
+    
+    .stat-icon {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.25rem;
+    }
+    
+    .bg-primary-light { background-color: rgba(13, 110, 253, 0.1); }
+    .bg-success-light { background-color: rgba(25, 135, 84, 0.1); }
+    .bg-warning-light { background-color: rgba(255, 193, 7, 0.1); }
+    .bg-info-light { background-color: rgba(13, 202, 240, 0.1); }
+    
+    .nav-tabs .nav-link {
+        border: none;
+        color: #6c757d;
+        font-weight: 500;
+        padding: 0.75rem 1.25rem;
+    }
+    
+    .nav-tabs .nav-link.active {
+        color: #0d6efd;
+        border-bottom: 3px solid #0d6efd;
+        background-color: transparent;
+    }
+    
+    .review-item {
+        padding-bottom: 1rem;
+    }
+    
+    .host-reply {
+        border-left: 3px solid #0d6efd;
+    }
+    
+    .star-rating {
+        color: #ffc107;
+    }
+</style>
+
+<script>
+    $(document).ready(function() {
+        $('#propertyTable').DataTable();
+        $('#eventTable').DataTable();
+        $('#propertyBookingTable').DataTable();
+        $('#eventBookingTable').DataTable();
+    });
+</script>
+
+<script>
+
+  // Process Payout Form
+  $('#processPayoutForm').submit(function(e) {
+    e.preventDefault();
+    
+    const formData = $(this).serialize();
+    const maxAmount = parseFloat($(this).find('[name="amount"]').attr('max'));
+    const payoutAmount = parseFloat($(this).find('[name="amount"]').val());
+    
+    if (payoutAmount > maxAmount) {
+      Swal.fire({
+        icon: 'error',
+        title: 'Invalid Amount',
+        text: `Payout amount cannot exceed ${maxAmount.toLocaleString('en-IN')}`
+      });
+      return;
+    }
+    
+    Swal.fire({
+      title: 'Confirm Payout',
+      text: `Are you sure you want to process a payout of ₹${payoutAmount.toLocaleString('en-IN')}?`,
+      icon: 'question',
+      showCancelButton: true,
+      confirmButtonText: 'Process Payout'
+    }).then((result) => {
+      if (result.isConfirmed) {
+        $.ajax({
+          url: '/host/process-payout',
+          method: 'POST',
+          data: formData,
+          success: function(response) {
+            if (response.success) {
+              Swal.fire({
+                icon: 'success',
+                title: 'Payout Processed',
+                text: response.message
+              }).then(() => {
+                location.reload();
+              });
+            }
+          },
+          error: function(xhr) {
+            Swal.fire({
+              icon: 'error',
+              title: 'Error',
+              text: xhr.responseJSON?.message || 'Failed to process payout'
+            });
+          }
+        });
+      }
+    });
+  });
+
+  // Initialize Bootstrap tabs
+  var tabEl = document.querySelectorAll('a[data-bs-toggle="tab"]');
+  tabEl.forEach(function(tab) {
+    tab.addEventListener('shown.bs.tab', function (event) {
+      localStorage.setItem('lastHostTab', event.target.id);
+    });
+  });
+
+  // Activate last active tab if available
+  var lastTab = localStorage.getItem('lastHostTab');
+  if (lastTab) {
+    var tab = new bootstrap.Tab(document.querySelector('#' + lastTab));
+    tab.show();
+  }
+</script>
+
+<script>
+    // Status toggle handler for detail page
+    $('.status-toggle').change(function() {
+        const hostId = $(this).data('id');
+        const isActive = $(this).is(':checked');
+        
+        $.ajax({
+            url: `/host/${hostId}/status`,
+            method: 'PUT',
+            data: { isActive },
+            success: function(response) {
+                if (response.success) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Success',
+                        text: response.message,
+                        timer: 1500,
+                        showConfirmButton: false
+                    }).then(() => {
+                        location.reload(); // Refresh to show updated status
+                    });
+                }
+            },
+            error: function(xhr) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: xhr.responseJSON?.message || 'Failed to update status'
+                });
+                $(this).prop('checked', !isActive); // Revert toggle on error
+            }
+        });
+    });
+
+    $(document).ready(function() {
+
+        $('#verifyToggleBtn').click(function() {
+            const hostId = $(this).data('host-id');
+            const isVerified = $(this).data('verifiedhost');
+            console.log(isVerified);
+            const newStatus = !isVerified;
+            
+            Swal.fire({
+            title: 'Confirm Verification',
+            text: `Are you sure you want to ${newStatus ? 'verify' : 'unverify'} this host?`,
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonText: `Yes, ${newStatus ? 'verify' : 'unverify'}`,
+            cancelButtonText: 'Cancel'
+            }).then((result) => {
+            if (result.isConfirmed) {
+                toggleVerification(hostId, newStatus);
+            }
+            });
+        });
+
+        function toggleVerification(hostId, newStatus) {
+            $.ajax({
+            url: '/host/verifyUpdate',
+            method: 'POST',
+            contentType: 'application/json',
+            data: JSON.stringify({
+                hostId: hostId,
+                verified: newStatus
+            }),
+            success: function(response) {
+                if (response.success) {
+                // Update button appearance
+                const btn = $('#verifyToggleBtn');
+                btn.removeClass('btn-warning btn-success')
+                    .addClass(newStatus ? 'btn-success' : 'btn-warning')
+                    .text(newStatus ? 'Verified' : 'Not Verified')
+                    .data('verified', newStatus);
+                
+                    Swal.fire({
+                        title: 'Success!',
+                        text: `Host ${newStatus ? 'verified' : 'unverified'} successfully`,
+                        icon: 'success',
+                        timer: 1500,  // Show for 1.5 seconds
+                        showConfirmButton: false
+                    }).then(() => {
+                        // This will execute after the alert closes
+                        window.location.reload();
+                    });
+                }
+            },
+            error: function(xhr) {
+                Swal.fire({
+                title: 'Error!',
+                text: xhr.responseJSON?.message || 'Failed to update verification status',
+                icon: 'error'
+                });
+            }
+            });
+        }
+    });
+
+</script>
+
+<script>
+
+    // Function to show SweetAlert popup
+    function showApprovalPopup(propertyId) {
+        Swal.fire({
+            title: 'Update Approval Status',
+            html: `
+            <div class="text-start">
+                <div class="form-check mb-2">
+                <input class="form-check-input" type="radio" name="approvalStatus" id="approveRadio" value="approved" checked>
+                <label class="form-check-label" for="approveRadio">
+                    Approve Property
+                </label>
+                </div>
+                <div class="form-check mb-2">
+                <input class="form-check-input" type="radio" name="approvalStatus" id="rejectRadio" value="rejected">
+                <label class="form-check-label" for="rejectRadio">
+                    Reject Property
+                </label>
+                </div>
+                <div id="rejectReasonContainer" class="mt-2" style="display: none;">
+                <label for="rejectReason" class="form-label">Reason for rejection:</label>
+                <textarea class="form-control" id="rejectReason" rows="2"></textarea>
+                </div>
+            </div>
+            `,
+            showCancelButton: true,
+            confirmButtonText: 'Update Status',
+            cancelButtonText: 'Cancel',
+            preConfirm: () => {
+            const status = document.querySelector('input[name="approvalStatus"]:checked').value;
+            const reason = status === 'rejected' ? document.getElementById('rejectReason').value : '';
+            
+            if (status === 'rejected' && !reason.trim()) {
+                Swal.showValidationMessage('Please provide a reason for rejection');
+                return false;
+            }
+            
+            return { status, reason };
+            },
+            didOpen: () => {
+            // Show/hide reason textarea based on selection
+            const radios = document.querySelectorAll('input[name="approvalStatus"]');
+            radios.forEach(radio => {
+                radio.addEventListener('change', (e) => {
+                document.getElementById('rejectReasonContainer').style.display = 
+                    e.target.value === 'rejected' ? 'block' : 'none';
+                });
+            });
+            }
+        }).then((result) => {
+            if (result.isConfirmed) {
+            updateApprovalStatus(propertyId, result.value.status, result.value.reason);
+            }
+        });
+    }
+
+    // AJAX function to update status
+    function updateApprovalStatus(propertyId, status, rejectionReason = '') {
+        fetch('/property-status', {
+            method: 'POST',
+                headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                propertyId,
+                status,
+                rejectionReason
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.status) {
+                Swal.fire({
+                    title: 'Success!',
+                    text: 'Property status updated successfully',
+                    icon: 'success'
+                }).then(() => {
+                    // Refresh the page or update the UI dynamically
+                    window.location.reload();
+                });
+            } else {
+                Swal.fire({
+                    title: 'Error!',
+                    text: data.message || 'Failed to update status',
+                    icon: 'error'
+                });
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            Swal.fire({
+                title: 'Error!',
+                text: 'An error occurred while updating status',
+                icon: 'error'
+            });
+        });
+    }
+</script>
+
+<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+<script>
+    document.addEventListener("DOMContentLoaded", () => {
+    let currentPage = 1;
+    const userId = "<%= host._id %>";
+    const role = "host";
+    const limit = 10; 
+
+    async function loadWallet(page = 1) {
+        try {
+        const res = await axios.get(`/api/v1/common/getWalletDetails`, {
+            params: { userId, role, page, limit }
+        });
+
+        if (res.data.status) {
+            const wallet = res.data.data.wallet;
+            const txData = res.data.data.transactions;
+            const pagination = res.data.data.pagination;
+
+            // --- Wallet Balance
+            document.getElementById("hold-balance").textContent = formatPrice(wallet.holdBalance) ;
+            document.getElementById("wallet-balance").textContent = formatPrice(wallet.balance) ;
+            document.getElementById("wallet-total").textContent = formatPrice(wallet.totalEarnings) ;
+            document.getElementById("platform-total").textContent = formatPrice(wallet.commission) ;
+
+
+            // --- Transactions render
+            const list = document.getElementById("transaction-list");
+            list.innerHTML = "";
+
+            txData.forEach(tx => {
+            let badgeClass = "bg-secondary", icon = "fas fa-money-bill", label = "Transaction", amountColor = "text-dark";
+
+            if (tx.transactionType === "property_booking") {
+                badgeClass = "bg-success"; icon = "fas fa-home"; label = "Property"; amountColor = "text-success";
+            } else if (tx.transactionType === "event_booking") {
+                badgeClass = "bg-primary"; icon = "fas fa-calendar-alt"; label = "Event"; amountColor = "text-success";
+            } else if (tx.transactionType === "refund") {
+                badgeClass = "bg-danger"; icon = "fas fa-undo-alt"; label = "Refund"; amountColor = "text-danger";
+            } else if (tx.transactionType === "withdrawal") {
+                badgeClass = "bg-warning"; icon = "fas fa-download"; label = "Withdrawal"; amountColor = "text-warning";
+            }
+
+            const amountSign = (tx.transactionType === "withdrawal" || tx.transactionType === "refund") ? "-" : "+";
+            const amount = `${amountSign}${formatPrice(tx.amount)}`;
+            const date = formatDate(tx.createdAt);
+
+            // Use bookingDetails._id if available, otherwise fallback to tx._id
+            const refId = `• Ref #${tx.bookingDetails?.bookingId ||''}`;
+
+            const html = `
+                <div class="card mb-3" style="border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); border: none;">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                    <div class="d-flex align-items-center">
+                        <div class="${badgeClass} text-white me-3"
+                        style="width: 48px; height: 48px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 20px;">
+                        <i class="${icon}"></i>
+                        </div>
+                        <div>
+                        <h6 class="mb-0">${label} ${tx.status === "completed" ? "" : `(${tx.status})`}</h6>
+                        <p class="text-muted mb-0">${date} ${refId}</p>
+                        </div>
+                    </div>
+                    <div class="text-end">
+                        <div class="fw-bold ${amountColor}" style="font-size: 1.1rem;">${amount}</div>
+                        <span class="badge ${badgeClass}">${label}</span>
+                    </div>
+                    </div>
+                </div>
+                </div>
+            `;
+            list.insertAdjacentHTML("beforeend", html);
+            });
+
+            // --- Render pagination
+            renderPagination(pagination.page, pagination.pages);
+        }
+        } catch (err) {
+        console.error("Wallet fetch failed:", err);
+        }
+    }
+
+    function renderPagination(current, totalPages) {
+        const pagination = document.getElementById("pagination");
+        pagination.innerHTML = "";
+
+        const delta = 2; // current page ke left/right buttons count
+        let range = [];
+        let l;
+
+        // calculate visible pages
+        for (let i = 1; i <= totalPages; i++) {
+        if (i === 1 || i === totalPages || (i >= current - delta && i <= current + delta)) {
+            range.push(i);
+        }
+        }
+
+        // add Prev button
+        pagination.insertAdjacentHTML("beforeend", `
+        <li class="page-item ${current === 1 ? "disabled" : ""}">
+            <a class="page-link" href="#" data-page="${current - 1}">Previous</a>
+        </li>
+        `);
+
+        // add page buttons with ellipsis
+        for (let i of range) {
+        if (l) {
+            if (i - l !== 1) {
+            pagination.insertAdjacentHTML("beforeend", `
+                <li class="page-item disabled"><span class="page-link">…</span></li>
+            `);
+            }
+        }
+        pagination.insertAdjacentHTML("beforeend", `
+            <li class="page-item ${i === current ? "active" : ""}">
+            <a class="page-link" href="#" data-page="${i}">${i}</a>
+            </li>
+        `);
+        l = i;
+        }
+
+        // add Next button
+        pagination.insertAdjacentHTML("beforeend", `
+        <li class="page-item ${current === totalPages ? "disabled" : ""}">
+            <a class="page-link" href="#" data-page="${current + 1}">Next</a>
+        </li>
+        `);
+
+        // Click listeners
+        pagination.querySelectorAll("a.page-link").forEach(el => {
+        el.addEventListener("click", e => {
+            e.preventDefault();
+            const page = parseInt(e.target.dataset.page);
+            if (!isNaN(page) && page >= 1 && page <= totalPages) {
+            currentPage = page;
+            loadWallet(currentPage);
+            }
+        });
+        });
+    }
+
+    // First load
+    loadWallet(currentPage);
+    });
+</script>

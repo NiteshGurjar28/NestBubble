@@ -1,0 +1,37 @@
+
+<body>
+    <div class="layout-wrapper layout-content-navbar">
+        <div class="layout-container">
+            <%- include('../../../partials/sideBar') %>
+            <div class="layout-page">
+                <%- include('../../../partials/header') %>
+                <div class="content-wrapper">
+                    <div class="container mt-5">
+                        <div class="row justify-content-center">
+                            <div class="col-md-8 text-center">
+                            <div class="card">
+                                <div class="card-body p-5">
+                                    <h1 class="text-danger mb-4"><i class="fas fa-ban fa-3x"></i></h1>
+                                    <h2 class="mb-3">Access Denied</h2>
+                                    <p class="lead">You are not authorized to access this page.</p>
+                                    <p>Please contact your administrator if you believe this is an error.</p>
+                                    <a href="/" class="btn btn-gradient mt-4">
+                                        <i class="fas fa-arrow-left me-2"></i> Back to Dashboard
+                                    </a>
+                                </div>
+                            </div>
+                            </div>
+                        </div>
+                    </div>
+
+                  <%- include('../../../partials/footer') %>
+                  <div class="content-backdrop fade"></div>
+                </div>
+            </div>
+        </div>
+        <div class="layout-overlay layout-menu-toggle"></div>
+    </div> 
+
+</body>
+
+

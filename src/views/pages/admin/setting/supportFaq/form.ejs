@@ -1,0 +1,110 @@
+<body>
+    <div class="layout-wrapper layout-content-navbar">
+        <div class="layout-container">
+            <%- include('../../../../partials/sideBar') %>
+            <div class="layout-page">
+                <%- include('../../../../partials/header') %>
+                <div class="content-wrapper">
+                    <div class="admin-container">
+                        <div class="admin-header">
+                            <h2>Manage Support Faq</h2>
+                            <a href="/support-faq" class="btn btn-gradient">Back</a>
+                        </div>
+
+                        <div class="row g-4 mb-4">
+                            <div class="col-md-12 col-lg-12">
+                                <div class="card">
+                                    <div class="card-body">
+                                        <form id="adminFaqForm">  
+                                            <input type="hidden" name="id" value="<%= faq?._id || '' %>">
+                                            <div class="mb-3">
+                                                <label for="question" class="form-label">Question</label>
+                                                <input type="text" class="form-control" id="question" name="question" value="<%= faq?.question || '' %>" required>
+                                            </div>
+                                            <div class="mb-3">
+                                                <label for="answer" class="form-label">Answer</label>
+                                                <input type="text" class="form-control" id="answer" name="answer" value="<%= faq?.answer || '' %>" required>
+                                            </div>
+
+                                            <div class="mt-4">
+                                                <button type="submit" class="btn btn-gradient">
+                                                    <%= isEdit ? 'Update' : 'Save' %> FAQ
+                                                </button>
+                                            </div>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <%- include('../../../../partials/footer') %>
+                    <div class="content-backdrop fade"></div>
+                </div>
+            </div>
+        </div>
+        <div class="layout-overlay layout-menu-toggle"></div>
+    </div>
+
+
+    <script>
+        $(document).ready(function() {
+            $('#adminFaqForm').submit(async function(e) {
+                e.preventDefault();
+                
+                const form = $(this);
+                const submitBtn = form.find('button[type="submit"]');
+                const originalText = submitBtn.html();
+                const isEdit = form.find('input[name="id"]').val() !== '';
+                
+                try {
+                    // Show loading state
+                    submitBtn.prop('disabled', true).html(`
+                        <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                        Processing...
+                    `);
+
+                    const formData = {
+                        question: form.find('#question').val(),
+                        answer: form.find('#answer').val(),
+                    };
+
+                    // Determine API endpoint and method
+                    const url = isEdit ? `/support-faq/${form.find('input[name="id"]').val()}/edit` : '/support-faq';
+                    const method = isEdit ? 'PUT' : 'POST';
+                    
+                    // Make AJAX request
+                    const response = await $.ajax({
+                        url: url,
+                        method: method,
+                        data: formData,
+                        dataType: 'json'
+                    });
+                    
+                    // Show success message
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Success!',
+                        text: response.message || (isEdit ? 'FAQ updated successfully' : 'FAQ created successfully'),
+                        timer: 2000,
+                        showConfirmButton: false
+                    }).then(() => {
+                        // Redirect to list page after success
+                        window.location.href = '/support-faq';
+                    });
+                    
+                } catch (error) {
+                    // Show error message
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: error.responseJSON?.message || 'Something went wrong. Please try again.'
+                    });
+                } finally {
+                    // Restore button state
+                    submitBtn.prop('disabled', false).html(originalText);
+                }
+            });
+        });
+    </script>
+</body>

@@ -1,0 +1,166 @@
+<body>
+    <div class="layout-wrapper layout-content-navbar">
+        <div class="layout-container">
+            <%- include('../../../../partials/sideBar') %>
+            <div class="layout-page">
+                <%- include('../../../../partials/header') %>
+                <div class="content-wrapper">
+                    <div class="admin-container">
+                        <div class="admin-header">
+                            <h2>Permissions</h2>
+                            <a href="#" data-bs-toggle="modal" data-bs-target="#createPermissionModal" class="btn btn-gradient">Add New</a>
+                        </div>
+
+                        <div class="row g-4 mb-4">
+                            <div class="col-md-12 col-lg-12">
+                                <div class="card">
+                                     <div class="card-body">
+                                        <div class="">
+                                        <table class="table table-hover" id="permissionTable">
+                                            <thead>
+                                            <tr>
+                                                <th>S.No</th>
+                                                <th>Title </th>
+                                                <th>Name</th>
+                                            </tr>
+                                            </thead>
+                                            <tbody>
+                                            <% permissions.forEach((permission, loopIndex) => { %>
+                                                <tr>
+                                                    <td><%= loopIndex+1 %></td>
+                                                    <td><%= permission.title %></td>
+                                                    <td><%= permission.name %></td>
+                                                </tr>
+                                            <% }); %>
+                                            </tbody>
+                                        </table>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <%- include('../../../../partials/footer') %>
+                    <div class="content-backdrop fade"></div>
+                </div>
+            </div>
+        </div>
+        <div class="layout-overlay layout-menu-toggle"></div>
+    </div>
+
+    <!-- Create Permission Modal -->
+    <div class="modal fade" id="createPermissionModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Create New Permission</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form id="createPermissionForm">
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label for="permissionName" class="form-label">Permission Title</label>
+                            <input type="text" class="form-control" id="permissionTitle" name="title" required>
+                            <div class="invalid-feedback" id="titleError"></div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="permissionName" class="form-label">Permission Name</label>
+                            <input type="text" class="form-control" id="permissionName" name="name" required>
+                            <div class="invalid-feedback" id="nameError"></div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Close</button>
+                        <button type="submit" class="btn btn-gradient">Save Permission</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Success Toast -->
+    <div class="bs-toast toast toast-placement-ex m-2 fade bg-success top-0 end-0" id="successToast" role="alert" aria-live="assertive" aria-atomic="true">
+        <div class="toast-header">
+            <i class="bx bx-bell me-2"></i>
+            <div class="me-auto fw-semibold">Success</div>
+            <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+        </div>
+        <div class="toast-body"></div>
+    </div>
+
+    <script>
+        $(document).ready(function () {
+            $('#permissionTable').DataTable({
+                responsive: true
+            });
+
+            // Handle permission form submission
+            $('#createPermissionForm').submit(async function(e) {
+                e.preventDefault();
+                
+                const form = $(this);
+                const submitButton = form.find('button[type="submit"]');
+                const originalText = submitButton.html();
+                
+                try {
+                    submitButton.prop('disabled', true).html('<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Saving...');
+                    
+                    const response = await $.ajax({
+                        url: '/permission',
+                        method: 'POST',
+                        data: form.serialize(),
+                        dataType: 'json'
+                    });
+                    
+                    // Close modal
+                    $('#createPermissionModal').modal('hide');
+                    form.trigger('reset');
+                    
+                    // Show success message
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Success!',
+                        text: response.message || 'Permission created successfully',
+                        timer: 2000,
+                        showConfirmButton: false
+                    });
+                    
+                    // Reload the page after a short delay
+                    setTimeout(() => {
+                        location.reload();
+                    }, 2000);
+                    
+                } catch (error) {
+                    if (error.responseJSON && error.responseJSON.message) {
+                        if (error.responseJSON.errors && error.responseJSON.errors.name) {
+                            $('#permissionName').addClass('is-invalid');
+                            $('#nameError').text(error.responseJSON.errors.name);
+                        } else {
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Error',
+                                text: error.responseJSON.message
+                            });
+                        }
+                    } else {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error',
+                            text: 'Something went wrong. Please try again.'
+                        });
+                    }
+                } finally {
+                    submitButton.prop('disabled', false).html(originalText);
+                }
+            });
+            
+            // Reset validation when modal is closed
+            $('#createPermissionModal').on('hidden.bs.modal', function() {
+                $('#createPermissionForm').trigger('reset');
+                $('#permissionName').removeClass('is-invalid');
+                $('#nameError').text('');
+            });
+        });
+    </script>
+</body>

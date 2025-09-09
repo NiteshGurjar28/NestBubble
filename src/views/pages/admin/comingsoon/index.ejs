@@ -1,0 +1,213 @@
+
+<body>
+    <div class="layout-wrapper layout-content-navbar">
+        <div class="layout-container">
+            <%- include('../../../partials/sideBar') %>
+            <div class="layout-page">
+                <%- include('../../../partials/header') %>
+                <div class="content-wrapper">
+                    <div class="admin-container">
+                        <div class="admin-header">
+                          <h2>Coming Soon Subscribers List</h2>
+                        </div>
+
+                        <div class="row g-4 mb-4">
+                            <div class="col-md-12 col-lg-12">
+                                <div class="card">
+                                <div class="card-header d-flex justify-content-between align-items-center">
+                                    <h5 class="mb-0">Coming Soon Subscribers</h5>
+                                    <div class="d-flex gap-2 align-items-center">
+                                    <!-- Status Filter -->
+                                    <div class="btn-group" role="group">
+                                        <a 
+                                        href="?status=all&search=<%= search %>&sort=<%= sort %>" 
+                                        class="btn btn-<%= status === 'all' ? 'primary' : 'outline-secondary' %>"
+                                        >
+                                        All (<%= total %>)
+                                        </a>
+                                        <a 
+                                        href="?status=first100&search=<%= search %>&sort=<%= sort %>" 
+                                        class="btn btn-<%= status === 'first100' ? 'primary' : 'outline-secondary' %>"
+                                        >
+                                        First 100 (<%= first100Count %>)
+                                        </a>
+                                        <a 
+                                        href="?status=regular&search=<%= search %>&sort=<%= sort %>" 
+                                        class="btn btn-<%= status === 'regular' ? 'primary' : 'outline-secondary' %>"
+                                        >
+                                        Regular (<%= regularCount %>)
+                                        </a>
+                                    </div>
+
+                                    <!-- Search Form -->
+                                    <form class="d-flex ms-3" method="get" action="/comingsoon">
+                                        <input type="hidden" name="status" value="<%= status %>">
+                                        <input type="hidden" name="sort" value="<%= sort %>">
+                                        <input 
+                                        type="text" 
+                                        name="search" 
+                                        value="<%= search %>" 
+                                        class="form-control" 
+                                        placeholder="Search emails..."
+                                        >
+                                        <button type="submit" class="btn btn-primary ms-2">
+                                            <i class="fas fa-search"></i>
+                                        </button>
+                                    </form>
+
+                                    <!-- Sort Dropdown -->
+                                    <select class="form-select sort-select" style="width: 180px;">
+                                        <option value="-createdAt" <%= sort === '-createdAt' ? 'selected' : '' %>>Newest First</option>
+                                        <option value="createdAt" <%= sort === 'createdAt' ? 'selected' : '' %>>Oldest First</option>
+                                        <option value="email" <%= sort === 'email' ? 'selected' : '' %>>Email (A-Z)</option>
+                                        <option value="-email" <%= sort === '-email' ? 'selected' : '' %>>Email (Z-A)</option>
+                                        <option value="position" <%= sort === 'position' ? 'selected' : '' %>>Position (Low-High)</option>
+                                        <option value="-position" <%= sort === '-position' ? 'selected' : '' %>>Position (High-Low)</option>
+                                    </select>
+                                    </div>
+                                </div>
+                                
+                                <div class="card-body">
+                                    <div class="table-responsive">
+                                    <table class="table table-hover" id="comingSoonTable">
+                                        <thead class="table-light">
+                                        <tr>
+                                            <th>#</th>
+                                            <th>Email</th>
+                                            <th>Position</th>
+                                            <th>Date Registered</th>
+                                            <th>Status</th>
+                                            <!-- <th>Actions</th> -->
+                                        </tr>
+                                        </thead>
+                                        <tbody>
+                                        <% emailList.forEach((li, index) => { %>
+                                            <tr class="<%= li.isFirst100 ? 'table-success' : '' %>">
+                                            <td><%= (currentPage - 1) * limit + index + 1 %></td>
+                                            <td><%= li.email %></td>
+                                            <td>
+                                                <% if (li.position > 0) { %>
+                                                <span class="badge bg-<%= li.position <= 100 ? 'primary' : 'secondary' %>">
+                                                    <%= li.position %>
+                                                </span>
+                                                <% } else { %>
+                                                <span class="badge bg-secondary">-</span>
+                                                <% } %>
+                                            </td>
+                                            <td> <%= formatDateTime(li.createdAt) %> </td>
+                                            <td>
+                                                <% if (li.isFirst100) { %>
+                                                <span class="badge bg-success">First 100</span>
+                                                <% } else { %>
+                                                <span class="badge bg-secondary">Regular</span>
+                                                <% } %>
+                                            </td>
+                                            <!-- <td>
+                                                <button class="btn btn-sm btn-outline-primary">
+                                                <i class="bi bi-envelope"></i> Email
+                                                </button>
+                                            </td> -->
+                                            </tr>
+                                        <% }); %>
+                                        </tbody>
+                                    </table>
+                                    </div>
+
+                                    <% if (pages > 1) { %>
+                                    <nav aria-label="Page navigation">
+                                        <ul class="pagination justify-content-center">
+                                        <% if (currentPage > 1) { %>
+                                            <li class="page-item">
+                                            <a class="page-link" 
+                                                href="?page=<%= currentPage - 1 %>&search=<%= search %>&sort=<%= sort %>&status=<%= status %>">
+                                                Previous
+                                            </a>
+                                            </li>
+                                        <% } %>
+                                        
+                                        <% for (let i = 1; i <= pages; i++) { %>
+                                            <li class="page-item <%= currentPage === i ? 'active' : '' %>">
+                                            <a class="page-link" 
+                                                href="?page=<%= i %>&search=<%= search %>&sort=<%= sort %>&status=<%= status %>">
+                                                <%= i %>
+                                            </a>
+                                            </li>
+                                        <% } %>
+                                        
+                                        <% if (currentPage < pages) { %>
+                                            <li class="page-item">
+                                            <a class="page-link" 
+                                                href="?page=<%= currentPage + 1 %>&search=<%= search %>&sort=<%= sort %>&status=<%= status %>">
+                                                Next
+                                            </a>
+                                            </li>
+                                        <% } %>
+                                        </ul>
+                                    </nav>
+                                    <% } %>
+
+                                    <div class="d-flex justify-content-between align-items-center mt-3">
+                                    <div class="text-muted">
+                                        Showing <%= (currentPage - 1) * limit + 1 %> to 
+                                        <%= Math.min(currentPage * limit, total) %> of <%= total %> entries
+                                        <% if (search) { %> (filtered) <% } %>
+                                    </div>
+                                    <div class="dropdown">
+                                        <button class="btn btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                                        <%= limit %> per page
+                                        </button>
+                                        <ul class="dropdown-menu">
+                                        <li><a class="dropdown-item" 
+                                            href="?limit=10&search=<%= search %>&sort=<%= sort %>&status=<%= status %>">
+                                            10 per page
+                                        </a></li>
+                                        <li><a class="dropdown-item" 
+                                            href="?limit=20&search=<%= search %>&sort=<%= sort %>&status=<%= status %>">
+                                            20 per page
+                                        </a></li>
+                                        <li><a class="dropdown-item" 
+                                            href="?limit=50&search=<%= search %>&sort=<%= sort %>&status=<%= status %>">
+                                            50 per page
+                                        </a></li>
+                                        <li><a class="dropdown-item" 
+                                            href="?limit=100&search=<%= search %>&sort=<%= sort %>&status=<%= status %>">
+                                            100 per page
+                                        </a></li>
+                                        </ul>
+                                    </div>
+                                    </div>
+                                </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                  <%- include('../../../partials/footer') %>
+                  <div class="content-backdrop fade"></div>
+                </div>
+            </div>
+        </div>
+        <div class="layout-overlay layout-menu-toggle"></div>
+    </div> 
+
+</body>
+
+
+<script>
+  // Auto-submit sort select
+  document.querySelector('.sort-select')?.addEventListener('change', function() {
+    const url = new URL(window.location.href);
+    url.searchParams.set('sort', this.value);
+    window.location.href = url.toString();
+  });
+
+  // Add confirmation for email actions
+  document.querySelectorAll('.email-btn').forEach(btn => {
+    btn.addEventListener('click', function() {
+      const email = this.dataset.email;
+      if (confirm(`Send email to ${email}?`)) {
+        // Add your AJAX call here
+      }
+    });
+  });
+</script>

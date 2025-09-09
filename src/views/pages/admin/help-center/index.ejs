@@ -1,0 +1,1205 @@
+<style>
+      :root {
+        --primary-color: #46CFC3 ;
+        --secondary-color: #f8fafc;
+        --accent-color: #10b981;
+        --danger-color: #ef4444;
+        --warning-color: #f59e0b;
+        --info-color: #3b82f6;
+        --dark-color: #1e293b;
+        --light-color: #f1f5f9;
+        --border-color: #e2e8f0;
+        --shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+        --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    }
+
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+    }
+
+    .content-wrapper {
+        padding: 0 !important;
+    }
+
+    .help-center-wrapper {
+        background: var(--secondary-color);
+        border-radius: 20px;
+        margin: 20px;
+        min-height: calc(100vh - 120px);
+        box-shadow: var(--shadow-lg);
+        overflow: hidden;
+    }
+
+    .help-center-header {
+            background: linear-gradient(177deg, #41C0C1 0%, #2573B9 32%, #2472B8 53%, #9FB743 100%) !important;
+            color: white;
+            padding: 30px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .help-center-header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grain" width="100" height="100" patternUnits="userSpaceOnUse"><circle cx="50" cy="50" r="1" fill="white" opacity="0.1"/></pattern></defs><rect width="100" height="100" fill="url(%23grain)"/></svg>');
+            opacity: 0.3;
+        }
+
+        .help-center-header h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .help-center-header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+            position: relative;
+            z-index: 1;
+        }
+
+        .filter-section {
+            background: white;
+            padding: 25px;
+            border-bottom: 1px solid var(--border-color);
+            box-shadow: var(--shadow);
+        }
+
+        .filter-controls {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .search-box {
+            flex: 1;
+            min-width: 300px;
+            position: relative;
+        }
+
+        .search-box input {
+            width: 100%;
+            padding: 12px 45px 12px 15px;
+            border: 2px solid var(--border-color);
+            border-radius: 12px;
+            font-size: 14px;
+            transition: all 0.3s ease;
+            background: var(--light-color);
+        }
+
+        .search-box input:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+            background: white;
+        }
+
+        .search-box i {
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #64748b;
+            font-size: 18px;
+        }
+
+        .filter-select {
+            min-width: 150px;
+        }
+
+        .filter-select select {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid var(--border-color);
+            border-radius: 12px;
+            font-size: 14px;
+            background: var(--light-color);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .filter-select select:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+            background: white;
+        }
+
+        .main-content {
+            display: flex;
+            height: calc(100vh - 300px);
+            min-height: 600px;
+        }
+
+        /* Ticket List Styles */
+        .ticket-sidebar {
+            width: 380px;
+            background: white;
+            border-right: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .ticket-list {
+            flex: 1;
+            overflow-y: auto;
+            padding: 10px;
+        }
+
+        .ticket-item {
+            background: white;
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .ticket-item:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-lg);
+            border-color: var(--primary-color);
+        }
+
+        .ticket-item.active {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+            background: linear-gradient(135deg, #f8faff, #f0f4ff);
+        }
+
+        .ticket-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .ticket-id {
+            font-weight: 600;
+            color: var(--primary-color);
+            font-size: 14px;
+        }
+
+        .priority-badge {
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .priority-badge.low { background: #dcfce7; color: #166534; }
+        .priority-badge.medium { background: #dbeafe; color: #1e40af; }
+        .priority-badge.high { background: #fef3c7; color: #92400e; }
+        .priority-badge.critical { background: #fecaca; color: #dc2626; }
+
+        .ticket-user {
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            margin-right: 12px;
+            border: 2px solid var(--border-color);
+            object-fit: cover;
+        }
+
+        .user-info {
+            flex: 1;
+        }
+
+        .user-name {
+            font-weight: 600;
+            font-size: 14px;
+            color: var(--dark-color);
+        }
+
+        .user-email {
+            font-size: 12px;
+            color: #64748b;
+        }
+
+        .ticket-title {
+            font-weight: 600;
+            font-size: 15px;
+            margin-bottom: 12px;
+            color: var(--dark-color);
+            line-height: 1.4;
+        }
+
+        .ticket-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 15px;
+        }
+
+        .status-badge {
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .status-badge.open { background: #dbeafe; color: #1e40af; }
+        .status-badge.in-progress { background: #fef3c7; color: #92400e; }
+        .status-badge.resolved { background: #dcfce7; color: #166534; }
+        .status-badge.closed { background: #f1f5f9; color: #64748b; }
+
+        .ticket-time {
+            font-size: 12px;
+            color: #64748b;
+        }
+
+        .unread-badge {
+            background: var(--danger-color);
+            color: white;
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: 600;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+
+        /* Conversation Styles */
+        .conversation-section {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background: #f8fafc;
+        }
+
+        .conversation-header {
+            background: white;
+            padding: 25px;
+            border-bottom: 1px solid var(--border-color);
+            box-shadow: var(--shadow);
+        }
+
+        .conversation-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: var(--dark-color);
+            margin: 0;
+        }
+
+        .conversation-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+            background: linear-gradient(135deg, #f8fafc, #f1f5f9);
+        }
+
+        .message {
+            margin-bottom: 20px;
+            max-width: 70%;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .message.user-message {
+            align-self: flex-start;
+        }
+
+        .message.admin-message {
+            align-self: flex-end;
+            margin-left: auto;
+        }
+
+        .message-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .message-avatar {
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            margin-right: 12px;
+            border: 2px solid var(--border-color);
+            object-fit: cover;
+        }
+
+        .message-sender {
+            font-weight: 600;
+            font-size: 14px;
+            color: var(--dark-color);
+        }
+
+        .message-time {
+            font-size: 12px;
+            color: #64748b;
+            margin-left: 8px;
+        }
+
+        .message-content {
+            background: white;
+            padding: 15px 20px;
+            border-radius: 20px;
+            position: relative;
+            box-shadow: var(--shadow);
+            line-height: 1.5;
+        }
+
+        .admin-message .message-content {
+            background: linear-gradient(135deg, var(--primary-color), #8b5cf6);
+            color: white;
+        }
+
+        .user-message .message-content::before {
+            content: '';
+            position: absolute;
+            top: 15px;
+            left: -8px;
+            width: 0;
+            height: 0;
+            border-top: 8px solid transparent;
+            border-bottom: 8px solid transparent;
+            border-right: 8px solid white;
+        }
+
+        .admin-message .message-content::after {
+            content: '';
+            position: absolute;
+            top: 15px;
+            right: -8px;
+            width: 0;
+            height: 0;
+            border-top: 8px solid transparent;
+            border-bottom: 8px solid transparent;
+            border-left: 8px solid var(--primary-color);
+        }
+
+        .message-attachments {
+            margin-top: 10px;
+        }
+
+        .attachment {
+            display: inline-block;
+            background: #f1f5f9;
+            padding: 8px 15px;
+            border-radius: 20px;
+            margin-right: 8px;
+            font-size: 12px;
+            color: var(--dark-color);
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+
+        .attachment:hover {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .conversation-footer {
+            background: white;
+            padding: 25px;
+            border-top: 1px solid var(--border-color);
+            box-shadow: var(--shadow);
+        }
+
+        .message-input {
+            display: flex;
+            gap: 15px;
+            align-items: flex-end;
+        }
+
+        .message-input textarea {
+            flex: 1;
+            padding: 15px;
+            border: 2px solid var(--border-color);
+            border-radius: 20px;
+            resize: none;
+            font-size: 14px;
+            min-height: 50px;
+            max-height: 120px;
+            transition: all 0.3s ease;
+            background: var(--light-color);
+        }
+
+        .message-input textarea:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+            background: white;
+        }
+
+        .send-button {
+            background: linear-gradient(135deg, var(--primary-color), #8b5cf6);
+            color: white;
+            border: none;
+            padding: 15px 25px;
+            border-radius: 20px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .send-button:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .send-button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .empty-state {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            color: #64748b;
+            text-align: center;
+        }
+
+        .empty-state i {
+            font-size: 4rem;
+            margin-bottom: 20px;
+            opacity: 0.5;
+        }
+
+        .empty-state h3 {
+            margin-bottom: 10px;
+            color: var(--dark-color);
+        }
+
+        .loading-spinner {
+            border: 4px solid var(--light-color);
+            border-top: 4px solid var(--primary-color);
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 50px auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .pagination-controls {
+            padding: 20px;
+            text-align: center;
+            border-top: 1px solid var(--border-color);
+            background: white;
+        }
+
+        .pagination-btn {
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 10px;
+            margin: 0 5px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .pagination-btn:hover {
+            background: #5b5fff;
+            transform: translateY(-1px);
+        }
+
+        .pagination-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .help-center-wrapper {
+                margin: 10px;
+                border-radius: 15px;
+            }
+
+            .main-content {
+                flex-direction: column;
+                height: auto;
+            }
+
+            .ticket-sidebar {
+                width: 100%;
+                max-height: 300px;
+            }
+
+            .filter-controls {
+                flex-direction: column;
+                gap: 15px;
+            }
+
+            .search-box {
+                min-width: 100%;
+            }
+
+            .message {
+                max-width: 85%;
+            }
+        }
+
+        /* Scrollbar Styling */
+        .ticket-list::-webkit-scrollbar,
+        .conversation-messages::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .ticket-list::-webkit-scrollbar-track,
+        .conversation-messages::-webkit-scrollbar-track {
+            background: var(--light-color);
+        }
+
+        .ticket-list::-webkit-scrollbar-thumb,
+        .conversation-messages::-webkit-scrollbar-thumb {
+            background: var(--primary-color);
+            border-radius: 3px;
+        }
+
+        .ticket-list::-webkit-scrollbar-thumb:hover,
+        .conversation-messages::-webkit-scrollbar-thumb:hover {
+            background: #5b5fff;
+        }
+</style>
+<div class="layout-wrapper layout-content-navbar">
+    <div class="layout-container">
+        <%- include('../../../partials/sideBar') %>
+        <div class="layout-page">
+            <%- include('../../../partials/header') %>
+            <div class="content-wrapper">
+                <div class="help-center-wrapper">
+                    <!-- Header -->
+                    <div class="help-center-header">
+                        <h1 class="text-white"><i class="bx bx-support" style="font-size: 41px;"></i> Help Center</h1>
+                        <p>Manage customer support tickets efficiently</p>
+                    </div>
+
+                    <!-- Filters -->
+                    <div class="filter-section">
+                        <div class="filter-controls">
+                            <div class="search-box">
+                                <input type="text" id="searchInput" placeholder="Search by ticket ID or title..." value="<%= filter.search || '' %>">
+                                <i class="bx bx-search"></i>
+                            </div>
+                            <div class="filter-select">
+                                <select id="statusFilter">
+                                    <option value="">All Statuses</option>
+                                    <option value="open" <%= filter.status === 'open' ? 'selected' : '' %>>Open</option>
+                                    <option value="in-progress" <%= filter.status === 'in-progress' ? 'selected' : '' %>>In Progress</option>
+                                    <option value="resolved" <%= filter.status === 'resolved' ? 'selected' : '' %>>Resolved</option>
+                                    <option value="closed" <%= filter.status === 'closed' ? 'selected' : '' %>>Closed</option>
+                                </select>
+                            </div>
+                            <div class="filter-select">
+                                <select id="priorityFilter">
+                                    <option value="">All Priorities</option>
+                                    <option value="low" <%= filter.priority === 'low' ? 'selected' : '' %>>Low</option>
+                                    <option value="medium" <%= filter.priority === 'medium' ? 'selected' : '' %>>Medium</option>
+                                    <option value="high" <%= filter.priority === 'high' ? 'selected' : '' %>>High</option>
+                                    <option value="critical" <%= filter.priority === 'critical' ? 'selected' : '' %>>Critical</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Main Content -->
+                    <div class="main-content">
+                        <!-- Ticket Sidebar -->
+                        <div class="ticket-sidebar">
+                            <div class="ticket-list" id="ticketList">
+       
+                            </div>
+
+                            <!-- Ticket List Pagination -->
+                            <div class="pagination-controls">
+                                    <button class="pagination-btn" id="prevTickets" onclick="">
+                                        <i class="bx bx-chevron-left"></i> Previous
+                                    </button>
+                        
+                                <span class="pagination-info">
+                                    Page <%= currentPage %> of <%= totalPages %>
+                                </span>
+                              
+                                    <button class="pagination-btn" id="nextTickets" onclick="">
+                                        Next <i class="bx bx-chevron-right"></i>
+                                    </button>
+                            </div>
+                        </div>
+
+                        <!-- Conversation Section -->
+                        <div class="conversation-section">
+                            <div class="conversation-header">
+                                <h3 class="conversation-title" id="conversationTitle">
+                                    Select a ticket to view conversation
+                                </h3>
+                                <div class="conversation-actions" id="conversationActions" style="display: none;">
+                                  <div class="row">
+                                    <div class="col-md-6">
+                                        <select id="statusSelect" class="form-select">
+                                            <option value="open">Open</option>
+                                            <option value="in-progress">In Progress</option>
+                                            <option value="resolved">Resolved</option>
+                                            <option value="closed">Closed</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <select id="prioritySelect" class="form-select">
+                                            <option value="low">Low</option>
+                                            <option value="medium">Medium</option>
+                                            <option value="high">High</option>
+                                            <option value="critical">Critical</option>
+                                        </select>
+                                    </div>
+                                  </div>
+                                </div>
+                            </div>
+
+                            <div class="conversation-messages" id="messageContainer">
+                                <div class="empty-state">
+                                    <i class="bx bx-conversation"></i>
+                                    <h3>No ticket selected</h3>
+                                    <p>Select a ticket from the list to view the conversation</p>
+                                </div>
+                            </div>
+
+                            <div class="conversation-footer">
+                                <div class="message-input">
+                                    <textarea id="messageInput" placeholder="Type your reply..." rows="1"></textarea>
+                                    <button class="send-button" id="sendMessageBtn" disabled>
+                                        <i class="bx bx-send"></i>
+                                        Send
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="layout-overlay layout-menu-toggle"></div>
+</div>
+
+<script src="https://cdn.socket.io/4.7.4/socket.io.min.js"></script>
+<script>
+
+const socket = io();
+socket.emit('joinAdminRoom');
+
+$(document).ready(function() {
+  let isLoading = false;
+    let currentTicketId = null;
+    let currentPage = 1;
+    let totalPages = 1;
+    let ticketPage = 1;
+    let ticketTotalPages = 1;
+    let searchTimeout;
+    let currentFilters = {};
+
+    // Auto-resize textarea
+    $('#messageInput').on('input', function() {
+        this.style.height = 'auto';
+        this.style.height = (this.scrollHeight) + 'px';
+    });
+
+    // Search functionality
+    $('#searchInput').on('input', function() {
+        clearTimeout(searchTimeout);
+        const searchTerm = $(this).val().trim();
+        
+        searchTimeout = setTimeout(function() {
+            currentFilters.search = searchTerm;
+            loadTicketList(1);
+        }, 500);
+    });
+
+    // Filter functionality
+    $('#statusFilter, #priorityFilter').on('change', function() {
+        currentFilters.status = $('#statusFilter').val();
+        currentFilters.priority = $('#priorityFilter').val();
+        loadTicketList(1);
+    });
+
+    // Ticket selection
+    $(document).on('click', '.ticket-item', function() {
+        const ticketId = $(this).data('ticket-id');
+        $('.ticket-item').removeClass('active');
+        $(this).addClass('active');
+        
+        $(this).find('.unread-badge').remove();
+        loadTicketConversation(ticketId);
+        socket.emit('joinTicketRoom', ticketId);
+    });
+
+    // Load ticket conversation with API
+    function loadTicketConversation(ticketId, page = 1) {
+        if (!ticketId || isLoading) return;
+        
+        isLoading = true;
+        currentTicketId = ticketId;
+        currentPage = page;
+        
+        // Show loading spinner for first page
+        if (page === 1) {
+            $('#messageContainer').html('<div class="loading-spinner"></div>');
+            $('#conversationTitle').text('Loading conversation...');
+            $('#conversationActions').hide();
+            $('#messageInput').prop('disabled', true);
+            $('#sendMessageBtn').prop('disabled', true);
+        }
+
+        $.ajax({
+            url: `/help-center-conversation/${ticketId}?page=${page}&limit=20`,
+            type: 'GET',
+            success: function(response) {
+                if (response.status) {
+                    const { ticket, pagination } = response.data;
+                    
+                    // Update ticket title and actions
+                    $('#conversationTitle').text(`#${ticket.ticketId} - ${ticket.title}`);
+                    $('#statusSelect').val(ticket.status);
+                    $('#prioritySelect').val(ticket.priority);
+                    $('#conversationActions').show();
+                    
+                    // Enable message input
+                    $('#messageInput').prop('disabled', false);
+                    $('#sendMessageBtn').prop('disabled', false);
+                    
+                    // Render messages
+                    renderMessages(ticket.messages, ticket.user, page, pagination);
+                    
+                    // Update ticket in list
+                    $(`.ticket-item[data-ticket-id="${ticketId}"] .status-badge`)
+                        .removeClass('open in-progress resolved closed')
+                        .addClass(ticket.status.replace(' ', '-'))
+                        .text(ticket.status);
+                }
+                isLoading = false;
+            },
+            error: function() {
+                $('#messageContainer').html(`
+                    <div class="error-state">
+                        <i class="bx bx-error"></i>
+                        <p>Failed to load conversation</p>
+                    </div>
+                `);
+                isLoading = false;
+            }
+        });
+    }
+
+    function renderMessages(messages, user, page, pagination) {
+        if (page === 1) {
+            $('#messageContainer').empty();
+        }
+
+        let messagesHtml = '';
+        messages.forEach(msg => {
+            const isAdmin = msg.sender === 'admin';
+            const senderName = isAdmin ? 'You' : `${user.firstName} ${user.lastName}`;
+            const avatar = isAdmin ? 
+                '/assets/img/default-user.jpg' : 
+                (user.profileImage || '/assets/img/default-user.jpg');
+            
+            messagesHtml += `
+                <div class="message ${isAdmin ? 'admin-message' : 'user-message'}">
+                    <div class="message-header">
+                        <img src="${avatar}" class="message-avatar" alt="${senderName}" 
+                             onerror="this.src='/assets/img/default-user.jpg'">
+                        <span class="message-sender">${senderName}</span>
+                        <span class="message-time">
+                            ${new Date(msg.createdAt).toLocaleString()}
+                        </span>
+                    </div>
+                    <div class="message-content">
+                        ${msg.message}
+                    </div>
+                    ${msg.attachments && msg.attachments.length > 0 ? `
+                        <div class="message-attachments">
+                            ${msg.attachments.map(att => `
+                                <a href="${att.url}" target="_blank" class="attachment">
+                                    <i class="bx bx-file"></i> ${att.name}
+                                </a>
+                            `).join('')}
+                        </div>
+                    ` : ''}
+                </div>
+            `;
+        });
+
+        if (page === 1) {
+            $('#messageContainer').html(messagesHtml);
+            scrollToBottom();
+        } else {
+            $('#messageContainer').prepend(messagesHtml);
+            
+            // Maintain scroll position after loading older messages
+            const container = $('#messageContainer')[0];
+            container.scrollTop = container.scrollHeight - scrollPositionBeforeLoad;
+        }
+
+        // Set up infinite scroll for messages if there are more pages
+        if (pagination.hasNextPage) {
+            $('#messageContainer').off('scroll').on('scroll', handleMessageScroll);
+        } else {
+            $('#messageContainer').off('scroll');
+        }
+    }
+
+    let scrollPositionBeforeLoad = 0;
+    function handleMessageScroll() {
+        const container = $('#messageContainer')[0];
+ 
+        if (container.scrollTop < 100 && !isLoading) {
+            scrollPositionBeforeLoad = container.scrollHeight - container.scrollTop;
+            loadTicketConversation(currentTicketId, currentPage + 1);
+        }
+    }
+
+    function scrollToBottom() {
+        const container = $('#messageContainer')[0];
+        container.scrollTop = container.scrollHeight;
+    }
+
+    socket.on('ticketMessage', (data) => {
+        const { ticketId, message, user } = data;
+        
+        // 1. If this is the currently open ticket
+        if (ticketId === currentTicketId) {
+            const messageHtml = createUserMessageHtml(message.message, user, message.createdAt);
+            $('#messageContainer').append(messageHtml);
+            scrollToBottom();
+
+            if (message.sender === 'user') {
+                resetAdminUnreadCount(ticketId);
+            }
+        }
+        
+    });
+
+    socket.on('ticketList', (data) => {
+        const { ticketId } = data;
+        loadTicketList();
+    });
+
+    function resetAdminUnreadCount(ticketId) {
+        $.ajax({
+            url: '/help-center/reset-unread-count',
+            type: 'PATCH',
+            data: { ticketId: ticketId },
+            success: function(response) {
+                // Update the UI if needed
+                $(`.ticket-item[data-ticket-id="${ticketId}"] .unread-badge`).remove();
+            },
+            error: function(error) {
+                console.error('Failed to reset unread count:', error);
+            }
+        });
+    }
+
+    // Function to create user message HTML
+    function createUserMessageHtml(message, user, createdAt) {
+        const senderName = `${user.firstName} ${user.lastName}`;
+        const avatar = user.profileImage || '/assets/img/default-user.jpg';
+        
+        return `
+            <div class="message user-message">
+                <div class="message-header">
+                    <img src="${avatar}" class="message-avatar" alt="${senderName}" 
+                        onerror="this.src='/assets/img/default-user.jpg'">
+                    <span class="message-sender">${senderName}</span>
+                    <span class="message-time">
+                        ${new Date(createdAt).toLocaleString()}
+                    </span>
+                </div>
+                <div class="message-content">
+                    ${message}
+                </div>
+            </div>
+        `;
+    }
+
+    // Send message via API
+    $('#sendMessageBtn').click(function() {
+        sendMessage();
+    });
+
+    $('#messageInput').keypress(function(e) {
+        if (e.which === 13 && !e.shiftKey) {
+            e.preventDefault();
+            sendMessage();
+        }
+    });
+
+    function sendMessage() {
+        const message = $('#messageInput').val().trim();
+        if (!message || !currentTicketId) return;
+
+        // Disable send button
+        $('#sendMessageBtn').prop('disabled', true);
+
+        // Add message to conversation immediately (optimistic update)
+        const messageHtml = `
+            <div class="message admin-message">
+                <div class="message-header">
+                    <img src="/assets/img/default-user.jpg" class="message-avatar" alt="You">
+                    <span class="message-sender">You</span>
+                    <span class="message-time">Just now</span>
+                </div>
+                <div class="message-content">
+                    ${message}
+                </div>
+            </div>
+        `;
+
+        $('#messageContainer').append(messageHtml);
+        $('#messageInput').val('').css('height', 'auto');
+        scrollToBottom();
+
+        // Send to API
+        $.ajax({
+            url: `/help-center/${currentTicketId}/reply`,
+            type: 'POST',
+            data: { message },
+            success: function(response) {
+                if (response.status) {
+                    // Update the temporary message with actual data from server
+                    const lastMessage = $('#messageContainer .message').last();
+                    lastMessage.find('.message-time').text(
+                        new Date(response.data.message.createdAt).toLocaleString()
+                    );
+                    
+                    // Update ticket in list
+                    const ticket = response.data.ticket;
+                    $(`.ticket-item[data-ticket-id="${currentTicketId}"] .ticket-time`).text(
+                        formatTime(ticket.updatedAt)
+                    );
+                    $(`.ticket-item[data-ticket-id="${currentTicketId}"] .status-badge`)
+                        .removeClass('open in-progress resolved closed')
+                        .addClass(ticket.status.replace(' ', '-'))
+                        .text(ticket.status);
+                    
+                    loadTicketList();
+                }
+                $('#sendMessageBtn').prop('disabled', false);
+            },
+            error: function() {
+                alert('Failed to send message');
+                $('#sendMessageBtn').prop('disabled', false);
+            }
+        });
+    }
+
+    // Update ticket status/priority via API
+    $('#statusSelect, #prioritySelect').on('change', function() {
+        if (!currentTicketId) return;
+        
+        const status = $('#statusSelect').val();
+        const priority = $('#prioritySelect').val();
+        
+        $.ajax({
+            url: `/help-center/${currentTicketId}/status`,
+            type: 'PUT',
+            data: { status, priority },
+            success: function(response) {
+                if (response.status) {
+                    const ticket = response.data;
+                    
+                    // Update ticket in list
+                    const ticketItem = $(`.ticket-item[data-ticket-id="${currentTicketId}"]`);
+                    ticketItem.find('.status-badge')
+                        .removeClass('open in-progress resolved closed')
+                        .addClass(ticket.status.replace(' ', '-'))
+                        .text(ticket.status);
+                    ticketItem.find('.priority-badge')
+                        .removeClass('low medium high critical')
+                        .addClass(ticket.priority)
+                        .text(ticket.priority);
+                    ticketItem.find('.ticket-time').text(formatTime(ticket.updatedAt));
+                }
+            },
+            error: function() {
+                alert('Failed to update ticket');
+            }
+        });
+    });
+
+    // Load ticket list with API
+    function loadTicketList(page = 1) {
+        if (isLoading) return;
+        
+        isLoading = true;
+        ticketPage = page;
+        
+        // Show loading spinner
+        $('.ticket-list').html('<div class="loading-spinner"></div>');
+
+        // Prepare query params
+        const params = new URLSearchParams({
+            page,
+            limit: 10,
+            ...currentFilters
+        });
+
+        $.ajax({
+            url: `/help-center-api?${params.toString()}`,
+            type: 'GET',
+            dataType: 'json',
+            success: function(response) {
+                if (response.status) {
+                    const { tickets, totalPages } = response.data;
+                    ticketTotalPages = totalPages;
+                    
+                    renderTicketList(tickets);
+                    updatePaginationControls();
+                }
+                isLoading = false;
+            },
+            error: function() {
+                $('.ticket-list').html(`
+                    <div class="error-state">
+                        <i class="bx bx-error"></i>
+                        <p>Failed to load tickets</p>
+                    </div>
+                `);
+                isLoading = false;
+            }
+        });
+    }
+
+    function renderTicketList(tickets) {
+        // Sort by updatedAt descending
+        tickets.sort((a, b) => new Date(b.updatedAt) - new Date(a.updatedAt));
+        
+        let ticketsHtml = '';
+        
+        tickets.forEach(ticket => {
+            ticketsHtml += `
+                <div class="ticket-item" data-ticket-id="${ticket._id}">
+                    <div class="ticket-header">
+                        <span class="ticket-id">#${ticket.ticketId}</span>
+                        <span class="priority-badge ${ticket.priority}">
+                            ${ticket.priority}
+                        </span>
+                    </div>
+                    <div class="ticket-user">
+                        <img src="${ticket.user.profileImage || '/assets/img/default-user.jpg'}" 
+                            class="user-avatar" 
+                            alt="${ticket.user.firstName}"
+                            onerror="this.src='/assets/img/default-user.jpg'">
+                        <div class="user-info">
+                            <div class="user-name">${ticket.user.firstName} ${ticket.user.lastName}</div>
+                            <div class="user-email">${ticket.user.email}</div>
+                        </div>
+                    </div>
+                    <div class="ticket-title">${ticket.title}</div>
+                    <div class="ticket-footer">
+                        <span class="status-badge ${ticket.status.replace(' ', '-')}">
+                            ${ticket.status}
+                        </span>
+                        <span class="ticket-time" data-timestamp="${ticket.updatedAt}">
+                            ${formatTime(ticket.updatedAt)}
+                        </span>
+                        ${ticket.unreadCount && ticket.unreadCount.admin > 0 ? 
+                            `<span class="unread-badge">${ticket.unreadCount.admin}</span>` : ''}
+                    </div>
+                </div>
+            `;
+        });
+        
+        $('.ticket-list').html(ticketsHtml);
+        
+        // Re-select current ticket if exists
+        if (currentTicketId) {
+            $(`.ticket-item[data-ticket-id="${currentTicketId}"]`).addClass('active');
+        }
+    }
+
+    function updatePaginationControls() {
+        $('#prevTickets').prop('disabled', ticketPage === 1);
+        $('#nextTickets').prop('disabled', ticketPage === ticketTotalPages);
+        $('.pagination-info').text(`Page ${ticketPage} of ${ticketTotalPages}`);
+    }
+
+    // Ticket list pagination
+    $('#nextTickets').click(function() {
+        if (ticketPage < ticketTotalPages) {
+            loadTicketList(ticketPage + 1);
+        }
+    });
+
+    $('#prevTickets').click(function() {
+        if (ticketPage > 1) {
+            loadTicketList(ticketPage - 1);
+        }
+    });
+
+    // Ticket list infinite scroll
+    // $('.ticket-list').on('scroll', function() {
+    //     const container = this;
+    //     if (container.scrollTop + container.clientHeight >= container.scrollHeight - 5) {
+    //         if (!isLoading && ticketPage < ticketTotalPages) {
+    //             loadTicketList(ticketPage + 1);
+    //         }
+    //     }
+    // });
+
+    // Helper function to format time
+    function formatTime(date) {
+        const now = new Date();
+        const diff = now - new Date(date);
+        const minutes = Math.floor(diff / 60000);
+        const hours = Math.floor(minutes / 60);
+        const days = Math.floor(hours / 24);
+        
+        if (days > 0) return `${days} day${days > 1 ? 's' : ''} ago`;
+        if (hours > 0) return `${hours} hour${hours > 1 ? 's' : ''} ago`;
+        if (minutes > 0) return `${minutes} minute${minutes > 1 ? 's' : ''} ago`;
+        return 'Just now';
+    }
+
+    // Initialize
+    loadTicketList(1);
+});
+</script>

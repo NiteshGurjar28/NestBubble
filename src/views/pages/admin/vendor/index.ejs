@@ -1,0 +1,408 @@
+   <style>
+        .vendor-badge {
+            font-size: 0.75rem;
+            padding: 0.35em 0.65em;
+        }
+        .status-badge {
+            font-size: 0.75rem;
+            padding: 0.35em 0.65em;
+        }
+        .badge-individual {
+            background-color: #6f42c1;
+        }
+        .badge-business {
+            background-color: #fd7e14;
+        }
+        .table th {
+            white-space: nowrap;
+        }
+        .action-btns {
+            min-width: 100px;
+        }
+    </style>
+<body>
+    <div class="layout-wrapper layout-content-navbar">
+        <div class="layout-container">
+            <%- include('../../../partials/sideBar') %>
+            <div class="layout-page">
+                <%- include('../../../partials/header') %>
+                <div class="content-wrapper">
+                    <div class="admin-container">
+                        <div class="admin-header">
+                            <h2>Vendor List</h2>
+                            <button class="btn btn-outline-primary" type="button" data-bs-toggle="collapse" data-bs-target="#filterPanel">
+                                <i class="bx bx-filter-alt me-1"></i> Advanced Filters
+                            </button>
+                        </div>
+
+                        <!-- Add this below the admin-header div -->
+                        <div class="mb-4">
+              
+                            <!-- Filter Panel -->
+                            <div class="card mt-3 collapse" id="filterPanel">
+                                <div class="card-body">
+                                    <form id="vendorFilterForm" method="GET" action="/vendor">
+                                        <div class="row">
+                                            <div class="col-md-3">
+                                                <div class="form-group mb-3">
+                                                    <label class="form-label">Search</label>
+                                                    <input type="text" class="form-control" name="search" 
+                                                        value="<%= filterValues.search || '' %>" 
+                                                        placeholder="Name, email, phone, ID">
+                                                </div>
+                                            </div>
+                                            <div class="col-md-3">
+                                                <div class="form-group mb-3">
+                                                    <label class="form-label">Vendor Type</label>
+                                                    <select class="form-select" name="vendorType">
+                                                        <option value="">All Types</option>
+                                                        <option value="individual" <%= filterValues.vendorType === 'individual' ? 'selected' : '' %>>Individual</option>
+                                                        <option value="business" <%= filterValues.vendorType === 'business' ? 'selected' : '' %>>Business</option>
+                                                    </select>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-3">
+                                                <div class="form-group mb-3">
+                                                    <label class="form-label">Status</label>
+                                                    <select class="form-select" name="status">
+                                                        <option value="">All Statuses</option>
+                                                        <option value="pending" <%= filterValues.status === 'pending' ? 'selected' : '' %>>Pending</option>
+                                                        <option value="active" <%= filterValues.status === 'active' ? 'selected' : '' %>>Active</option>
+                                                        <option value="inactive" <%= filterValues.status === 'inactive' ? 'selected' : '' %>>Inactive</option>
+                                                    </select>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-3">
+                                                <div class="form-group mb-3">
+                                                    <label class="form-label">Location</label>
+                                                    <input type="text" class="form-control" name="location" 
+                                                        value="<%= filterValues.location || '' %>" 
+                                                        placeholder="City, state, or address">
+                                                </div>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="row">
+                                            <div class="col-md-3">
+                                                <div class="form-group mb-3">
+                                                    <label class="form-label">Service Category</label>
+                                                    <select class="form-select" name="serviceCategory">
+                                                        <option value="">All Categories</option>
+                                                        <% serviceCategories.forEach(category => { %>
+                                                            <option value="<%= category._id %>" 
+                                                                <%= filterValues.serviceCategory === category._id.toString() ? 'selected' : '' %>>
+                                                                <%= category.name %>
+                                                            </option>
+                                                        <% }); %>
+                                                    </select>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-3">
+                                                <div class="form-group mb-3">
+                                                    <label class="form-label">Discount Code</label>
+                                                    <select class="form-select" name="discountCode">
+                                                        <option value="">All Codes</option>
+                                                        <% discountCodes.forEach(code => { %>
+                                                            <option value="<%= code._id %>" 
+                                                                <%= filterValues.discountCode === code._id.toString() ? 'selected' : '' %>>
+                                                                <%= code.codeName %> (<%= code.codeValue %>%)
+                                                            </option>
+                                                        <% }); %>
+                                                    </select>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-3">
+                                                <div class="form-group mb-3">
+                                                    <label class="form-label">Refund Policy</label>
+                                                    <select class="form-select" name="refundPolicy">
+                                                        <option value="">All Policies</option>
+                                                        <% refundPolicies.forEach(policy => { %>
+                                                            <option value="<%= policy._id %>" 
+                                                                <%= filterValues.refundPolicy === policy._id.toString() ? 'selected' : '' %>>
+                                                                <%= policy.timeValue %> <%= policy.timeUnit %> (<%= policy.percentage %>%)
+                                                            </option>
+                                                        <% }); %>
+                                                    </select>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-3">
+                                                <div class="form-group mb-3">
+                                                    <label class="form-label">Registration Date</label>
+                                                    <select class="form-select" name="registrationPeriod">
+                                                        <option value="">All Time</option>
+                                                        <option value="today" <%= filterValues.registrationPeriod === 'today' ? 'selected' : '' %>>Today</option>
+                                                        <option value="week" <%= filterValues.registrationPeriod === 'week' ? 'selected' : '' %>>This Week</option>
+                                                        <option value="month" <%= filterValues.registrationPeriod === 'month' ? 'selected' : '' %>>This Month</option>
+                                                        <option value="year" <%= filterValues.registrationPeriod === 'year' ? 'selected' : '' %>>This Year</option>
+                                                        <option value="custom" <%= filterValues.registrationPeriod === 'custom' ? 'selected' : '' %>>Custom Range</option>
+                                                    </select>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        
+                                        <!-- Custom date range (shown only when custom is selected) -->
+                                        <div class="row" id="customDateRange" style="<%= filterValues.registrationPeriod === 'custom' ? '' : 'display: none;' %>">
+                                            <div class="col-md-3">
+                                                <div class="form-group mb-3">
+                                                    <label class="form-label">From Date</label>
+                                                    <input type="date" class="form-control" name="fromDate" 
+                                                        value="<%= filterValues.fromDate || '' %>">
+                                                </div>
+                                            </div>
+                                            <div class="col-md-3">
+                                                <div class="form-group mb-3">
+                                                    <label class="form-label">To Date</label>
+                                                    <input type="date" class="form-control" name="toDate" 
+                                                        value="<%= filterValues.toDate || '' %>">
+                                                </div>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="row mt-2">
+                                            <div class="col-md-12 text-end">
+                                                <a href="/vendor" class="btn btn-secondary me-2">Reset All</a>
+                                                <button type="submit" class="btn btn-primary">Apply Filters</button>
+                                            </div>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+
+
+                        <div class="row g-4 mb-4">
+                            <div class="col-md-12 col-lg-12">
+                                <div class="stats-card">
+                                    <div class="card-body">
+                                        <div class="table-responsive">
+                                            <table class="table table-hover" id="vendorTable">
+                                                <thead class="table-light">
+                                                    <tr>
+                                                        <th>#</th>
+                                                        <th>Vendor Type</th>
+                                                        <th>Name</th>
+                                                        <th>Contact</th>
+                                                        <th>Service Areas</th>
+                                                        <th>Services</th>
+                                                        <th>Status</th>
+                                                        <th>Registered On</th>
+                                                        <th class="action-btns">Actions</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    <% list.forEach((vendor, index) => { %>
+                                                    <tr>
+                                                        <td><%= index + 1 %></td>
+                                                        <td>
+                                                            <span class="badge vendor-badge <%= vendor.vendorType === 'individual' ? 'badge-individual' : 'badge-business' %>">
+                                                                <%= vendor.vendorType.charAt(0).toUpperCase() + vendor.vendorType.slice(1) %>
+                                                            </span>
+                                                        </td>
+                                                        <td>
+                                                            <% if (vendor.vendorType === 'individual') { %>
+                                                                <%= vendor.firstName %> <%= vendor.lastName %>
+                                                            <% } else { %>
+                                                                <%= vendor.businessInfo.businessName %>
+                                                            <% } %>
+                                                        </td>
+                                                        <td>
+                                                            <div class="d-flex flex-column">
+                                                                <span><%= vendor.phoneNumber %></span>
+                                                                <small class="text-muted"><%= vendor.emailAddress %></small>
+                                                            </div>
+                                                        </td>
+                                                        <td>
+                                                            <% if (vendor.serviceableLocations && vendor.serviceableLocations.length > 0) { %>
+                                                                <%= vendor.serviceableLocations.slice(0, 2).map(loc => loc.address).join(', ') %>
+                                                                <% if (vendor.serviceableLocations.length > 2) { %>
+                                                                +<%= vendor.serviceableLocations.length - 2 %> more
+                                                                <% } %>
+                                                            <% } else { %>
+                                                                <span class="text-muted">Not specified</span>
+                                                            <% } %>
+                                                        </td>
+                                                        <td>
+                                                            <% if (vendor.serviceCategories && vendor.serviceCategories.length > 0) { %>
+                                                                <%= vendor.serviceCategories.slice(0, 2).map(cat => cat.name).join(', ') %>
+                                                                <% if (vendor.serviceCategories.length > 2) { %>
+                                                                    +<%= vendor.serviceCategories.length - 2 %> more
+                                                                <% } %>
+                                                            <% } else { %>
+                                                                <span class="text-muted">Not specified</span>
+                                                            <% } %>
+                                                        </td>
+                                                        <td>
+                                                            <% if(adminPerms.includes('vendor-status')) { %>
+                                                                <span class="badge status-badge 
+                                                                    <%= vendor.status === 'active' ? 'bg-success' : '' %>
+                                                                    <%= vendor.status === 'inactive' ? 'bg-danger' : '' %>
+                                                                    <%= vendor.status === 'pending' ? 'bg-info' : 'bg-secondary' %>
+                                                                    cursor-pointer" onclick="updateVendorStatus('<%= vendor._id %>', '<%= vendor.status %>')">
+                                                                    <%= vendor.status.charAt(0).toUpperCase() + vendor.status.slice(1) %>
+                                                                </span>
+                                                            <% } else { %>
+                                                                 <span class="badge status-badge 
+                                                                    <%= vendor.status === 'active' ? 'bg-success' : '' %>
+                                                                    <%= vendor.status === 'inactive' ? 'bg-danger' : '' %>
+                                                                    <%= vendor.status === 'pending' ? 'bg-info' : 'bg-secondary' %>">
+                                                                    <%= vendor.status.charAt(0).toUpperCase() + vendor.status.slice(1) %>
+                                                                </span>
+                                                            <% } %>
+                                                        </td>
+                                                        <td><%= formatDate(vendor.createdAt) %></td>
+                                                        <td>
+                                                            <div class="d-flex gap-2">
+                                                                <% if(adminPerms.includes('vendor-show')) { %>
+                                                                    <a href="/vendor/<%= vendor._id %>/show" class="btn btn-sm btn-icon btn-outline-primary"><i class="bx bx-show"></i> </a>
+                                                                <% } %>
+                                                                <% if(adminPerms.includes('vendor-edit')) { %>
+                                                                    <a href="/vendor/<%= vendor._id %>/edit" 
+                                                                    class="btn btn-sm btn-icon btn-outline-primary " 
+                                                                    title="Edit Vendor">
+                                                                        <i class="bx bx-edit"></i>
+                                                                    </a>
+                                                                <% } %>
+                                                            </div>
+                                                        </td>
+                                                    </tr>
+                                                    <% }); %>
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                        <!-- Pagination -->
+                                        <% if (totalPages > 1) { %>
+                                        <div class="d-flex justify-content-between align-items-center mt-4">
+                                            <div class="text-muted">
+                                                Showing <%= (currentPage - 1) * 10 + 1 %> to 
+                                                <%= Math.min(currentPage * 10, totalVendors) %> of 
+                                                <%= totalVendors %> vendors
+                                            </div>
+                                            
+                                            <nav aria-label="Page navigation">
+                                                <ul class="pagination mb-0">
+                                                    <% if (currentPage > 1) { %>
+                                                        <li class="page-item">
+                                                            <a class="page-link" 
+                                                            href="/vendor?<%= new URLSearchParams({...filterValues, page: currentPage - 1}) %>" 
+                                                            aria-label="Previous">
+                                                                <span aria-hidden="true">&laquo;</span>
+                                                            </a>
+                                                        </li>
+                                                    <% } %>
+                                                    
+                                                    <% const maxVisiblePages = 5; %>
+                                                    <% let startPage = Math.max(1, currentPage - Math.floor(maxVisiblePages / 2)); %>
+                                                    <% let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1); %>
+                                                    
+                                                    <% if (endPage - startPage + 1 < maxVisiblePages) { %>
+                                                        <% startPage = Math.max(1, endPage - maxVisiblePages + 1); %>
+                                                    <% } %>
+                                                    
+                                                    <% if (startPage > 1) { %>
+                                                        <li class="page-item">
+                                                            <a class="page-link" 
+                                                            href="/vendor?<%= new URLSearchParams({...filterValues, page: 1}) %>">1</a>
+                                                        </li>
+                                                        <% if (startPage > 2) { %>
+                                                            <li class="page-item disabled">
+                                                                <span class="page-link">...</span>
+                                                            </li>
+                                                        <% } %>
+                                                    <% } %>
+                                                    
+                                                    <% for (let i = startPage; i <= endPage; i++) { %>
+                                                        <li class="page-item <%= currentPage === i ? 'active' : '' %>">
+                                                            <a class="page-link" 
+                                                            href="/vendor?<%= new URLSearchParams({...filterValues, page: i}) %>">
+                                                                <%= i %>
+                                                            </a>
+                                                        </li>
+                                                    <% } %>
+                                                    
+                                                    <% if (endPage < totalPages) { %>
+                                                        <% if (endPage < totalPages - 1) { %>
+                                                            <li class="page-item disabled">
+                                                                <span class="page-link">...</span>
+                                                            </li>
+                                                        <% } %>
+                                                        <li class="page-item">
+                                                            <a class="page-link" 
+                                                            href="/vendor?<%= new URLSearchParams({...filterValues, page: totalPages}) %>">
+                                                                <%= totalPages %>
+                                                            </a>
+                                                        </li>
+                                                    <% } %>
+                                                    
+                                                    <% if (currentPage < totalPages) { %>
+                                                        <li class="page-item">
+                                                            <a class="page-link" 
+                                                            href="/vendor?<%= new URLSearchParams({...filterValues, page: currentPage + 1}) %>" 
+                                                            aria-label="Next">
+                                                                <span aria-hidden="true">&raquo;</span>
+                                                            </a>
+                                                        </li>
+                                                    <% } %>
+                                                </ul>
+                                            </nav>
+                                        </div>
+                                        <% } %>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <%- include('../../../partials/footer') %>
+                    <div class="content-backdrop fade"></div>
+                </div>
+            </div>
+        </div>
+        <div class="layout-overlay layout-menu-toggle"></div>
+    </div>
+</body> 
+
+
+
+
+    <script>
+    function updateVendorStatus(vendorId, currentStatus) {
+        // Determine new status based on current status
+        let newStatus;
+        if (currentStatus === 'pending') {
+            newStatus = 'active';
+        } else {
+            newStatus = currentStatus === 'active' ? 'inactive' : 'active';
+        }
+
+        Swal.fire({
+            title: 'Confirm Status Change',
+            text: `Change status from ${currentStatus} to ${newStatus}?`,
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonText: 'Update',
+            cancelButtonText: 'Cancel'
+        }).then((result) => {
+            if (result.isConfirmed) {
+            $.ajax({
+                url: `/vendor/${vendorId}/status`,
+                method: 'PATCH',
+                data: { status: newStatus },
+                success: function() {
+                Swal.fire(
+                    'Updated!',
+                    `Status changed to ${newStatus}`,
+                    'success'
+                ).then(() => location.reload());
+                },
+                error: function(xhr) {
+                Swal.fire(
+                    'Error!',
+                    xhr.responseJSON.message || 'Update failed',
+                    'error'
+                );
+                }
+            });
+            }
+        });
+    }
+</script>

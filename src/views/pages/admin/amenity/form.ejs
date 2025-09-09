@@ -1,0 +1,126 @@
+
+<body>
+    <div class="layout-wrapper layout-content-navbar">
+        <div class="layout-container">
+            <%- include('../../../partials/sideBar') %>
+            <div class="layout-page">
+                <%- include('../../../partials/header') %>
+                <div class="content-wrapper">
+                    <div class="admin-container">
+                        <div class="admin-header">
+                          <h2><%= formTitle %></h2>
+                            <a href="/amenity" class="btn btn-gradient">Back</a>
+                        </div>
+
+                        <div class="row g-4 mb-4">
+                            <div class="col-md-12 col-lg-12">
+                                <div class="stats-card">
+
+                                    <div class="card-body">
+                                        <form id="amenityForm" method="POST" enctype="multipart/form-data" 
+                                                action="<%= isEditMode ? `/amenity/${formData.id}/edit` : '/amenity' %>">
+                                          <div class="mb-3">
+                                                <label for="name" class="form-label">Name *</label>
+                                                <input type="text" class="form-control" id="name" name="name" 
+                                                      value="<%= formData.name || '' %>" required>
+                                          </div>
+
+
+                                          <div class="mb-3">
+                                                <label for="category" class="form-label">Category *</label>
+                                                <select class="form-control" id="category" name="category" required>
+                                                    <option value="Basic Amenities" <%= formData.category === 'Basic Amenities'? 'selected' : '' %>>Basic Amenities</option>
+                                                    <option value="Standout Amenities" <%= formData.category === 'Standout Amenities'? 'selected' : '' %>>Standout Amenities</option>
+                                                    <option value="Safety Items" <%= formData.category === 'Safety Items'?'selected' : '' %>>Safety Items</option>
+                                                </select>    
+                                          </div>
+
+
+                                          <div class="mb-3">
+                                              <label for="icon" class="form-label">Icon</label>
+                                              <% if (formData.icon) { %>
+                                                  <div class="mb-2">
+                                                      <img src="<%= formData.icon %>" alt="Current Icon" 
+                                                          style="max-height: 150px;" class="img-thumbnail">
+                                                  </div>
+                                              <% } %>
+                                              <input type="file" class="form-control" id="icon" name="icon" accept="image/*">
+                                          </div>
+
+                                          <div class="mb-3 form-check form-switch">
+                                              <input class="form-check-input" type="checkbox" id="status" name="status"
+                                                    <%= formData.status ? 'checked' : '' %>>
+                                              <label class="form-check-label" for="status">Active</label>
+                                          </div>
+                                            
+                                            <button type="submit" class="btn btn-primary">
+                                                <%= isEditMode ? 'Update' : 'Save' %>
+                                            </button>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                  <%- include('../../../partials/footer') %>
+                  <div class="content-backdrop fade"></div>
+                </div>
+            </div>
+        </div>
+        <div class="layout-overlay layout-menu-toggle"></div>
+    </div> 
+
+</body>
+
+<script>
+  $(document).ready(function() {
+    $('#amenityForm').on('submit', function(e) {
+      e.preventDefault();
+      
+      const form = $(this)[0];
+      const formData = new FormData(form);
+         for (let pair of formData.entries()) {
+        console.log(`Name: ${pair[0]}, Value: ${pair[1]}`);
+    }
+      const url = $(this).attr('action');
+      const isEditMode = '<%= isEditMode %>' === 'true';
+      
+      $.ajax({
+        url: url,
+        type: 'POST',
+        data: formData,
+        processData: false,
+        contentType: false,
+        success: function(result) {
+          if (result.success) {
+            Swal.fire({
+              title: 'Success!',
+              text: isEditMode ? 'Amenity updated successfully' : 'Amenity added successfully',
+              icon: 'success',
+              confirmButtonText: 'OK'
+            }).then(() => {
+              window.location.href = '/amenity';
+            });
+          } else {
+            Swal.fire({
+              title: 'Error!',
+              text: result.message || 'Something went wrong',
+              icon: 'error',
+              confirmButtonText: 'OK'
+            });
+          }
+        },
+        error: function(xhr) {
+          const errorMsg = xhr.responseJSON?.message || 'An error occurred';
+          Swal.fire({
+            title: 'Error!',
+            text: errorMsg,
+            icon: 'error',
+            confirmButtonText: 'OK'
+          });
+        }
+      });
+    });
+  });
+</script>

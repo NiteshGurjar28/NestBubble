@@ -1,0 +1,306 @@
+<body>
+    <style>
+        .form-builder-container {
+            background-color: #f8f9fa;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        .form-field {
+            background-color: #f8f9fa;
+            border: 1px dashed #adb5bd;
+            border-radius: 5px;
+            padding: 15px;
+            margin-bottom: 15px;
+            position: relative;
+        }
+        .field-actions {
+            position: absolute;
+            right: 10px;
+            top: 10px;
+        }
+        .image-preview {
+            max-width: 200px;
+            max-height: 200px;
+            margin-top: 10px;
+            border-radius: 5px;
+        }
+    </style>
+    <div class="layout-wrapper layout-content-navbar">
+        <div class="layout-container">
+            <%- include('../../../partials/sideBar') %>
+            <div class="layout-page">
+                <%- include('../../../partials/header') %>
+                <div class="content-wrapper">
+                    <div class="admin-container">
+                        <div class="admin-header">
+                            <h2><%= formTitle %></h2>
+                            <a href="/concierge-service" class="btn btn-gradient">
+                                <i class="fas fa-arrow-left me-2"></i> Back
+                            </a>
+                        </div>
+
+                        <form id="conciergeServiceForm" enctype="multipart/form-data">
+                            <div class="row g-4 mb-4">
+                                <!-- Service Basic Information -->
+                                <div class="col-md-12">
+                                    <div class="card">
+                                        <div class="card-header">
+                                            <h5 class="card-title mb-0">Service Information</h5>
+                                        </div>
+                                        <div class="card-body">
+                                            <div class="row">
+                                                <div class="col-md-6">
+                                                    <div class="mb-3">
+                                                        <label class="form-label">Service Name *</label>
+                                                        <input type="text" class="form-control" name="name" id="serviceName" 
+                                                               value="<%= formData.name %>" required>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <div class="mb-3">
+                                                        <label class="form-label">Status</label>
+                                                        <div class="form-check form-switch">
+                                                            <input class="form-check-input" type="checkbox" name="status" 
+                                                                   id="serviceStatus" <%= formData.status ? 'checked' : '' %>>
+                                                            <label class="form-check-label" for="serviceStatus">
+                                                                Active
+                                                            </label>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="row">
+                                                <div class="col-md-12">
+                                                    <div class="mb-3">
+                                                        <label class="form-label">Description</label>
+                                                        <textarea class="form-control" name="description" rows="3"><%= formData.description %></textarea>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="row">
+                                                <div class="col-md-6">
+                                                    <div class="mb-3">
+                                                        <label class="form-label">Service Image</label>
+                                                        <input type="file" class="form-control" name="image" id="serviceImage" accept="image/*">
+                                                        <% if (formData.image) { %>
+                                                            <img src="<%= formData.image %>" alt="Current image" class="image-preview">
+                                                        <% } %>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Booking Form Builder -->
+                                <div class="col-md-12">
+                                    <div class="card">
+                                        <div class="card-header">
+                                            <h5 class="card-title mb-0">Booking Form Builder</h5>
+                                        </div>
+                                        <div class="card-body">
+                                            <div class="form-builder-container">
+                                                <h6 class="mb-3">Add Form Fields</h6>
+                                                
+                                                <div class="row mb-3">
+                                                    <div class="col-md-4">
+                                                        <label class="form-label">Field Label *</label>
+                                                        <input type="text" class="form-control" id="fieldLabel" placeholder="Enter field label" >
+                                                    </div>
+                                                    <div class="col-md-4">
+                                                        <label class="form-label">Field Name *</label>
+                                                        <input type="text" class="form-control" id="fieldName" placeholder="Will be auto-generated" readonly>
+                                                    </div>
+                                                    <div class="col-md-2 d-flex align-items-end">
+                                                        <button type="button" class="btn btn-primary w-100" id="addFieldBtn">
+                                                            <i class="fas fa-plus me-2"></i>Add Field
+                                                        </button>
+                                                    </div>
+                                                </div>
+
+                                                <div id="formFieldsContainer">
+                                                    <% if (formData.bookingForm && formData.bookingForm.length > 0) { %>
+                                                        <% formData.bookingForm.forEach((field, index) => { %>
+                                                            <div class="form-field" data-index="<%= index %>">
+                                                                <div class="field-actions">
+                                                                    <button type="button" class="btn btn-sm btn-danger delete-field">
+                                                                        <i class="fas fa-trash"></i>
+                                                                    </button>
+                                                                </div>
+                                                                <div class="row">
+                                                                    <div class="col-md-4">
+                                                                        <label class="form-label">Label *</label>
+                                                                        <input type="text" class="form-control field-label" value="<%= field.lable || field.label || '' %>" required>
+                                                                    </div>
+                                                                    <div class="col-md-4">
+                                                                        <label class="form-label">Name *</label>
+                                                                        <input type="text" class="form-control field-name" value="<%= field.name %>" readonly>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        <% }); %>
+                                                    <% } %>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Submit Button -->
+                                <div class="col-md-12">
+                                    <div class="d-flex justify-content-end gap-2">
+                                        <a href="/concierge-service" class="btn btn-secondary">
+                                            <i class="fas fa-times me-2"></i>Cancel
+                                        </a>
+                                        <button type="submit" class="btn btn-success" id="submitBtn">
+                                            <i class="fas fa-save me-2"></i>
+                                            <%= isEditMode ? 'Update' : 'Create' %> Service
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+
+                    <%- include('../../../partials/footer') %>
+                    <div class="content-backdrop fade"></div>
+                </div>
+            </div>
+        </div>
+        <div class="layout-overlay layout-menu-toggle"></div>
+    </div>
+
+   <script>
+        $(document).ready(function() {
+            const isEditMode = "<%= isEditMode %>" === "true";
+            const serviceId = '<%= formData.id || "" %>';
+
+            // Generate field name from label
+            $('#fieldLabel').on('input', function() {
+                const label = $(this).val();
+                const name = label.toLowerCase().replace(/\s+/g, '_').replace(/[^a-zA-Z0-9_]/g, '');
+                $('#fieldName').val(name);
+            });
+
+            // Add new field to form builder
+            $('#addFieldBtn').click(function() {
+                const label = $('#fieldLabel').val().trim();
+                const name = $('#fieldName').val().trim();
+
+                if (!label) {
+                    Swal.fire('Error', 'Field label is required', 'error');
+                    return;
+                }
+
+                if (!name) {
+                    Swal.fire('Error', 'Field name could not be generated from label', 'error');
+                    return;
+                }
+
+                addFieldToBuilder({
+                    label: label,
+                    name: name
+                });
+
+                // Clear inputs
+                $('#fieldLabel').val('');
+                $('#fieldName').val('');
+            });
+
+            // Delete field from form builder
+            $(document).on('click', '.delete-field', function() {
+                $(this).closest('.form-field').remove();
+            });
+
+            // Function to add field to builder
+            function addFieldToBuilder(field) {
+                const fieldHtml = `
+                    <div class="form-field">
+                        <div class="field-actions">
+                            <button type="button" class="btn btn-sm btn-danger delete-field">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-4">
+                                <label class="form-label">Label *</label>
+                                <input type="text" class="form-control field-label" value="${field.label}" required readonly>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">Name *</label>
+                                <input type="text" class="form-control field-name" value="${field.name}" required readonly>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                $('#formFieldsContainer').append(fieldHtml);
+            }
+
+            // Handle form submission
+            $('#conciergeServiceForm').submit(function(e) {
+                e.preventDefault();
+                
+                const formData = new FormData(this);
+                const bookingFormFields = [];
+                let isValid = true;
+
+                // Validate required fields
+                if (!$('#serviceName').val().trim()) {
+                    Swal.fire('Error', 'Service name is required', 'error');
+                    return;
+                }
+
+                // Collect booking form data
+                $('#formFieldsContainer .form-field').each(function() {
+                    const label = $(this).find('.field-label').val().trim();
+                    const name = $(this).find('.field-name').val().trim();
+
+                    if (!label || !name) {
+                        isValid = false;
+                        return false;
+                    }
+
+                    bookingFormFields.push({
+                        label: label,
+                        name: name
+                    });
+                });
+
+
+                if (!isValid) {
+                    Swal.fire('Error', 'All form fields must have a label and name', 'error');
+                    return;
+                }
+
+                // Add booking form to FormData
+                formData.append('bookingForm', JSON.stringify(bookingFormFields));
+
+                // Submit the form
+                const url = isEditMode ? `/concierge-service/${serviceId}/edit` : '/concierge-service';
+                const method = isEditMode ? 'PUT' : 'POST';
+
+                $.ajax({
+                    url: url,
+                    method: method,
+                    data: formData,
+                    processData: false,
+                    contentType: false,
+                    success: function(response) {
+                        if (response.success) {
+                            Swal.fire('Success', response.message, 'success')
+                                .then(() => {
+                                    window.location.href = '/concierge-service';
+                                });
+                        } else {
+                            Swal.fire('Error', response.message || 'Operation failed', 'error');
+                        }
+                    },
+                    error: function(xhr) {
+                        Swal.fire('Error', xhr.responseJSON?.message || 'Operation failed', 'error');
+                    }
+                });
+            });
+        });
+    </script>
+</body>

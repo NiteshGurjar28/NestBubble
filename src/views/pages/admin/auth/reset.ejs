@@ -1,0 +1,592 @@
+
+  <style>
+    :root {
+      --teal: #46CFC3;
+      --blue: #2471B7;
+      --lime: #B0C031;
+      --bg: #eaf6f9;
+      --card-bg: #ffffff;
+      --text: #1e1e2f;
+      --muted: #7a7a8c;
+      --transition: 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+      --shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: linear-gradient(135deg, #e0f7fa, #e3f2fd);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      color: var(--text);
+      overflow-x: hidden;
+    }
+
+    /* Floating bubbles background */
+    .bubbles {
+      position: fixed;
+      width: 100%;
+      height: 100%;
+      z-index: -1;
+      overflow: hidden;
+    }
+
+    .bubble {
+      position: absolute;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.2);
+      animation: float 15s infinite ease-in-out;
+    }
+
+    @keyframes float {
+      0%, 100% {
+        transform: translateY(0) translateX(0);
+      }
+      50% {
+        transform: translateY(-100px) translateX(50px);
+      }
+    }
+
+    .login-container {
+      perspective: 1000px;
+      width: 100%;
+      max-width: 420px;
+      padding: 20px;
+    }
+
+    .login-card {
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(12px);
+      padding: 2.5rem;
+      border-radius: 24px;
+      box-shadow: var(--shadow);
+      transform-style: preserve-3d;
+      transition: transform 0.6s, box-shadow 0.3s;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .login-card:hover {
+      transform: translateY(-5px) rotateX(1deg);
+      box-shadow: 0 15px 40px rgba(0, 0, 0, 0.12);
+    }
+
+    .login-card::before {
+      /* content: ''; */
+      position: absolute;
+      top: -50%;
+      left: -50%;
+      width: 200%;
+      height: 200%;
+      background: linear-gradient(45deg, 
+        rgba(70, 207, 195, 0.05) 0%, 
+        rgba(36, 113, 183, 0.05) 50%, 
+        rgba(176, 192, 49, 0.05) 100%);
+      transform: rotate(30deg);
+      z-index: -1;
+      animation: shine 6s infinite linear;
+    }
+
+    @keyframes shine {
+      0% { transform: translateX(-100%) rotate(30deg); }
+      100% { transform: translateX(100%) rotate(30deg); }
+    }
+
+    .branding {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin-bottom: 2rem;
+      transform: translateY(0);
+      transition: transform 0.3s ease;
+    }
+
+    .branding:hover {
+      transform: translateY(-5px);
+    }
+
+    .logo-image {
+      width: 100px;
+      height: 100px;
+      margin-bottom: 1rem;
+      filter: drop-shadow(0 5px 15px rgba(36, 113, 183, 0.2));
+      animation: pulse 4s infinite ease-in-out;
+    }
+
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.05); }
+    }
+
+    .brand-text {
+      font-size: 2rem;
+      font-weight: 700;
+      color: var(--blue);
+      letter-spacing: -0.5px;
+      background: linear-gradient(to right, var(--blue), var(--teal));
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+      position: relative;
+    }
+
+    .brand-text::after {
+      content: '';
+      position: absolute;
+      bottom: -5px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 40px;
+      height: 3px;
+      background: linear-gradient(to right, var(--teal), var(--lime));
+      border-radius: 3px;
+      animation: underline 3s infinite ease-in-out;
+    }
+
+    @keyframes underline {
+      0%, 100% { width: 40px; }
+      50% { width: 80px; }
+    }
+
+    .brand-subtext {
+      font-size: 0.9rem;
+      color: var(--muted);
+      margin-top: 0.5rem;
+      font-weight: 400;
+    }
+
+    .login-card h2 {
+      text-align: center;
+      margin-bottom: 0.5rem;
+      font-size: 1.8rem;
+      color: var(--blue);
+    }
+
+    .login-card p {
+      text-align: center;
+      color: var(--muted);
+      font-size: 0.95rem;
+      margin-bottom: 2rem;
+    }
+
+    .input-group {
+      position: relative;
+      margin-bottom: 1.5rem;
+      animation: fadeInUp 0.6s ease-out;
+    }
+
+    @keyframes fadeInUp {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .input-group label {
+      display: block;
+      margin-bottom: 0.5rem;
+      font-weight: 500;
+      font-size: 0.95rem;
+      color: var(--blue);
+    }
+
+    .input-group input {
+      width: 100%;
+      padding: 1rem 1.2rem 1rem 3rem;
+      border: 1px solid #e0e9f2;
+      border-radius: 12px;
+      background: #fff;
+      box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.03);
+      transition: all var(--transition);
+      font-size: 0.95rem;
+    }
+
+    .input-group input:focus {
+      border-color: var(--teal);
+      box-shadow: 0 0 0 3px rgba(70, 207, 195, 0.2);
+      outline: none;
+      transform: translateY(-2px);
+    }
+
+    .input-group .input-icon {
+      position: absolute;
+      left: 1rem;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--muted);
+      transition: color var(--transition);
+    }
+
+    .input-group input:focus ~ .input-icon {
+      color: var(--teal);
+    }
+
+    .btn {
+      width: 100%;
+      padding: 1rem;
+      background: linear-gradient(135deg, var(--teal), var(--blue));
+      color: white;
+      font-weight: 600;
+      font-size: 1rem;
+      border: none;
+      border-radius: 12px;
+      cursor: pointer;
+      transition: all var(--transition);
+      box-shadow: 0 6px 14px rgba(70, 207, 195, 0.25);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .btn:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 10px 20px rgba(70, 207, 195, 0.35);
+    }
+
+    .btn:active {
+      transform: translateY(0);
+    }
+
+    .btn::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, 
+        transparent, 
+        rgba(255, 255, 255, 0.2), 
+        transparent);
+      transition: all 0.6s ease;
+    }
+
+    .btn:hover::after {
+      left: 100%;
+    }
+
+    .forgot-password,
+    .signup-link {
+      text-align: center;
+      font-size: 0.9rem;
+      margin-top: 1.5rem;
+      animation: fadeIn 0.8s ease-out;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    .forgot-password a {
+      color: var(--lime);
+      text-decoration: none;
+      font-weight: 500;
+      position: relative;
+    }
+
+    .forgot-password a::after {
+      content: '';
+      position: absolute;
+      bottom: -2px;
+      left: 0;
+      width: 0;
+      height: 1px;
+      background: var(--lime);
+      transition: width var(--transition);
+    }
+
+    .forgot-password a:hover::after {
+      width: 100%;
+    }
+
+    .signup-link a {
+      color: var(--blue);
+      text-decoration: none;
+      font-weight: 600;
+      position: relative;
+    }
+
+    .signup-link a::after {
+      content: '';
+      position: absolute;
+      bottom: -2px;
+      left: 0;
+      width: 0;
+      height: 1px;
+      background: var(--blue);
+      transition: width var(--transition);
+    }
+
+    .signup-link a:hover::after {
+      width: 100%;
+    }
+
+    /* Responsive adjustments */
+    @media (max-width: 480px) {
+      .login-card {
+        padding: 2rem 1.5rem;
+      }
+      
+      .brand-text {
+        font-size: 1.8rem;
+      }
+      
+      .logo-image {
+        width: 80px;
+        height: 80px;
+      }
+    }
+
+    /* Animation delays for form elements */
+    .input-group:nth-child(1) {
+      animation-delay: 0.1s;
+    }
+    
+    .input-group:nth-child(2) {
+      animation-delay: 0.2s;
+    }
+    
+    .btn {
+      animation-delay: 0.3s;
+    }
+    
+    .forgot-password {
+      animation-delay: 0.4s;
+    }
+    
+    .signup-link {
+      animation-delay: 0.5s;
+    }
+  </style>
+
+<body>
+  <div class="bubbles">
+    <!-- Bubbles will be added by JavaScript -->
+  </div>
+  
+  <div class="login-container">
+    <div class="login-card">
+      <div class="branding">
+        <svg class="logo-image" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 266 228" fill="none">
+          <ellipse cx="146.343" cy="110.513" rx="113.337" ry="110.513" fill="url(#paint0_linear_1163_1940)"/>
+          <circle cx="137.634" cy="113.337" r="113.337" fill="url(#paint1_linear_1163_1940)"/>
+          <mask id="mask0_1163_1940" style="mask-type:alpha" maskUnits="userSpaceOnUse" x="24" y="0" width="227" height="227">
+          <circle cx="137.634" cy="113.337" r="113.337" fill="url(#paint2_linear_1163_1940)"/>
+          </mask>
+          <g mask="url(#mask0_1163_1940)">
+          <circle cx="113.434" cy="72.1966" r="98.8167" fill="#46D0C4"/>
+          <path d="M98.9138 12.1001C45.0285 33.0734 40.6994 69.5079 45.2705 85.1035C43.6571 59.2901 73.1005 35.6279 88.0239 27.0235C122.227 5.40481 160.893 13.4446 175.951 20.1668C161.108 -4.03324 118.408 4.70565 98.9138 12.1001Z" fill="#7EE9E0"/>
+          <path d="M60.1937 60.0963C75.386 36.703 120.129 -3.06572 177.564 25.0063C154.843 16.2674 99.5591 11.051 60.1937 60.0963Z" fill="#7EE9E0"/>
+          </g>
+          <path opacity="0.79" d="M74.3106 208.12C19.7799 168.755 20.3984 111.051 27.5239 87.12C19.7799 122.291 39.6239 157.703 50.5139 171.013C89.8792 218.445 141.398 213.632 162.237 205.297C195.472 198.521 218.301 167.249 225.561 152.46C248.47 118.257 239.408 65.7434 227.174 44.3667C236.209 52.756 242.501 70.4489 245.727 79.0534C266.701 133.907 230.401 184.323 210.234 200.457C158.607 245.953 98.1073 224.522 74.3106 208.12Z" fill="url(#paint3_linear_1163_1940)"/>
+          <path d="M40.744 40.7005C40.744 45.6011 36.7713 49.5739 31.8707 49.5739C29.3082 49.5739 26.6338 48.891 25.014 47.1539C23.536 45.5688 22.9973 43.0386 22.9973 40.7005C22.9973 35.7999 26.97 31.0205 31.8707 31.0205C36.7713 31.0205 40.744 35.7999 40.744 40.7005Z" fill="#B0C031"/>
+          <ellipse cx="30.6606" cy="37.0705" rx="2.01667" ry="1.21" transform="rotate(-38.4382 30.6606 37.0705)" fill="#DDE49C"/>
+          <path d="M18.1576 96.3602C18.1576 101.261 14.1848 105.234 9.28423 105.234C6.72172 105.234 4.04734 104.551 2.42756 102.814C0.949615 101.229 0.410889 98.6983 0.410889 96.3602C0.410889 91.4596 4.38362 86.6802 9.28423 86.6802C14.1848 86.6802 18.1576 91.4596 18.1576 96.3602Z" fill="#3396D4"/>
+          <ellipse cx="8.07414" cy="92.7302" rx="2.01667" ry="1.21" transform="rotate(-38.4382 8.07414 92.7302)" fill="#A2F7FE"/>
+          <circle cx="14.9311" cy="69.7406" r="10.4867" fill="#43CCB9"/>
+          <ellipse cx="12.5108" cy="64.4971" rx="2.42" ry="1.21" transform="rotate(-44.2135 12.5108 64.4971)" fill="#81ECE7"/>
+          <path d="M105.004 180.073H117.943L137.352 181.69H165.387L182.101 177.377C184.437 173.243 189.433 164.545 190.727 162.82C192.344 160.664 190.727 152.037 190.727 149.342C190.727 146.646 193.962 135.324 193.962 133.167V116.454L199.353 104.593L192.344 94.8886C188.57 90.3958 180.591 81.1945 178.866 80.3319C176.709 79.2536 169.7 72.2448 165.387 70.0882C161.937 68.363 155.683 58.5866 152.987 53.9141L134.117 43.6704L123.874 53.9141L103.926 67.9317C99.6124 73.5028 90.7705 84.8606 89.9079 85.7233C89.0453 86.5859 80.5628 96.8655 76.4294 101.897V111.063L82.36 117.532L85.5948 127.237L82.36 144.489L83.9774 157.968L86.6731 170.368L97.4559 177.377L105.004 180.073Z" fill="#3191D4"/>
+          <g filter="url(#filter0_d_1163_1940)">
+          <path d="M87.1941 119.452C87.1941 114.842 82.6651 110.104 79.1086 107.334C77.4657 106.054 75.1948 106.692 74.1615 108.501L71.0338 113.974C70.9529 114.116 71.0551 114.292 71.2181 114.292C71.26 114.292 71.3011 114.304 71.3358 114.328C71.6564 114.543 71.9567 114.764 72.2264 114.973C73.0318 115.599 73.4326 116.585 73.4326 117.605V159.017C75.8408 181.379 93.6448 186.683 102.246 186.539H170.193C190.147 185.851 197.143 168.478 198.146 159.877L198.576 117.732C198.576 116.847 198.77 115.858 199.029 114.918C199.652 112.655 199.196 110.254 197.48 108.653L196.894 108.106C195.061 106.395 192.267 105.907 190.363 107.538C185.836 111.417 185.709 116.329 185.357 118.806C185.295 119.24 185.245 119.673 185.245 120.111V157.726C183.524 170.8 175.067 173.781 171.053 173.638H103.565C103.259 173.638 102.948 173.615 102.647 173.564C89.6247 171.358 86.9107 162.119 87.1941 157.726V119.452Z" fill="white"/>
+          </g>
+          <g filter="url(#filter1_d_1163_1940)">
+          <path d="M53.2205 122.463L132.341 42.1188C134.704 39.719 138.579 39.7341 140.924 42.1522L218.788 122.463" stroke="white" stroke-width="12" stroke-linecap="round"/>
+          </g>
+          <path d="M102.847 91.7972V161.544C108.576 169.748 116.102 166.162 118.173 161.544V114.728L156.281 165.366C165.459 170.638 170.227 162.977 170.779 157.244V90.8417C165.459 82.4856 157.386 86.0646 154.624 90.8417V134.314L119.416 87.02C111.85 80.2594 104.366 86.7015 102.847 91.7972Z" fill="white"/>
+          <defs>
+          <filter id="filter0_d_1163_1940" x="49.0055" y="71.5381" width="172.289" height="124.004" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+          <feFlood flood-opacity="0" result="BackgroundImageFix"/>
+          <feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/>
+          <feOffset dy="-13"/>
+          <feGaussianBlur stdDeviation="11"/>
+          <feComposite in2="hardAlpha" operator="out"/>
+          <feColorMatrix type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.25 0"/>
+          <feBlend mode="normal" in2="BackgroundImageFix" result="effect1_dropShadow_1163_1940"/>
+          <feBlend mode="normal" in="SourceGraphic" in2="effect1_dropShadow_1163_1940" result="shape"/>
+          </filter>
+          <filter id="filter1_d_1163_1940" x="22.2205" y="12.3286" width="243.568" height="160.134" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+          <feFlood flood-opacity="0" result="BackgroundImageFix"/>
+          <feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/>
+          <feOffset dx="8" dy="11"/>
+          <feGaussianBlur stdDeviation="16.5"/>
+          <feComposite in2="hardAlpha" operator="out"/>
+          <feColorMatrix type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.37 0"/>
+          <feBlend mode="normal" in2="BackgroundImageFix" result="effect1_dropShadow_1163_1940"/>
+          <feBlend mode="normal" in="SourceGraphic" in2="effect1_dropShadow_1163_1940" result="shape"/>
+          </filter>
+          <linearGradient id="paint0_linear_1163_1940" x1="159.653" y1="-3.93286" x2="183.442" y2="221.155" gradientUnits="userSpaceOnUse">
+          <stop stop-color="#AAC334"/>
+          <stop offset="1" stop-color="#AAB836"/>
+          </linearGradient>
+          <linearGradient id="paint1_linear_1163_1940" x1="237.257" y1="48.4" x2="50.1106" y2="191.18" gradientUnits="userSpaceOnUse">
+          <stop offset="0.129179" stop-color="#37A9A1"/>
+          <stop offset="0.803777" stop-color="#2573BA"/>
+          </linearGradient>
+          <linearGradient id="paint2_linear_1163_1940" x1="237.257" y1="48.4" x2="50.1106" y2="191.18" gradientUnits="userSpaceOnUse">
+          <stop offset="0.129179" stop-color="#37A9A1"/>
+          <stop offset="0.803777" stop-color="#2573BA"/>
+          </linearGradient>
+          <linearGradient id="paint3_linear_1163_1940" x1="37.2039" y1="165.367" x2="251.777" y2="129.873" gradientUnits="userSpaceOnUse">
+          <stop offset="0.574946" stop-color="#1C5098"/>
+          <stop offset="1" stop-color="#288157"/>
+          </linearGradient>
+          </defs>
+        </svg>
+        <div class="brand-text">Nest Bubble</div>
+        <div class="brand-subtext">Please Enter your email</div>
+      </div>
+            <!-- Message Container -->
+            <div id="message-container">
+                <% if (error) { %>
+                    <div class="alert alert-danger" role="alert"><%= error %></div>
+                <% } %> 
+                <% if (success) { %>
+                    <div class="alert alert-success" role="alert"><%= success %></div>
+                <% } %>
+            </div>
+
+            <!-- Reset Password Form -->
+            <form id="resetPasswordForm" role="form">
+                <input type="hidden" name="token" value="<%= token %>">
+                
+                <div class="input-group mb-3">
+                    <div class="position-relative" style="width: 100%;">
+                        <input type="password" name="password" id="password" 
+                              placeholder="Enter your password" required />
+                        <i class='bx bx-lock-alt input-icon'></i>
+                    </div>
+                </div>
+                
+                <div class="input-group mb-3">
+                    <div class="position-relative" style="width: 100%;">
+                        <input type="password" name="confirmPassword" id="confirmPassword" 
+                              placeholder="Confirm your password" required />
+                        <i class='bx bx-lock-alt input-icon'></i>
+                    </div>
+                </div>
+
+                <button class="btn btn-primary d-grid w-100" type="submit">
+                    Reset Password
+                </button>
+            </form>
+
+      </div>
+    </div>
+
+    <script>
+      $(document).ready(function() {
+          $('#resetPasswordForm').submit(function(e) {
+              e.preventDefault();
+              
+              // Clear previous messages
+              $('#message-container').html('');
+              
+              // Show loading state
+              const submitBtn = $(this).find('button[type="submit"]');
+              submitBtn.prop('disabled', true).html(
+                  '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Processing...'
+              );
+              
+              // Client-side validation
+              const password = $('#password').val();
+              const confirmPassword = $('#confirmPassword').val();
+              
+              if (password !== confirmPassword) {
+                  $('#message-container').html(
+                      '<div class="alert alert-danger" role="alert">Passwords do not match</div>'
+                  );
+                  submitBtn.prop('disabled', false).text('Reset Password');
+                  return;
+              }
+              
+              $.ajax({
+                  type: "POST",
+                  url: "/reset-password/" + $('input[name="token"]').val(),
+                  data: $(this).serialize(),
+                  dataType: "json",
+                  success: function(response) {
+                      if (response.error) {
+                          $('#message-container').html(
+                              '<div class="alert alert-danger" role="alert">' + response.error + '</div>'
+                          );
+                      } else if (response.success) {
+                          // Redirect to login page on success
+                          window.location.href = '/login?success=' + encodeURIComponent(response.message);
+                      }
+                  },
+                  error: function(xhr) {
+                      let errorMsg = "An error occurred. Please try again.";
+                      if (xhr.responseJSON && xhr.responseJSON.error) {
+                          errorMsg = xhr.responseJSON.error;
+                      }
+                      $('#message-container').html(
+                          '<div class="alert alert-danger" role="alert">' + errorMsg + '</div>'
+                      );
+                  },
+                  complete: function() {
+                      submitBtn.prop('disabled', false).text('Reset Password');
+                  }
+              });
+          });
+      });
+    </script>
+
+  <script>
+    // Create floating bubbles
+    document.addEventListener('DOMContentLoaded', function() {
+      const bubblesContainer = document.querySelector('.bubbles');
+      const bubbleCount = 15;
+      
+      for (let i = 0; i < bubbleCount; i++) {
+        const bubble = document.createElement('div');
+        bubble.classList.add('bubble');
+        
+        // Random size between 20px and 100px
+        const size = Math.random() * 80 + 20;
+        bubble.style.width = `${size}px`;
+        bubble.style.height = `${size}px`;
+        
+        // Random position
+        bubble.style.left = `${Math.random() * 100}%`;
+        bubble.style.top = `${Math.random() * 100}%`;
+        
+        // Random opacity
+        bubble.style.opacity = Math.random() * 0.4 + 0.1;
+        
+        // Random animation duration
+        const duration = Math.random() * 20 + 10;
+        bubble.style.animationDuration = `${duration}s`;
+        
+        // Random delay
+        bubble.style.animationDelay = `${Math.random() * 5}s`;
+        
+        bubblesContainer.appendChild(bubble);
+      }
+      
+      // Add subtle hover tilt effect to card
+      const card = document.querySelector('.login-card');
+      
+      card.addEventListener('mousemove', (e) => {
+        const xAxis = (window.innerWidth / 2 - e.pageX) / 15;
+        const yAxis = (window.innerHeight / 2 - e.pageY) / 15;
+        card.style.transform = `rotateY(${xAxis}deg) rotateX(${yAxis}deg)`;
+      });
+      
+      card.addEventListener('mouseleave', () => {
+        card.style.transform = 'rotateY(0deg) rotateX(0deg)';
+      });
+    });
+  </script>
+</body>
+

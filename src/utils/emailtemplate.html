@@ -1,0 +1,97 @@
+<!-- templates/emailtemplate.ejs -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title><%= emailTitle %></title>
+  <style>
+    body {
+      font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+      background-color: #f4f4f4;
+      margin: 0;
+      padding: 0;
+      color: #333;
+    }
+    .container {
+      max-width: 600px;
+      margin: 40px auto;
+      background-color: #fff;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    }
+    .header {
+      background-color: #ffffff;
+      text-align: center;
+      padding: 30px 20px 10px;
+    }
+    .header h1 {
+      font-size: 26px;
+      margin: 0;
+      color: #000;
+    }
+    .header span {
+      font-size: 14px;
+      color: #888;
+    }
+    .content {
+      padding: 30px 30px 20px;
+      text-align: left;
+    }
+    .content p {
+      font-size: 16px;
+      margin-bottom: 18px;
+    }
+    .otp-box {
+      display: inline-block;
+      background-color: #FF7E00;
+      color: white;
+      font-size: 22px;
+      font-weight: bold;
+      padding: 10px 20px;
+      border-radius: 8px;
+      margin: 10px 0 30px;
+      letter-spacing: 2px;
+    }
+    .footer {
+      text-align: center;
+      background-color: #fafafa;
+      padding: 20px 15px;
+      font-size: 13px;
+      color: #777;
+      border-top: 1px solid #eee;
+    }
+    @media screen and (max-width: 640px) {
+      .container {
+        margin: 20px;
+      }
+      .content {
+        padding: 20px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>SILENT BALL</h1>
+      <span><%= emailTitle %></span>
+    </div>
+
+    <div class="content">
+      
+      <p><%= emailGreeting %></p>
+      <p><%= emailBody %></p>
+      <div class="otp-box"><%= otp %></div>
+      <p>If you didn’t request this, please ignore this email.</p>
+    </div>
+
+    <div class="footer">
+      &copy; 2025 Silent Ball Academy. All rights reserved.<br/>
+      
+      Need help? Contact support@silentballacademy.com
+    </div>
+  </div>
+</body>
+</html>

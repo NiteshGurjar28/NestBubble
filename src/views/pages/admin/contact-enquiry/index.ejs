@@ -1,0 +1,422 @@
+
+<body>
+    <style>
+.timeline {
+  position: relative;
+  padding-left: 20px;
+}
+
+.timeline-item {
+  position: relative;
+  padding-bottom: 15px;
+}
+
+.timeline-point {
+  position: absolute;
+  left: -20px;
+  top: 0;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background-color: #3a7bd5;
+}
+
+.timeline-content {
+  padding: 10px;
+  background-color: #f8f9fa;
+  border-radius: 5px;
+  margin-left: 10px;
+}
+
+.timeline-item:not(:last-child)::after {
+  content: '';
+  position: absolute;
+  left: -15px;
+  top: 12px;
+  bottom: 0;
+  width: 2px;
+  background-color: #dee2e6;
+}
+
+.btn-sm {
+  padding: 0.25rem 0.5rem;
+  font-size: 0.75rem;
+}
+</style>
+    <div class="layout-wrapper layout-content-navbar">
+        <div class="layout-container">
+            <%- include('../../../partials/sideBar') %>
+            <div class="layout-page">
+                <%- include('../../../partials/header') %>
+                <div class="content-wrapper">
+                    <div class="admin-container">
+                        <div class="admin-header d-flex justify-content-between align-items-center mb-4">
+                            <h2>Contact Enquiries</h2>
+                        </div>
+
+                        <!-- Filters Card -->
+                        <div class="card mb-4">
+                            <div class="card-body">
+                                <div class="row g-3">
+                                    <div class="col-md-4">
+                                        <div class="input-group">
+                                            <span class="input-group-text bg-white"><i class="bx bx-search"></i></span>
+                                            <input type="text" class="form-control" id="searchInput" placeholder="Search enquiries...">
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <select class="form-select" id="statusFilter">
+                                            <option value="all">All Statuses</option>
+                                            <option value="pending">Pending</option>
+                                            <option value="resolved">Resolved</option>
+                                            <option value="cancelled">Cancelled</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <select class="form-select" id="typeFilter">
+                                            <option value="all">All Types</option>
+                                            <% contactTypes.forEach(type => { %>
+                                                <option value="<%= type._id %>"><%= type.name %></option>
+                                            <% }) %>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-2">
+                                        <button class="btn btn-outline-secondary w-100" id="resetFilters">
+                                            <i class="bx bx-reset"></i> Reset
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Enquiries Table -->
+                        <div class="card">
+                            <div class="card-body">
+                                <div class="">
+                                    <table class="table table-hover" id="contactEnquiryTable">
+                                        <thead class="table-light">
+                                            <tr>
+                                            <th>Name</th>
+                                            <th>Contact</th>
+                                            <th>Type</th>
+                                            <th>Message Preview</th>
+                                            <th>Status</th>
+                                            <th>Date</th>
+                                            <th>Actions</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <!-- Data will be loaded via AJAX -->
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+
+                  <%- include('../../../partials/footer') %>
+                  <div class="content-backdrop fade"></div>
+                </div>
+            </div>
+        </div>
+        <div class="layout-overlay layout-menu-toggle"></div>
+    </div> 
+
+
+
+
+<!-- View Enquiry Modal -->
+<div class="modal fade" id="viewEnquiryModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Enquiry Details</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body" id="enquiryDetailsContent">
+        <!-- Content will be loaded dynamically -->
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Response Modal -->
+<div class="modal fade" id="responseModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Respond to Enquiry</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <form id="responseForm">
+          <input type="hidden" id="enquiryId">
+          <div class="mb-3">
+            <label class="form-label">Status</label>
+            <select class="form-select" id="responseStatus" >
+              <option value="">Select Status</option>
+              <option value="resolved">Resolved</option>
+              <option value="cancelled">Cancelled</option>
+            </select>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Response Message</label>
+            <textarea class="form-control" id="responseMessage" rows="4" required></textarea>
+          </div>
+          <div class="d-flex justify-content-end">
+            <button type="button" class="btn btn-secondary me-2" data-bs-dismiss="modal">Cancel</button>
+            <button type="submit" class="btn btn-primary">Submit Response</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+</body>
+<script>
+$(document).ready(function() {
+  // Initialize DataTable
+  const table = $('#contactEnquiryTable').DataTable({
+    responsive: true,
+    processing: true,
+    serverSide: false,
+    ajax: {
+      url: '/contact-enquiries',
+      dataSrc: '',
+      data: function(d) {
+        return {
+          status: $('#statusFilter').val(),
+          type: $('#typeFilter').val(),
+          search: $('#searchInput').val()
+        };
+      }
+    },
+    columns: [
+      { 
+        data: 'name',
+        render: function(data, type, row) {
+          return `<div class="d-flex align-items-center">
+            ${row.userId?.profileImage ? 
+              `<img src="${row.userId.profileImage}" class="rounded-circle me-2" width="40" height="40">` : 
+              `<div class="rounded-circle bg-light d-flex align-items-center justify-content-center me-2" style="width: 40px; height: 40px;">
+                <i class="bx bx-user text-muted"></i>
+              </div>`}
+            <div>
+              <div class="fw-semibold">${data}</div>
+              ${row.userId ? `<small class="text-muted">User</small>` : `<small class="text-muted">Guest</small>`}
+            </div>
+          </div>`;
+        }
+      },
+      { 
+        data: null,
+        render: function(data) {
+          return `<div>
+            <div>${data.email}</div>
+            <small class="text-muted">${data.phoneNumber}</small>
+          </div>`;
+        }
+      },
+      { data: 'type.name' },
+      { 
+        data: 'message',
+        render: function(data) {
+          return data ? `<div class="text-truncate" style="max-width: 200px;">${data}</div>` : 'N/A';
+        }
+      },
+      { 
+        data: 'status',
+        render: function(data) {
+          const statusClass = {
+            pending: 'warning',
+            resolved: 'success',
+            cancelled: 'danger'
+          }[data] || 'secondary';
+          return `<span class="badge bg-${statusClass}">${data.charAt(0).toUpperCase() + data.slice(1)}</span>`;
+        }
+      },
+      { 
+        data: 'createdAt',
+        render: function(data) {
+          return formatDate(data);
+        }
+      },
+      {
+        data: null,
+        render: function(data) {
+          return `<div class="d-flex">
+            <button class="btn btn-sm btn-outline-primary me-2 view-enquiry" data-id="${data._id}">
+              <i class="bx bx-show"></i>
+            </button>
+            <button class="btn btn-sm btn-outline-success respond-enquiry" data-id="${data._id}" ${data.status !== 'pending' ? 'disabled' : ''}>
+              <i class="bx bx-reply"></i>
+            </button>
+          </div>`;
+        }
+      }
+    ]
+  });
+
+  // Search input handler
+  $('#searchInput').on('keyup', function() {
+    table.ajax.reload();
+  });
+
+  // Status filter handler
+  $('#statusFilter').on('change', function() {
+    table.ajax.reload();
+  });
+
+  // Type filter handler
+  $('#typeFilter').on('change', function() {
+    table.ajax.reload();
+  });
+
+  // Reset filters
+  $('#resetFilters').on('click', function() {
+    $('#searchInput').val('');
+    $('#statusFilter').val('all');
+    $('#typeFilter').val('all');
+    table.ajax.reload();
+  });
+
+  // View enquiry details
+  $(document).on('click', '.view-enquiry', function() {
+    const enquiryId = $(this).data('id');
+    $('#enquiryDetailsContent').html(`
+      <div class="text-center py-4">
+        <div class="spinner-border text-primary" role="status">
+          <span class="visually-hidden">Loading...</span>
+        </div>
+      </div>
+    `);
+    
+    $.get(`/contact-enquiries/${enquiryId}`, function(data) {
+      const enquiry = data;
+      const user = enquiry.userId || {};
+      
+      const html = `
+        <div class="row">
+          <div class="col-md-6">
+            <h5 class="mb-3">Enquiry Info</h5>
+            <table class="table table-bordered">
+              <tr>
+                <th width="30%">Name</th>
+                <td>${enquiry.name}</td>
+              </tr>
+              <tr>
+                <th>Email</th>
+                <td>${enquiry.email}</td>
+              </tr>
+              <tr>
+                <th>Phone</th>
+                <td>${enquiry.phoneNumber}</td>
+              </tr>
+              <tr>
+                <th>Type</th>
+                <td>${enquiry.type.name || 'N/A'}</td>
+              </tr>
+              <tr>
+                <th>Status</th>
+                <td>
+                  <span class="badge bg-${enquiry.status === 'pending' ? 'warning' : enquiry.status === 'resolved' ? 'success' : 'danger'}">
+                    ${enquiry.status.charAt(0).toUpperCase() + enquiry.status.slice(1)}
+                  </span>
+                </td>
+              </tr>
+              <tr>
+                <th>Submitted On</th>
+                <td>${ formatDate(enquiry.createdAt)}</td>
+              </tr>
+            </table>
+            
+            <h5 class="mt-4 mb-3">Message</h5>
+            <div class="card bg-light p-3">
+              <p class="mb-0">${enquiry.message || 'No message provided'}</p>
+            </div>
+          </div>
+          
+          <div class="col-md-6">
+            <h5 class="mb-3">User Information</h5>
+            <div class="card">
+              <div class="card-body">
+                <div class="d-flex align-items-start">
+                  ${user.profileImage ? 
+                    `<img src="${user.profileImage}" class="rounded-circle me-3" width="80" height="80" onerror="this.onerror=null;this.src='/temp/default-user.png'">` : 
+                    `<img src="/temp/default-user.png" class="rounded-circle me-3" width="80" height="80">`}
+                  <div>
+                    <h5>${user.firstName || 'Guest'} ${user.lastName || ''}</h5>
+                    ${user.email ? `<p class="mb-1"><i class="bx bx-envelope me-2"></i> ${user.email}</p>` : ''}
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            ${enquiry.responses?.length > 0 ? `
+              <h5 class="mt-4 mb-3">Response </h5>
+                ${enquiry.responses.map(response => `
+                  <div class="timeline-item">
+                    <div class="timeline-content">
+                      <div class="d-flex justify-content-between">
+                        <strong>${response.message}</strong>
+                        <small class="text-muted">${new Date(response.respondedAt).toLocaleDateString()}</small>
+                      </div>
+                         <!-- <small class="text-muted">Status changed to ${response.status}</small> -->
+                    </div>
+                  </div>
+                `).join('')}
+            ` : `
+              <div class="alert alert-light mt-4">
+                <i class="bx bx-info-circle me-2"></i> No responses yet
+              </div>
+            `}
+          </div>
+        </div>
+      `;
+      
+      $('#enquiryDetailsContent').html(html);
+    });
+    
+    $('#viewEnquiryModal').modal('show');
+  });
+
+  // Respond to enquiry
+  $(document).on('click', '.respond-enquiry', function() {
+    const enquiryId = $(this).data('id');
+    $('#enquiryId').val(enquiryId);
+    $('#responseModal').modal('show');
+  });
+
+  // Submit response form
+  $('#responseForm').on('submit', function(e) {
+    e.preventDefault();
+    
+    const enquiryId = $('#enquiryId').val();
+    const status = $('#responseStatus').val();
+    const message = $('#responseMessage').val();
+    
+    $.ajax({
+      url: `/contact-enquiries/${enquiryId}/status`,
+      method: 'PUT',
+      contentType: 'application/json',
+      data: JSON.stringify({ status, response: message }),
+      success: function() {
+        $('#responseModal').modal('hide');
+        $('#responseForm')[0].reset();
+        table.ajax.reload();
+        toastr.success('Response submitted successfully');
+      },
+      error: function() {
+        toastr.error('Failed to submit response');
+      }
+    });
+  });
+});
+</script>  
+
+

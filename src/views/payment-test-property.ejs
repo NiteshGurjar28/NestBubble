@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Payment Test</title>
+  <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+  <script src="https://js.stripe.com/v3/"></script>
+  <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+</head>
+<body>
+  <h2>Test Property Booking Payment</h2>
+
+  <form id="paymentForm">
+    <label>Property ID:</label><br>
+    <input type="text" id="propertyId" value="<%= propertyId %>" /><br><br>
+
+
+    <label>Payment Type:</label><br>
+    <select id="paymentType">
+      <option value="stripe">Stripe</option>
+      <option value="razorpay">Razorpay</option>
+    </select><br><br>
+
+    <!-- Stripe card input (hidden unless Stripe is selected) -->
+    <div id="card-element-container" style="display:none;">
+      <label>Card Details:</label>
+      <div id="card-element"></div>
+    </div>
+    <br>
+
+    <button type="button" onclick="startPayment()">Start Payment</button>
+  </form>
+
+  <div id="result"></div>
+
+  <script>
+    let stripe, cardElement;
+
+    // Initialize Stripe
+    stripe = Stripe("<%= STRIPE_PUBLISHABLE_KEY %>");
+    const elements = stripe.elements();
+    cardElement = elements.create('card');
+    cardElement.mount('#card-element');
+
+    // Show card input only when Stripe selected
+    document.getElementById('paymentType').addEventListener('change', (e) => {
+      document.getElementById('card-element-container').style.display = 
+        e.target.value === 'stripe' ? 'block' : 'none';
+    });
+
+    async function startPayment() {
+      const propertyId = document.getElementById('propertyId').value;
+      const paymentType = document.getElementById('paymentType').value;
+      const bookingSummary = {
+            bookingDates: {
+                startDate: "2025-09-22T00:00:00.000Z",
+                endDate: "2025-09-23T00:00:00.000Z",
+                totalNights: 1
+            },
+            guestDetails: {
+                adults: 2,
+                children: 2,
+                infants: 1
+            },
+            pricing: {
+                totalAmountBeforeTax: 10000,
+                totalTaxAmount: 1100,
+                totalAmountWithTax: 11100,
+                totalDiscountAmount: 2220,
+                amountAfterDiscounts: 8880,
+                extraFeaturesTotal: 8000,
+                finalAmount: 16880,
+                cleaningFeeAmount: 1665
+            },
+            discounts: [
+                {
+                    type: "newListingDiscount",
+                    percentage: 20,
+                    amount: 2220
+                }
+            ],
+            extraFeatures: [
+                {
+                    featureType: "car",
+                    duration: {
+                        startDate: "2025-06-22T00:00:00.000Z",
+                        endDate: "2025-06-30T00:00:00.000Z",
+                        totalDays: 8
+                    },
+                    pricing: {
+                        dailyRate: 1000,
+                        totalAmount: 8000
+                    }
+                },
+                {
+                    featureType: "clubHouse",
+                    duration: {
+                        startDate: "2025-06-25T00:00:00.000Z",
+                        endDate: "2025-06-28T00:00:00.000Z",
+                        totalDays: 3
+                    },
+                    pricing: {
+                        dailyRate: 4000,
+                        totalAmount: 12000
+                    }
+                }
+            ]
+      };
+
+      try {
+        // Call your createPaymentEventBookingLink API
+        const response = await axios.post('/api/v1/guest/propertyBooking', {
+          propertyId: propertyId,
+          paymentType: paymentType,
+          bookingSummary: bookingSummary
+        });
+
+        document.getElementById('result').innerText = JSON.stringify(response.data, null, 2);
+
+        const data = response.data.data;
+
+        if (paymentType === "stripe") {
+          const { clientSecret, paymentRecordId } = data;
+
+          // Confirm payment with card element
+          const { error, paymentIntent } = await stripe.confirmCardPayment(clientSecret, {
+            payment_method: {
+              card: cardElement
+            }
+          });
+
+          if (error) {
+            alert("Stripe Payment Failed: " + error.message);
+          } else if (paymentIntent.status === "succeeded") {
+            // Call booking confirm API
+            await axios.post('/api/v1/guest/bookPropertyWithPayment', { paymentRecordId });
+            alert("Stripe booking success!");
+          }
+
+        } else if (paymentType === "razorpay") {
+          const { orderId, razorpayKeyId, paymentRecordId, amount } = data;
+          var options = {
+            key: razorpayKeyId,
+            amount: amount,
+            currency: "INR",
+            name: "Test Property Booking",
+            description: "Property Payment",
+            order_id: orderId,
+            handler: async function (response) {
+              // Call booking confirm API
+              await axios.post('/api/v1/guest/bookPropertyWithPayment', {
+                paymentRecordId
+              });
+              alert("Razorpay booking success!");
+            }
+          };
+          var rzp = new Razorpay(options);
+          rzp.open();
+        }
+
+      } catch (err) {
+        console.error(err);
+        alert("Error: " + err.message);
+      }
+    }
+  </script>
+</body>
+</html>

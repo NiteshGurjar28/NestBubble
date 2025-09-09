@@ -1,0 +1,280 @@
+
+<body>
+    <div class="layout-wrapper layout-content-navbar">
+        <div class="layout-container">
+            <%- include('../../../partials/sideBar') %>
+            <div class="layout-page">
+                <%- include('../../../partials/header') %>
+                <div class="content-wrapper">
+                    <div class="admin-container">
+                        <div class="admin-header">
+                          <h2>Guest List</h2>
+                          <button class="btn btn-primary position-relative" data-bs-toggle="collapse" data-bs-target="#filterPanel">
+                            <i class="bx bx-filter-alt"></i> Filters
+                            <% const hasActiveFilters = Object.keys(filterValues).some(key => 
+                                  key !== 'page' && key !== 'limit' && filterValues[key] !== '' && filterValues[key] !== undefined
+                              ); %>
+                            <% if (hasActiveFilters) { %>
+                              <span class="position-absolute top-0 start-100 translate-middle p-1 bg-danger border border-light rounded-circle">
+                                <span class="visually-hidden">Active filters</span>
+                              </span>
+                            <% } %>
+                          </button>
+                        </div>
+
+                        <!-- Filter Panel -->
+                        <div class="card mb-4 collapse" id="filterPanel">
+                          <div class="card-body">
+                            <form id="guestFilterForm" method="GET" action="/guest">
+                              <div class="row">
+                                <div class="col-md-3">
+                                  <div class="form-group">
+                                    <label>Search Guests</label>
+                                    <input type="text" class="form-control" name="search" 
+                                        value="<%= filterValues.search || '' %>" 
+                                        placeholder="Name, email, mobile, Id">
+                                  </div>
+                                </div>
+                                <div class="col-md-3">
+                                  <div class="form-group">
+                                    <label>Address Search</label>
+                                    <input type="text" class="form-control" name="addressSearch" 
+                                        value="<%= filterValues.addressSearch || '' %>" 
+                                        placeholder="Street, city, state, postal code">
+                                  </div>
+                                </div>
+                                <div class="col-md-3">
+                                  <div class="form-group">
+                                    <label>Status</label>
+                                    <select class="form-control" name="status">
+                                      <option value="">All</option>
+                                      <option value="active" <%= filterValues.status === 'active' ? 'selected' : '' %>>Active</option>
+                                      <option value="inactive" <%= filterValues.status === 'inactive' ? 'selected' : '' %>>Inactive</option>
+                                    </select>
+                                  </div>
+                                </div>
+                              </div>
+                              
+                              <div class="row mt-3">
+                                <div class="col-md-12 text-end">
+                                  <a href="/guest" class="btn btn-secondary">Reset All</a>
+                                  <button type="submit" class="btn btn-primary">Apply Filters</button>
+                                </div>
+                              </div>
+                            </form>
+                          </div>
+                        </div>
+
+
+                        <div class="card">
+                            <div class="card-body">
+                              <div class="table-responsive">
+                                <table class="table table-hover">
+                                  <thead class="table-light">
+                                    <tr>
+                                      <th>#ID</th>
+                                      <th>Guest</th>
+                                      <th>Contact</th>
+                                      <th>Address</th>
+                                      <th>Status</th>
+                                      <th>Joined</th>
+                                      <th>Actions</th>
+                                    </tr>
+                                  </thead>
+                                  <tbody>
+                                    <% if (guests.length === 0) { %>
+                                      <tr>
+                                        <td colspan="7" class="text-center py-4">No guests found matching your filters</td>
+                                      </tr>
+                                    <% } %>
+                                    
+                                    <% guests.forEach((guest, index) => { %>
+                                    <tr>
+                                      <td><%= guest.userId  %>   </td> 
+                                      <td>
+                                        <div class="d-flex align-items-center">
+                                          <div class="position-relative">
+                                            <% if (guest.profileImage) { %>
+                                              <img src="<%= guest.profileImage %>" 
+                                                  class="rounded-circle me-2" 
+                                                  width="40" height="40" 
+                                                  alt="<%= guest.firstName %>"
+                                                  onerror="this.onerror=null;this.src='/temp/default-user.png'">
+                                            <% } else { %>
+                                              <div class="avatar-placeholder rounded-circle me-2">
+                                                  <img src="/temp/default-user.png" 
+                                                  class="rounded-circle me-2" 
+                                                  width="40" height="40" 
+                                                  alt="<%= guest.firstName %>">
+                                              </div>
+                                            <% } %>
+                                          </div>
+                                          <div>
+                                            <div class="fw-bold">
+                                              <%= guest.firstName %> <%= guest.lastName %>
+                                            </div>
+                                          </div>
+                                        </div>
+                                      </td>
+                                      <td>
+                                        <div><%= guest.mobile || 'N/A' %></div>
+                                        <small class="text-muted"><%= guest.email %></small>
+                                      </td>
+                                      <td>
+                                        <% if (guest.address) { %>
+                                          <div><%= guest.address.city || 'N/A' %>, <%= guest.address.state || '' %></div>
+                                          <small class="text-muted"><%= guest.address.postalCode || '' %></small>
+                                        <% } else { %>
+                                          N/A
+                                        <% } %>
+                                      </td>
+                                      <td>
+                                          <% if(adminPerms.includes('guest-status')) { %>
+                                            <div class="form-check form-switch d-inline-block">
+                                              <input class="form-check-input status-toggle" 
+                                                  type="checkbox" 
+                                                  data-id="<%= guest._id %>"
+                                                  <%= guest.isActive ? 'checked' : '' %>>
+                                            </div>
+                                          <% } %>
+                                      </td>
+                                      <td><%= formatDate(guest.createdAt) %></td>
+                                      <td>
+                                          <% if(adminPerms.includes('guest-show')) { %>
+                                            <a href="/guest/<%= guest._id %>/show" class="btn btn-sm btn-icon btn-outline-primary">
+                                              <i class="bx bx-show"></i>
+                                            </a>
+                                          <% } %>
+                                      </td>
+                                    </tr>
+                                    <% }) %>
+                                  </tbody>
+                                </table>
+                                  <!-- Pagination -->
+                                  <% if (totalPages > 1) { %>
+                                  <div class="d-flex justify-content-between align-items-center mt-4">
+                                      <div class="text-muted">
+                                          Showing <%= (currentPage - 1) * limit + 1 %> to 
+                                          <%= Math.min(currentPage * limit, totalGuests) %> of 
+                                          <%= totalGuests %> guests
+                                      </div>
+                                      
+                                      <nav aria-label="Page navigation">
+                                          <ul class="pagination mb-0">
+                                              <% if (currentPage > 1) { %>
+                                                  <li class="page-item">
+                                                      <a class="page-link" 
+                                                        href="/guest?<%= new URLSearchParams({...filterValues, page: currentPage - 1}) %>" 
+                                                        aria-label="Previous">
+                                                          <span aria-hidden="true">&laquo;</span>
+                                                      </a>
+                                                  </li>
+                                              <% } %>
+                                              
+                                              <% const maxVisiblePages = 5; %>
+                                              <% let startPage = Math.max(1, currentPage - Math.floor(maxVisiblePages / 2)); %>
+                                              <% let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1); %>
+                                              
+                                              <% if (endPage - startPage + 1 < maxVisiblePages) { %>
+                                                  <% startPage = Math.max(1, endPage - maxVisiblePages + 1); %>
+                                              <% } %>
+                                              
+                                              <% if (startPage > 1) { %>
+                                                  <li class="page-item">
+                                                      <a class="page-link" 
+                                                        href="/guest?<%= new URLSearchParams({...filterValues, page: 1}) %>">1</a>
+                                                  </li>
+                                                  <% if (startPage > 2) { %>
+                                                      <li class="page-item disabled">
+                                                          <span class="page-link">...</span>
+                                                      </li>
+                                                  <% } %>
+                                              <% } %>
+                                              
+                                              <% for (let i = startPage; i <= endPage; i++) { %>
+                                                  <li class="page-item <%= currentPage === i ? 'active' : '' %>">
+                                                      <a class="page-link" 
+                                                        href="/guest?<%= new URLSearchParams({...filterValues, page: i}) %>">
+                                                          <%= i %>
+                                                      </a>
+                                                  </li>
+                                              <% } %>
+                                              
+                                              <% if (endPage < totalPages) { %>
+                                                  <% if (endPage < totalPages - 1) { %>
+                                                      <li class="page-item disabled">
+                                                          <span class="page-link">...</span>
+                                                      </li>
+                                                  <% } %>
+                                                  <li class="page-item">
+                                                      <a class="page-link" 
+                                                        href="/guest?<%= new URLSearchParams({...filterValues, page: totalPages}) %>">
+                                                          <%= totalPages %>
+                                                      </a>
+                                                  </li>
+                                              <% } %>
+                                              
+                                              <% if (currentPage < totalPages) { %>
+                                                  <li class="page-item">
+                                                      <a class="page-link" 
+                                                        href="/guest?<%= new URLSearchParams({...filterValues, page: currentPage + 1}) %>" 
+                                                        aria-label="Next">
+                                                          <span aria-hidden="true">&raquo;</span>
+                                                      </a>
+                                                  </li>
+                                              <% } %>
+                                          </ul>
+                                      </nav>
+                                  </div>
+                                  <% } %>
+                              </div>
+                            </div>
+                        </div>
+                    </div>
+
+                  <%- include('../../../partials/footer') %>
+                  <div class="content-backdrop fade"></div>
+                </div>
+            </div>
+        </div>
+        <div class="layout-overlay layout-menu-toggle"></div>
+    </div> 
+
+</body>
+
+
+<script>
+    $(document).ready(function() {
+
+        // Status toggle handler
+        $('.status-toggle').change(function() {
+            const guestId = $(this).data('id');
+            const isActive = $(this).is(':checked');
+            
+            $.ajax({
+                url: `/guest/${guestId}/status`,
+                method: 'PUT',
+                data: { isActive },
+                success: function(response) {
+                    if (response.success) {
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Success',
+                            text: response.message,
+                            timer: 1500,
+                            showConfirmButton: false
+                        });
+                    }
+                },
+                error: function(xhr) {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: xhr.responseJSON?.message || 'Failed to update status'
+                    });
+                    $(this).prop('checked', !isActive); // Revert toggle on error
+                }
+            });
+        });
+    });
+</script>

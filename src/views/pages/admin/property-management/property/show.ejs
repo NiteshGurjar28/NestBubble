@@ -1,0 +1,1330 @@
+<body>
+    <!-- ERB Template -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+
+
+    <div class="layout-wrapper layout-content-navbar">
+        <div class="layout-container">
+            <%- include('../../../../partials/sideBar') %>
+            <div class="layout-page">
+                <%- include('../../../../partials/header') %>
+                <div class="content-wrapper">
+                    <div class="admin-container">
+                        <div class="admin-header ">
+                            <div>
+                                <h2><%= property.name %></h2>
+                                <!-- <p class="text-muted mb-0"><%= property.address.street %>, <%= property.address.city %></p> -->
+                            </div>
+                            <div>
+                                <span class="badge bg-<%= property.status === 'active' ? 'success' : 'secondary' %> me-2">
+                                    <%= property.status.toUpperCase() %>
+                                </span>
+                                <span class="badge bg-<%= property.adminApprovalStatus === 'approved' ? 'success' : 
+                                                    property.adminApprovalStatus === 'pending' ? 'warning' : 'danger' %>">
+                                    <%= property.adminApprovalStatus.toUpperCase() %>
+                                </span>
+                                  <a href="/property" class="btn btn-gradient"><i class="fas fa-arrow-left me-1"></i> Back</a>
+                            </div>
+                        </div>
+
+                        <!-- Main Content with Tabs -->
+                        <div class="card mt-4">
+                            <div class="card-body">
+                                <ul class="nav nav-tabs" id="propertyTabs" role="tablist">
+                                    <li class="nav-item" role="presentation">
+                                        <button class="nav-link active" id="overview-tab" data-bs-toggle="tab" 
+                                                data-bs-target="#overview" type="button" role="tab">
+                                            <i class="fas fa-home me-2"></i>Overview
+                                        </button>
+                                    </li>
+                                    <% if(adminPerms.includes('property-booking-list')) { %>
+                                        <li class="nav-item" role="presentation">
+                                            <button class="nav-link" id="bookings-tab" data-bs-toggle="tab" 
+                                                    data-bs-target="#bookings" type="button" role="tab">
+                                                <i class="fas fa-calendar-check me-2"></i>Bookings
+                                            </button>
+                                        </li>
+                                    <% } %>
+                                    <li class="nav-item" role="presentation">
+                                        <button class="nav-link" id="ratings-tab" data-bs-toggle="tab" 
+                                                data-bs-target="#ratings" type="button" role="tab">
+                                            <i class="fas fa-star me-2"></i>Ratings (<%= property?.ratingCount ?? 0 %>)
+                                        </button>
+                                    </li>
+                                    <% if(adminPerms.includes('property-payments')) { %>
+                                        <li class="nav-item" role="presentation">
+                                            <button class="nav-link" id="payments-tab" data-bs-toggle="tab" 
+                                                    data-bs-target="#payments" type="button" role="tab">
+                                                <i class="fas fa-rupee-sign me-2"></i>Payments
+                                            </button>
+                                        </li>
+                                    <% } %>
+                                    <% if(adminPerms.includes('property-calendar')) { %>
+                                    <li class="nav-item" role="presentation">
+                                        <button class="nav-link" id="calendar-tab" data-bs-toggle="tab" 
+                                                data-bs-target="#calendar" type="button" role="tab">
+                                            <i class="fas fa-calendar me-2"></i> Calendar
+                                        </button>
+                                    </li>
+                                    <% } %>
+                                    <!-- <li class="nav-item" role="presentation">
+                                        <button class="nav-link" id="settings-tab" data-bs-toggle="tab" 
+                                                data-bs-target="#settings" type="button" role="tab">
+                                            <i class="fas fa-cog me-2"></i>Settings
+                                        </button>
+                                    </li> -->
+                                </ul>
+
+                                <div class="tab-content py-4" id="propertyTabsContent">
+                                    <!-- Overview Tab -->
+                                    <div class="tab-pane fade show active" id="overview" role="tabpanel">
+                                        <div class="row">
+                                            <!-- Property Images Carousel -->
+                                            <div class="col-md-7">
+                                                <div id="propertyCarousel" class="carousel slide" data-bs-ride="carousel">
+                                                    <div class="carousel-inner rounded-3">
+                                                        <% property.images.forEach((image, index) => { %>
+                                                            <div class="carousel-item <%= index === 0 ? 'active' : '' %>">
+                                                                <img src="<%= image.url %>" class="d-block w-100" 
+                                                                     style="height: 400px; object-fit: cover;" 
+                                                                     alt="Property image <%= index + 1 %>"
+                                                                     onerror="this.onerror=null;this.src='/assets/img/default-event.jpg'">
+                                                                <% if (image.caption) { %>
+                                                                    <div class="carousel-caption d-none d-md-block bg-dark bg-opacity-50 rounded">
+                                                                        <p><%= image.caption %></p>
+                                                                    </div>
+                                                                <% } %>
+                                                            </div>
+                                                        <% }); %>
+                                                    </div>
+                                                    <button class="carousel-control-prev" type="button" 
+                                                            data-bs-target="#propertyCarousel" data-bs-slide="prev">
+                                                        <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                                                        <span class="visually-hidden">Previous</span>
+                                                    </button>
+                                                    <button class="carousel-control-next" type="button" 
+                                                            data-bs-target="#propertyCarousel" data-bs-slide="next">
+                                                        <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                                                        <span class="visually-hidden">Next</span>
+                                                    </button>
+                                                </div>
+
+                                                <!-- Property Highlights -->
+                                                <div class="card mt-4">
+                                                    <div class="card-body">
+                                                        <h5 class="card-title"><i class="fas fa-info-circle me-2"></i>Description</h5>
+                                                        <p class="card-text"><%= property.description %></p>
+                                                        
+                                                        <div class="row mt-3">
+                                                            <div class="col-md-6">
+                                                                <h6><i class="fas fa-home me-2"></i>Property Details</h6>
+                                                                <ul class="list-group list-group-flush">
+                                                                    <li class="list-group-item d-flex justify-content-between">
+                                                                        <span>Property Type:</span>
+                                                                        <span><%= property.propertyType.name %></span>
+                                                                    </li>
+                                                                    <li class="list-group-item d-flex justify-content-between">
+                                                                        <span>Built Year:</span>
+                                                                        <span><%= property.buildYear || 'N/A' %></span>
+                                                                    </li>
+                                                                    <li class="list-group-item d-flex justify-content-between">
+                                                                        <span>Land Size:</span>
+                                                                        <span><%= property.landSize.value %> <%= property.landSize.unit %></span>
+                                                                    </li>
+                                                                </ul>
+                                                            </div>
+                                                            <div class="col-md-6">
+                                                                <h6><i class="fas fa-users me-2"></i>Capacity</h6>
+                                                                <ul class="list-group list-group-flush">
+                                                                    <li class="list-group-item d-flex justify-content-between">
+                                                                        <span>Guests:</span>
+                                                                        <span><%= property.capacity.guestsAllowed %></span>
+                                                                    </li>
+                                                                    <li class="list-group-item d-flex justify-content-between">
+                                                                        <span>Bedrooms:</span>
+                                                                        <span><%= property.capacity.bedrooms %></span>
+                                                                    </li>
+                                                                    <li class="list-group-item d-flex justify-content-between">
+                                                                        <span>Bathrooms:</span>
+                                                                        <span><%= property.capacity.bathrooms %></span>
+                                                                    </li>
+                                                                </ul>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <!-- Property Info Sidebar -->
+                                            <div class="col-md-5">
+                                                <div class="card sticky-top" style="top: 20px;">
+                                                    <div class="card-body">
+                                                        <div class="d-flex justify-content-between align-items-center mb-3">
+                                                            <h5 class="card-title mb-0">Property Information</h5>
+                                                            <% if(adminPerms.includes('property-top-vacation-status')) { %>
+                                                                <span class="badge top-vacation-badge bg-<%= property.topVacation ? 'primary' : 'secondary' %>"
+                                                                    style="cursor: pointer;"
+                                                                    onclick="updateTopVacationStatus('<%= property._id %>', <%= property.topVacation %>)">
+                                                                    <%= property.topVacation ? 'TOP VACATION' : 'STANDARD' %>
+                                                                </span>
+                                                            <% } else { %>
+                                                                <span class="badge bg-<%= property.topVacation ? 'primary' : 'secondary' %>"><%= property.topVacation ? 'TOP VACATION' : 'STANDARD' %></span>
+                                                            <% }  %>
+                                                        </div>
+                                                        
+                                                        <!-- Owner Info -->
+                                                        <div class="d-flex align-items-center mb-4 p-3 bg-light rounded">
+                                                            <div class="position-relative">
+                                                                <a href="/host/<%= property.owner._id %>/show">
+                                                                    <% if (property.owner.profileImage) { %>
+                                                                        <img src="<%= property.owner.profileImage %>"  class="rounded-circle me-3" width="60" height="60" onerror="this.onerror=null;this.src='/temp/default-user.png'">
+                                                                    <% } else { %>
+                                                                    <div class="avatar-placeholder rounded-circle me-3" style="width:60px;height:60px;">
+                                                                        <img src="/temp/default-user.png" class="rounded-circle me-2"  width="60" height="60">
+                                                                    </div>
+                                                                <% } %>
+                                                                </a>
+                                                                <% if (property.owner.hostVerified) { %>
+                                                                <span class="position-absolute bottom-0 end-0  rounded-circle p-1">
+                                                                    <i class="fas fa-check-circle text-primary"></i>
+                                                                </span>
+                                                                <% } %>
+                                                            </div>
+                                                            <div>
+                                                                <p class="mb-0"><%= property.owner.firstName %> <%= property.owner.lastName %></p>
+                                                                <small class="text-muted">Joined: <%= new Date(property.owner.createdAt).toLocaleDateString() %></small>
+                                                            </div>
+                                                        </div>
+                                                        
+                                                        <!-- Pricing Summary -->
+                                                        <div class="mb-4">
+                                                            <h6 class="mb-3"><i class="fas fa-tag me-2"></i>Pricing</h6>
+                                                            <table class="table table-sm">
+                                                                <tr>
+                                                                    <td>Base Price:</td>
+                                                                    <td class="text-end"><%= formatPrice(property.pricing.baseAmount) %> /night</td>
+                                                                </tr>
+                                                                <% if (property.pricing.customWeekendPriceStatus) { %>
+                                                                    <tr>
+                                                                        <td>Weekend Price:</td>
+                                                                        <td class="text-end"><%= formatPrice(property.pricing.customWeekendPrice) %>/night</td>
+                                                                    </tr>
+                                                                <% } %>
+                                                                
+                                                                <!-- Discounts Section -->
+                                                                <% if (property.discounts.newListingDiscount.status) { %>
+                                                                    <tr class="text-success">
+                                                                        <td>New Listing Discount:</td>
+                                                                        <td class="text-end">-<%= property.discounts.newListingDiscount.percentage %>%</td>
+                                                                    </tr>
+                                                                <% } %>
+                                                                
+                                                                <% if (property.discounts.weeklyDiscount?.status) { %>
+                                                                    <tr class="text-success">
+                                                                        <td>Weekly Discount (<%= property.discounts.weeklyDiscount.minimumStay %>+ nights):</td>
+                                                                        <td class="text-end">-<%= property.discounts.weeklyDiscount.percentage %>%</td>
+                                                                    </tr>
+                                                                <% } %>
+                                                                
+                                                                <% if (property.discounts.monthlyDiscount?.status) { %>
+                                                                    <tr class="text-success">
+                                                                        <td>Monthly Discount (<%= property.discounts.monthlyDiscount.minimumStay %>+ nights):</td>
+                                                                        <td class="text-end">-<%= property.discounts.monthlyDiscount.percentage %>%</td>
+                                                                    </tr>
+                                                                <% } %>
+                                                                
+                                                                <% if (property.discounts.lastMintDiscount?.status) { %>
+                                                                    <tr class="text-success">
+                                                                        <td>Last Minute Discount 
+                                                                            <!-- (within <%= property.discounts.lastMintDiscount.beforeDays %> days) -->
+                                                                        :</td>
+                                                                        <td class="text-end">-<%= property.discounts.lastMintDiscount.percentage %>%</td>
+                                                                    </tr>
+                                                                <% } %>
+                                                            </table>
+                                                        </div>
+
+                                                        
+                                                        <!-- Quick Stats -->
+                                                        <div class="mb-4">
+                                                            <h6 class="mb-3"><i class="fas fa-chart-pie me-2"></i>Quick Stats</h6>
+                                                            <div class="row text-center">
+                                                                <div class="col-4">
+                                                                    <div class="p-2 bg-secondary bg-opacity-10 rounded">
+                                                                        <h5 class="mb-0 text-secondary"><%= property?.ratingCount ?? 0 %> </h5>
+                                                                        <small>Ratings</small>
+                                                                    </div>
+                                                                </div>
+                                                                <div class="col-4">
+                                                                    <div class="p-2 bg-success bg-opacity-10 rounded">
+                                                                        <h5 class="mb-0 text-success"><%= property?.averageRating ?? 0 %></h5>
+                                                                        <small>Avg Rating</small>
+                                                                    </div>
+                                                                </div>
+                                                                <div class="col-4">
+                                                                    <div class="p-2 bg-info bg-opacity-10 rounded">
+                                                                        <h5 class="mb-0 text-info"><%= formatPrice(property.todayPrice.price)  ?? formatPrice(property.pricing.baseAmount) %></h5>
+                                                                        <small>Today Price</small>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                        
+                                                        
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <!-- Amenities Section -->
+                                        <div class="card mt-4">
+                                            <div class="card-body">
+                                                <h5 class="card-title mb-4"><i class="fas fa-list-check me-2"></i>Amenities</h5>
+                                                
+                                                <!-- Amenities Groups -->
+                                                <% property.groupedAmenities.forEach(group => { %>
+                                                    <div class="mb-4">
+                                                        <h6 class="text-muted mb-3"><%= group.category %></h6>
+                                                        <div class="row">
+                                                            <% group.items.forEach(amenity => { %>
+                                                                <div class="col-6 col-md-3 mb-3">
+                                                                    <div class="amenity-tile text-center p-3 border rounded">
+                                                                        <div class="amenity-icon mb-2">
+                                                                            <img src="<%= amenity.icon %>" alt="<%= amenity.name %>" class="img-fluid" style="height: 24px; width: auto;">
+                                                                        </div>
+                                                                        <p class="mb-0 small"><%= amenity.name %></p>
+                                                                    </div>
+                                                                </div>
+                                                            <% }); %>
+                                                        </div>
+                                                    </div>
+                                                <% }); %>
+                                                
+                                                <!-- Extra Features Section -->
+                                                <div class="mt-5">
+                                                    <h5 class="card-title mb-4"><i class="fas fa-star me-2"></i>Extra Features</h5>
+                                                    <div class="row">
+                                                        <% if (property.extraFeatures.clubHouse.available) { %>
+                                                            <div class="col-md-6 mb-3">
+                                                                <div class="d-flex align-items-center p-3 border rounded">
+                                                                    <div class="feature-icon bg-light-primary rounded-circle p-3 me-3">
+                                                                        <i class="fas fa-home text-primary"></i>
+                                                                    </div>
+                                                                    <div>
+                                                                        <h6 class="mb-1">Club House</h6>
+                                                                        <p class="mb-0 text-muted"><%= formatPrice(property.extraFeatures.clubHouse.amount)  %></p>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        <% } %>
+                                                        
+                                                        <% if (property.extraFeatures.car.available) { %>
+                                                            <div class="col-md-6 mb-3">
+                                                                <div class="d-flex align-items-center p-3 border rounded">
+                                                                    <div class="feature-icon bg-light-primary rounded-circle p-3 me-3">
+                                                                        <i class="fas fa-car text-primary"></i>
+                                                                    </div>
+                                                                    <div>
+                                                                        <h6 class="mb-1">Car Rental</h6>
+                                                                        <p class="mb-0 text-muted"><%= formatPrice(property.extraFeatures.car.amount)  %></p>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        <% } %>
+                                                        
+                                                        <% if (property.extraFeatures.carwithDriver.available) { %>
+                                                            <div class="col-md-6 mb-3">
+                                                                <div class="d-flex align-items-center p-3 border rounded">
+                                                                    <div class="feature-icon bg-light-primary rounded-circle p-3 me-3">
+                                                                        <i class="fas fa-car-side text-primary"></i>
+                                                                    </div>
+                                                                    <div>
+                                                                        <h6 class="mb-1">Car with Driver</h6>
+                                                                        <p class="mb-0 text-muted"><%= formatPrice(property.extraFeatures.carwithDriver.amount)  %></p>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        <% } %>
+                                                        
+                                                        <% if (property.extraFeatures.maidService.available) { %>
+                                                            <div class="col-md-6 mb-3">
+                                                                <div class="d-flex align-items-center p-3 border rounded">
+                                                                    <div class="feature-icon bg-light-primary rounded-circle p-3 me-3">
+                                                                        <i class="fas fa-broom text-primary"></i>
+                                                                    </div>
+                                                                    <div>
+                                                                        <h6 class="mb-1">Maid Service</h6>
+                                                                        <p class="mb-0 text-muted"><%= formatPrice(property.extraFeatures.maidService.amount)  %></p>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        <% } %>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <!-- Location Map -->
+                                        <div class="card mt-4">
+                                            <div class="card-body">
+                                                <h5 class="card-title"><i class="fas fa-map-marker-alt me-2"></i>Location</h5>
+                                                <div class="row">
+                                                    <div class="col-md-6">
+                                                        <div id="map" style="height: 300px; width: 90%;"></div>
+                                                    </div>
+                                                    <div class="col-md-6">
+                                                        <address class="mt-3">
+                                                            <strong>Address:</strong><br>
+                                                            <%= property.address.street %><br>
+                                                            <%= property.address.landmark ? property.address.landmark + `` : '' %>
+                                                            <%= property.address.city %>, <%= property.address.district %><br>
+                                                            <%= property.address.state %>, <%= property.address.country %><br>
+                                                            PIN: <%= property.address.pincode %>
+                                                        </address>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                       <% if (property?.videos && property.videos.length > 0) { %>
+                                            <div class="card mt-4">
+                                                <div class="card-header d-flex justify-content-between align-items-center">
+                                                    <h5 class="mb-0">Videos</h5>
+                                                </div>
+                                                <div class="card-body">
+                                                    <div class="row">
+                                                        <% property.videos.forEach(function(video) { %>
+                                                        <div class="col-md-4 mb-3">
+                                                            <div class="ratio ratio-16x9">
+                                                                <video src="<%= video %>" controls></video>
+                                                            </div>
+                                                        </div>
+                                                        <% }) %>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        <% } %>
+                                          
+                                    </div>
+
+                                    <!-- Bookings Tab -->
+                                    <div class="tab-pane fade" id="bookings" role="tabpanel">
+                                        <div class=" ">
+                                            <div class="card-header py-3 d-flex justify-content-between align-items-center">
+                                                <h6 class="m-0 font-weight-bold text-primary">All Bookings</h6>
+                                                <div class="dropdown no-arrow">
+                                                    <a class="dropdown-toggle" href="#" role="button" id="filterDropdown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                                        <i class="fas fa-filter fa-sm fa-fw text-gray-400"></i> Filters
+                                                    </a>
+                                                    <div class="dropdown-menu dropdown-menu-right filter-dropdown" aria-labelledby="filterDropdown">
+                                                        <form id="bookingFilterForm">
+                                                            <div class="form-group">
+                                                                <label for="searchFilter">Search</label>
+                                                                <input type="text" class="form-control" id="searchFilter" placeholder="Search by Booking ID, Guest Name">
+                                                            </div>
+                                                            <div class="form-group">
+                                                                <label for="statusFilter">Status</label>
+                                                                <select class="form-control" id="statusFilter">
+                                                                    <option value="all">All Status</option>
+                                                                    <option value="confirmed">Confirmed</option>
+                                                                    <option value="completed">Completed</option>
+                                                                    <option value="pending">Pending</option>
+                                                                    <option value="cancelled">Cancelled</option>
+                                                                </select>
+                                                                <input type="hidden" value="<%= property?._id %>" id="propertyId">
+                                                            </div>
+                                                            <div class="form-group">
+                                                                <label for="dateRangeFilter">Date Range</label>
+                                                                <select class="form-control" id="dateRangeFilter">
+                                                                    <option value="all">All Dates</option>
+                                                                    <option value="today">Today</option>
+                                                                    <option value="this_week">This Week</option>
+                                                                    <option value="this_month">This Month</option>
+                                                                    <option value="next_month">Next Month</option>
+                                                                </select>
+                                                            </div>
+                                                            <button type="submit" class="btn btn-primary btn-block mt-3">
+                                                                <i class="fas fa-filter mr-2"></i> Apply Filters
+                                                            </button>
+                                                        </form>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="card-body">
+                                                <div class="loading-spinner" id="loadingSpinner">
+                                                    <div class="spinner-border text-primary" role="status">
+                                                        <span class="sr-only">Loading...</span>
+                                                    </div>
+                                                    <p class="mt-2">Loading bookings...</p>
+                                                </div>
+                                                <div class="row" id="bookingList">
+                                                    <!-- Bookings will be loaded here via AJAX -->
+                                                </div>
+                                                <div class="empty-state d-none" id="emptyState">
+                                                    <i class="far fa-calendar-times fa-4x text-muted mb-3"></i>
+                                                    <h4>No Bookings Found</h4>
+                                                    <p class="text-muted">No bookings match your current filters.</p>
+                                                </div>
+                                                <nav aria-label="Booking pagination" class="mt-4" id="paginationContainer">
+                                                    <ul class="pagination justify-content-center" id="pagination">
+                                                        <!-- Pagination will be loaded here via AJAX -->
+                                                    </ul>
+                                                </nav>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Ratings Tab -->
+                                    <div class="tab-pane fade" id="ratings" role="tabpanel">
+                                        <div class="row">
+                                            <% if(ratings.length > 0) { %>
+                                                <div class="col-md-4">
+                                                    <!-- Overall Rating Card -->
+                                                    <div class="card bg-light">
+                                                        <div class="card-body text-center py-4">
+                                                            <h1 class="display-4 text-primary mb-0"><%= property?.averageRating.toFixed(1) %></h1>
+                                                            <div class="star-rating mb-2">
+                                                                <% for (let i = 1; i <= 5; i++) { %>
+                                                                    <i class="fas fa-star <%= i <= property?.averageRating ? 'text-warning' : 'text-secondary' %>"></i>
+                                                                <% } %>
+                                                            </div>
+                                                            <p class="text-muted mb-0"><%= property?.ratingCount ?? 0 %> reviews</p>
+                                                        </div>
+                                                    </div>
+                                                    
+                                                    <!-- Rating Breakdown Card -->
+                                                    <div class="card mt-3">
+                                                        <div class="card-body">
+                                                            <h6>Rating Breakdown</h6>
+                                                            
+                                                            <!-- Overall Rating Distribution -->
+                                                            <div class="mb-3">
+                                                                <small class="text-muted d-block mb-2">Overall Rating</small>
+                                                                <% [5,4,3,2,1].forEach(star => { 
+                                                                    const count = ratings.filter(r => r.rating === star).length;
+                                                                    const percentage = property?.ratingCount > 0 ? (count / property?.ratingCount) * 100 : 0;
+                                                                %>
+                                                                    <div class="d-flex align-items-center mb-2">
+                                                                        <div class="text-nowrap me-2" style="width: 80px;">
+                                                                            <%= star %> <i class="fas fa-star text-warning"></i>
+                                                                        </div>
+                                                                        <div class="progress flex-grow-1" style="height: 10px;">
+                                                                            <div class="progress-bar bg-warning" 
+                                                                                role="progressbar" 
+                                                                                style="width: <%= percentage %>%" 
+                                                                                aria-valuenow="<%= percentage %>" 
+                                                                                aria-valuemin="0" 
+                                                                                aria-valuemax="100"></div>
+                                                                        </div>
+                                                                        <div class="ms-2 text-muted" style="width: 40px;">
+                                                                            <%= count %>
+                                                                        </div>
+                                                                    </div>
+                                                                <% }); %>
+                                                            </div>
+                                                            
+                                                            <div class="category-ratings">
+                                                                <div class="mb-3">
+                                                                    <small class="text-muted d-block mb-1">Comfort</small>
+                                                                    <div class="d-flex align-items-center">
+                                                                        <div class="text-nowrap me-2" style="width: 80px;">
+                                                                            <%= property?.averageComfortableRating.toFixed(1) %> <i class="fas fa-star text-warning"></i>
+                                                                        </div>
+                                                                        <div class="progress flex-grow-1" style="height: 10px;">
+                                                                            <div class="progress-bar bg-info" 
+                                                                                role="progressbar" 
+                                                                                style="width: <%= (property?.averageComfortableRating/5)*100 %>%" 
+                                                                                aria-valuenow="<%= property?.averageComfortableRating %>" 
+                                                                                aria-valuemin="0" 
+                                                                                aria-valuemax="5"></div>
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                                
+                                                                <div class="mb-3">
+                                                                    <small class="text-muted d-block mb-1">Cleanliness</small>
+                                                                    <div class="d-flex align-items-center">
+                                                                        <div class="text-nowrap me-2" style="width: 80px;">
+                                                                            <%= property?.averageCleanlinessRating.toFixed(1) %> <i class="fas fa-star text-warning"></i>
+                                                                        </div>
+                                                                        <div class="progress flex-grow-1" style="height: 10px;">
+                                                                            <div class="progress-bar bg-success" 
+                                                                                role="progressbar" 
+                                                                                style="width: <%= (property?.averageCleanlinessRating/5)*100 %>%" 
+                                                                                aria-valuenow="<%= property?.averageCleanlinessRating %>" 
+                                                                                aria-valuemin="0" 
+                                                                                aria-valuemax="5"></div>
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                                
+                                                                <div class="mb-3">
+                                                                    <small class="text-muted d-block mb-1">Facilities</small>
+                                                                    <div class="d-flex align-items-center">
+                                                                        <div class="text-nowrap me-2" style="width: 80px;">
+                                                                            <%= property?.averageFacilitiesRating.toFixed(1) %> <i class="fas fa-star text-warning"></i>
+                                                                        </div>
+                                                                        <div class="progress flex-grow-1" style="height: 10px;">
+                                                                            <div class="progress-bar bg-primary" 
+                                                                                role="progressbar" 
+                                                                                style="width: <%= (property?.averageFacilitiesRating/5)*100 %>%" 
+                                                                                aria-valuenow="<%= property?.averageFacilitiesRating %>" 
+                                                                                aria-valuemin="0" 
+                                                                                aria-valuemax="5"></div>
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                
+                                                <div class="col-md-8">
+                                                    <% if (ratings.length > 0) { %>
+                                                        <% ratings.forEach(rating => { %>
+                                                            <div class="card mb-3">
+                                                                <div class="card-body">
+                                                                    <div class="d-flex justify-content-between">
+                                                                        <div class="d-flex align-items-center">
+                                                                            <% if (rating.guestId.profileImage) { %>
+                                                                                <img src="<%= rating.guestId.profileImage %>" onerror="this.onerror=null;this.src='/temp/default-user.png'" class="rounded-circle me-3" width="50" height="50"  >
+                                                                            <% } else { %>
+                                                                                    <img src="/temp/default-user.png" class="rounded-circle me-2"  width="50" height="50">
+                                                                            <% } %>
+                                                                            <div>
+                                                                                <h6 class="mb-0"><%= rating.guestId.firstName %> <%= rating.guestId.lastName %></h6>
+                                                                                <small class="text-muted">
+                                                                                    Booking #<%= rating.bookingId.bookingId %>
+                                                                                </small>
+                                                                            </div>
+                                                                        </div>
+                                                                        <div class="text-end">
+                                                                            <div class="star-rating">
+                                                                                <% for (let i = 1; i <= 5; i++) { %>
+                                                                                    <i class="fas fa-star <%= i <= rating.rating ? 'text-warning' : 'text-secondary' %>"></i>
+                                                                                <% } %>
+                                                                            </div>
+                                                                            <small class="text-muted">
+                                                                                <%= formatDate(rating.createdAt) %>
+                                                                            </small>
+                                                                        </div>
+                                                                    </div>
+                                                                    
+                                                                    <!-- Category Ratings for each review -->
+                                                                    <div class="row mt-3">
+                                                                        <div class="col-md-4">
+                                                                            <small class="text-muted">Comfort</small>
+                                                                            <div class="star-rating small">
+                                                                                <% for (let i = 1; i <= 5; i++) { %>
+                                                                                    <i class="fas fa-star <%= i <= rating.comfortableRating ? 'text-info' : 'text-secondary' %>"></i>
+                                                                                <% } %>
+                                                                            </div>
+                                                                        </div>
+                                                                        <div class="col-md-4">
+                                                                            <small class="text-muted">Cleanliness</small>
+                                                                            <div class="star-rating small">
+                                                                                <% for (let i = 1; i <= 5; i++) { %>
+                                                                                    <i class="fas fa-star <%= i <= rating.cleanlinessRating ? 'text-success' : 'text-secondary' %>"></i>
+                                                                                <% } %>
+                                                                            </div>
+                                                                        </div>
+                                                                        <div class="col-md-4">
+                                                                            <small class="text-muted">Facilities</small>
+                                                                            <div class="star-rating small">
+                                                                                <% for (let i = 1; i <= 5; i++) { %>
+                                                                                    <i class="fas fa-star <%= i <= rating.facilitiesRating ? 'text-primary' : 'text-secondary' %>"></i>
+                                                                                <% } %>
+                                                                            </div>
+                                                                        </div>
+                                                                    </div>
+                                                                    
+                                                                    <% if (rating.review) { %>
+                                                                        <div class="mt-3">
+                                                                            <p class="mb-0"><%= rating.review %></p>
+                                                                        </div>
+                                                                    <% } %>
+                                                                </div>
+                                                            </div>
+                                                        <% }); %>
+                                                    <% } else { %>
+                                                        <div class="text-center py-5">
+                                                            <i class="fas fa-star fa-3x text-muted mb-3"></i>
+                                                            <h5>No Ratings Yet</h5>
+                                                            <p class="text-muted">This property hasn't received any ratings yet.</p>
+                                                        </div>
+                                                    <% } %>
+                                                </div>
+                                            <% } else{ %>
+                                                 <div class="text-center py-4">
+                                                    <i class="fas fa-star fa-3x text-muted mb-3"></i>
+                                                    <h5>No Reviews</h5>
+                                                    <p class="text-muted">This guest hasn't reviewed any properties yet.</p>
+                                                </div>
+                                            <% }  %>
+                                        </div>
+                                    </div>
+
+                                    <div class="tab-pane fade" id="payments" role="tabpanel">
+                                        <div class="row">
+                                            <div class="col-md-6">
+                                                <div class="card mb-4">
+                                                    <div class="card-body">
+                                                        <h5 class="card-title mb-4">Financial Summary</h5>
+                                                        
+                                                        <!-- Booking Counts -->
+                                                        <div class="row mb-4">
+                                                            <div class="col-md-4 text-center p-2">
+                                                                <h6 class="mb-1">Total Bookings</h6>
+                                                                <h4 class="text-primary"><%=  paymentSummary.bookingsCount %></h4>
+                                                            </div>
+                                                            <div class="col-md-4 text-center p-2">
+                                                                <h6 class="mb-1">Completed</h6>
+                                                                <h4 class="text-success"><%= paymentSummary.completedBookings %></h4>
+                                                            </div>
+                                                            <div class="col-md-4 text-center p-2">
+                                                                <h6 class="mb-1">Cancelled</h6>
+                                                                <h4 class="text-danger"><%= paymentSummary.cancelledBookings %></h4>
+                                                            </div>
+                                                        </div>
+                                                        
+                                                        <!-- Financial Breakdown -->
+                                                        <div class="border rounded p-3 mb-3">
+                                                            <div class="d-flex justify-content-between mb-2">
+                                                                <span>Total Amount Before Tax:</span>
+                                                                <strong><%= formatPrice(paymentSummary.totalAmountBeforeTax) %></strong>
+                                                            </div>
+
+                                                            <div class="d-flex justify-content-between mb-2">
+                                                                <span>Taxes:</span>
+                                                                <strong>+<%= formatPrice(paymentSummary.totalTaxAmount) %></strong>
+                                                            </div>
+                                                            
+                                                            
+                                                            <div class="d-flex justify-content-between mb-2">
+                                                                <span>Discounts Given:</span>
+                                                                <strong class="text-danger">-<%= formatPrice(paymentSummary.totalDiscountAmount) %></strong>
+                                                            </div>
+                                                            
+                                                            <div class="d-flex justify-content-between mb-2">
+                                                                <span>Extra Services:</span>
+                                                                <strong class="text-success">+<%= formatPrice(paymentSummary.extraFeaturesTotal) %></strong>
+                                                            </div>
+                                                            
+                                                            <!-- <div class="d-flex justify-content-between mb-2">
+                                                                <span>Cleaning Fees:</span>
+                                                                <strong class="text-success">+<%= formatPrice(paymentSummary.cleaningFeeAmount) %></strong>
+                                                            </div> -->
+                                                            
+                                                    
+                                                            <hr>
+                                                            
+                                                            <div class="d-flex justify-content-between mb-2 fw-bold">
+                                                                <span>Final Amount Collected:</span>
+                                                                <strong class="text-success"><%= formatPrice(paymentSummary.finalAmount) %></strong>
+                                                            </div>
+                                                            
+                                                            <div class="d-flex justify-content-between mb-2">
+                                                                <span>Refunds Issued:</span>
+                                                                <strong class="text-danger">-<%= formatPrice(paymentSummary.totalRefundAmount) %></strong>
+                                                            </div>
+                                                            
+                                                            <!-- <div class="d-flex justify-content-between mb-2">
+                                                                <span>Penalty Amount Collected:</span>
+                                                                <strong class="text-success">+<%= formatPrice(paymentSummary.totalPenaltyAmount) %></strong>
+                                                            </div> -->
+                                                            
+                                                            <hr>
+                                                            
+                                                            <!-- Platform Earnings Calculation -->
+                                                            <div class="d-flex justify-content-between mb-2">
+                                                                <span>Platform Fee :</span>
+                                                                <strong class="text-info">-<%= formatPrice(paymentSummary.totalTaxAmount) %></strong>
+                                                            </div>
+                                                            
+                                                            <!-- Host Earnings -->
+                                                            <div class="d-flex justify-content-between fw-bold fs-5 mt-3">
+                                                                <span>Host Total Earnings:</span>
+                                                                <strong class="text-success">
+                                                                    <%= formatPrice(paymentSummary.finalAmount - (paymentSummary.totalRefundAmount +  paymentSummary.totalTaxAmount)) %>
+                                                                </strong>
+                                                            </div>
+                                                        </div>
+
+                                                        <!-- Summary Stats -->
+                                                        <div class="row text-center">
+                                                            <div class="col-md-6 mb-2">
+                                                                <div class="border rounded p-2 bg-light">
+                                                                    <small class="text-muted">Avg. Booking Value</small>
+                                                                    <h6 class="mb-0">
+                                                                        <%= formatPrice(paymentSummary.bookingsCount > 0 ? (paymentSummary.finalAmount / paymentSummary.bookingsCount): 0) %>
+                                                                    </h6>
+                                                                </div>
+                                                            </div>
+                                                            <div class="col-md-6 mb-2">
+                                                                <div class="border rounded p-2 bg-light">
+                                                                    <small class="text-muted">Cancellation Rate</small>
+                                                                    <h6 class="mb-0">
+                                                                        <%= (paymentSummary.bookingsCount > 0 ? ((paymentSummary.cancelledBookings / paymentSummary.bookingsCount) * 100).toFixed(2) : 0) %>%
+                                                                    </h6>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                
+                                                <div class="card">
+                                                    <div class="card-body">
+                                                        <h5 class="card-title mb-4">Recent Transactions</h5>
+                                                        <% if (recentTransactions.length > 0) { %>
+                                                            <div class="list-group">
+                                                                <% recentTransactions.forEach(transaction => { %>
+                                                                    <div class="list-group-item">
+                                                                        <div class="d-flex justify-content-between align-items-center">
+                                                                            <div>
+                                                                                <p class="mb-1">Transaction Type: <%= transaction.gateway %></p>
+                                                                                <h6 class="mb-1">Transaction #<%= transaction.gatewayOrderId %></h6>
+                                                                                <small class="text-muted">
+                                                                                    <%= formatDate(transaction.createdAt) %>
+                                                                                </small>
+                                                                            </div>
+                                                                            <div class="text-end">
+                                                                                <h6 class="mb-1 text-success"><%= formatPrice(transaction.totalAmount) %></h6>
+                                                                                <span class="badge bg-<%= transaction.status === 'paid' ? 'success' : 'warning' %>">
+                                                                                    <%= transaction.status.charAt(0).toUpperCase() + transaction.status.slice(1) %>
+                                                                                </span>
+                                                                            </div>
+                                                                        </div>
+                                                                    </div>
+                                                                <% }); %>
+                                                            </div>
+                                                        <% } else { %>
+                                                            <div class="alert alert-info mb-0">No payout history yet</div>
+                                                        <% } %>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            
+                                            <div class="col-md-6">
+                                                
+                                                <div class="card">
+                                                    <div class="card-body">
+                                                        <h5 class="card-title mb-4">Cancellations & Refunds</h5>
+                                                        <% if (cancellations.length > 0) { %>
+                                                            <div class="list-group">
+                                                                <% cancellations.forEach(booking => { %>
+                                                                    <div class="list-group-item">
+                                                                        <div class="d-flex justify-content-between">
+                                                                            <div>
+                                                                                <h6 class="mb-1">#<%= booking.bookingId %></h6>
+                                                                                <small class="text-muted">
+                                                                                    <%= formatDate(booking.cancellation.cancellationDate) %>
+                                                                                    • <%= booking.cancellation.cancelledBy %>
+                                                                                </small>
+                                                                            </div>
+                                                                            <div class="text-end">
+                                                                                <h6 class="mb-1 text-danger">Penalty Amount <%= formatPrice(booking.cancellation.penaltyAmount) %></h6>
+                                                                                <h6 class="mb-1 text-danger">Refund Amount <%= formatPrice(booking.cancellation.refundAmount) %></h6>
+                                                                            </div>
+                                                                        </div>
+                                                                        <div class="mt-2 small">
+                                                                            <strong>Reason:</strong> <%= booking.cancellation.cancellationReason %>
+                                                                        </div>
+                                                                    </div>
+                                                                <% }); %>
+                                                            </div>
+                                                        <% } else { %>
+                                                            <div class="alert alert-success mb-0">No cancellations</div>
+                                                        <% } %>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="tab-pane fade" id="calendar" role="tabpanel">
+                                        <div class="row">
+                                                <div class="col-12">
+                                                    <div id="calendar" class="p-3"></div>
+                                                </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                  <%- include('../../../../partials/footer') %>
+                  <div class="content-backdrop fade"></div>
+                </div>
+            </div>
+        </div>
+        <div class="layout-overlay layout-menu-toggle"></div>
+    </div>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+        let propertyId = `<%= property._id %>`
+        $(document).ready(function() {
+            initializeCalendar(propertyId);
+        });
+
+        let currentMonthOffset = 0;
+        let propertyCalendarData = null;
+
+        function initializeCalendar(propertyId) {
+            const today = new Date();
+            const year = today.getFullYear();
+            const month = today.getMonth() + 1; // API expects 1-based month
+            fetchCalendarData(propertyId, year, month);
+        }
+
+        function fetchCalendarData(propertyId, year, month) {
+            $('#calendar').html('<div class="text-center">Loading calendar...</div>');
+
+            $.ajax({
+                url: `/api/v1/common/getpropertyCalendar?propertyId=${propertyId}&year=${year}&month=${month}`,
+                method: 'GET',
+                success: function (res) {
+                    console.log(res);
+                    if (res.status && res.data) {
+                        propertyCalendarData = res.data;
+                        renderCalendar();
+                    } else {
+                        $('#calendar').html('<div class="text-center text-danger">Failed to load calendar data.</div>');
+                    }
+                },
+                error: function () {
+                    $('#calendar').html('<div class="text-center text-danger">Error loading calendar.</div>');
+                }
+            });
+        }
+
+        function renderCalendar() {
+            const today = new Date();
+            const targetDate = new Date(today.getFullYear(), today.getMonth() + currentMonthOffset, 1);
+            const year = targetDate.getFullYear();
+            const month = targetDate.getMonth();
+            const daysInMonth = new Date(year, month + 1, 0).getDate();
+            const firstDay = new Date(year, month, 1).getDay();
+
+            const monthName = targetDate.toLocaleString('default', { month: 'long', year: 'numeric' });
+
+            // Create date status map
+            const dateStatusMap = {};
+            if (propertyCalendarData) {
+                propertyCalendarData.forEach(item => {
+                    const dateObj = new Date(item.date);
+                    const dateKey = dateObj.toISOString().split('T')[0];
+                    dateStatusMap[dateKey] = item;
+                });
+            }
+
+            let calendarHtml = `
+                <div class="container calendar-container">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <button class="btn btn-outline-secondary btn-sm px-3" onclick="changeMonth(-1)">
+                            <i class="fa fa-chevron-left"></i> Previous
+                        </button>
+                        <h4 class="mb-0 fw-bold text-primary">${monthName}</h4>
+                        <button class="btn btn-outline-secondary btn-sm px-3" onclick="changeMonth(1)">
+                            Next <i class="fa fa-chevron-right"></i>
+                        </button>
+                    </div>
+                    <table class="table table-bordered calendar-table">
+                        <thead>
+                            <tr class="bg-light">
+                                <th scope="col" class="text-center text-muted">Sun</th>
+                                <th scope="col" class="text-center text-muted">Mon</th>
+                                <th scope="col" class="text-center text-muted">Tue</th>
+                                <th scope="col" class="text-center text-muted">Wed</th>
+                                <th scope="col" class="text-center text-muted">Thu</th>
+                                <th scope="col" class="text-center text-muted">Fri</th>
+                                <th scope="col" class="text-center text-muted">Sat</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+            `;
+
+            let currentRow = '<tr>';
+            // Add empty cells before first day
+            for (let i = 0; i < firstDay; i++) {
+                currentRow += '<td class="empty-cell"></td>';
+            }
+
+            // Add days
+            for (let day = 1; day <= daysInMonth; day++) {
+                const date = new Date(Date.UTC(year, month, day));
+                const dateKey = date.toISOString().split('T')[0];
+                const dateItem = dateStatusMap[dateKey];
+                const dayOfWeek = date.getDay();
+
+                let cellClass = 'p-3 calendar-cell';
+                let statusText = '';
+                let priceText = '';
+                let beforeTaxPriceText = '';
+                let bookingNumberText = '';
+
+                if (dateItem) {
+                    if (dateItem.status === 'booked') {
+                        cellClass += ' bg-light-success';
+                        statusText = `<a href="/property/booking/${dateItem.bookingId?._id}/show" class="badge bg-success text-white">${dateItem.bookingId?.guestName || 'Booked'}</a>`;
+                        bookingNumberText = dateItem.bookingId?.bookingId ? `<span class="badge bg-info text-dark booking-number">#${dateItem.bookingId.bookingId}</span>` : '';
+                    } else if (dateItem.status === 'blocked') {
+                        cellClass += ' bg-light-danger';
+                        statusText = '<span class="badge bg-danger text-white">Blocked</span>';
+                    }
+                    priceText = `${formatPrice(dateItem.price)}`;
+                    beforeTaxPriceText = `${formatPrice(dateItem.priceBeforeTax)}`;
+                } else {
+                    priceText = 'N/A';
+                    beforeTaxPriceText = 'N/A';
+                }
+
+                currentRow += `
+                    <td class="${cellClass}" style="vertical-align: top;">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <strong class="day-number">${day}</strong>
+                            ${statusText ? `<div>${statusText}</div>` : ''}
+                        </div>
+                        ${bookingNumberText ? `<div class="mt-1">${bookingNumberText}</div>` : ''}
+                        <div class="mt-2">
+                            <div class="text-muted small">Before Tax: ${beforeTaxPriceText}</div>
+                            <div class="text-muted small">Price: ${priceText}</div>
+                        </div>
+                    </td>
+                `;
+
+                if ((firstDay + day - 1) % 7 === 6) {
+                    calendarHtml += currentRow + '</tr>';
+                    currentRow = '<tr>';
+                }
+            }
+
+            // Fill remaining cells
+            if ((firstDay + daysInMonth - 1) % 7 !== 6) {
+                const totalCells = firstDay + daysInMonth;
+                const remainingCells = (7 - (totalCells % 7)) % 7;
+                for (let i = 0; i < remainingCells; i++) {
+                    currentRow += '<td class="empty-cell"></td>';
+                }
+                calendarHtml += currentRow + '</tr>';
+            }
+
+            calendarHtml += '</tbody></table></div>';
+            $('#calendar').html(calendarHtml);
+        }
+
+        function changeMonth(offset) {
+            currentMonthOffset += offset;
+            const targetDate = new Date(new Date().getFullYear(), new Date().getMonth() + currentMonthOffset, 1);
+            const year = targetDate.getFullYear();
+            const month = targetDate.getMonth() + 1; // API expects 1-based month
+            fetchCalendarData(propertyId, year, month);
+        }
+    </script>
+
+
+    <script>
+            $(document).ready(function() {
+                // Initial load of bookings
+                loadBookings();
+                
+                // Handle filter form submission
+                $('#bookingFilterForm').on('submit', function(e) {
+                    e.preventDefault();
+                    loadBookings();
+                    $('.dropdown-menu').removeClass('show'); // Close dropdown after applying filters
+                });
+                
+                // Function to load bookings via AJAX
+                function loadBookings(page = 1) {
+                    const search = $('#searchFilter').val();
+                    const status = $('#statusFilter').val();
+                    const propertyId = $('#propertyId').val();
+                    const dateRange = $('#dateRangeFilter').val();
+                    const propertyType = $('#propertyTypeFilter').val();
+                    
+                    $('#loadingSpinner').show();
+                    $('#bookingList').html('');
+                    $('#emptyState').addClass('d-none');
+                    
+                    $.ajax({
+                        url: '/property/bookings/filter',
+                        type: 'GET',
+                        data: {
+                            search: search,
+                            status: status,
+                            propertyId: propertyId,
+                            dateRange: dateRange,
+                            propertyType: propertyType,
+                            page: page
+                        },
+                        success: function(response) {
+                            $('#loadingSpinner').hide();
+                            
+                            if (response.bookings && response.bookings.length > 0) {
+                                renderBookings(response.bookings);
+                                renderPagination(response.totalPages, page);
+                            } else {
+                                $('#emptyState').removeClass('d-none');
+                                $('#paginationContainer').hide();
+                            }
+                        },
+                        error: function(xhr, status, error) {
+                            $('#loadingSpinner').hide();
+                            $('#emptyState').removeClass('d-none').find('h4').text('Error Loading Bookings');
+                            console.error('Error fetching bookings:', error);
+                        }
+                    });
+                }
+                
+                // Function to render bookings
+                function renderBookings(bookings) {
+                let html = `
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Booking ID</th>
+                                <th>Dates</th>
+                                <th>Guests</th>
+                                <th>Status</th>
+                                <th>Amount</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>`;
+                
+                bookings.forEach(booking => {
+                    let statusClass = '';
+                    let statusIcon = '';
+                    
+                    switch (booking.status) {
+                        case 'confirmed':
+                            statusClass = 'bg-primary';
+                            statusIcon = 'fa-check-circle';
+                            break;
+                        case 'completed':
+                            statusClass = 'bg-success';
+                            statusIcon = 'fa-check-double';
+                            break;
+                        case 'pending':
+                            statusClass = 'bg-warning text-dark';
+                            statusIcon = 'fa-clock';
+                            break;
+                        case 'cancelled':
+                            statusClass = 'bg-danger';
+                            statusIcon = 'fa-ban';
+                            break;
+                        default:
+                            statusClass = 'bg-secondary';
+                            statusIcon = 'fa-question-circle';
+                            break;
+                    }
+
+                    html += `
+                        <tr>
+                            <td class="fw-bold">#${booking.bookingId }</td>
+                            <td>
+                                <div>${formatDate(booking.startDate)}</div>
+                                <div class="small text-muted">${booking.totalNights} nights</div>
+                            </td>
+                            <td>
+                                <div>${booking.adults} Adults</div>
+                                ${booking.children > 0 ? `<div class="small">+${booking.children} Children</div>` : ''}
+                                ${booking.infants > 0 ? `<div class="small">+${booking.infants} Infants</div>` : ''}
+                            </td>
+                            <td>
+                                <span class="badge ${statusClass}">
+                                    <i class="fas ${statusIcon} me-1"></i>
+                                    ${booking.status.charAt(0).toUpperCase() + booking.status.slice(1)}
+                                </span>
+                            </td>
+                            <td class="fw-bold">₹${booking.totalAmount.toLocaleString()}</td>
+                            <td>
+                                <div class="d-flex gap-2">
+                                    <a href="/property/booking/${booking._id}/show" class="btn btn-sm btn-outline-primary" title="View Details">
+                                        <i class="fas fa-eye"></i>
+                                    </a>
+                                    <a href="/guest/${booking.guestId}/show" class="btn btn-sm btn-outline-secondary" title="Guest Info">
+                                        <i class="fas fa-user"></i>
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>`;
+                });
+                
+                html += `</tbody></table></div>`;
+                
+                $('#bookingList').html(html);
+                $('#paginationContainer').show();
+            }
+                // Function to render pagination
+                function renderPagination(totalPages, currentPage) {
+                    let html = '';
+                    const maxVisiblePages = 5; // Maximum pages to show around current page
+                    
+                    if (totalPages > 1) {
+                        // Previous button
+                        html += `<li class="page-item ${currentPage === 1 ? 'disabled' : ''}">
+                                    <a class="page-link" href="#" data-page="${currentPage - 1}">Previous</a>
+                                </li>`;
+                        
+                        // Always show first page
+                        html += `<li class="page-item ${currentPage === 1 ? 'active' : ''}">
+                                    <a class="page-link" href="#" data-page="1">1</a>
+                                </li>`;
+                        
+                        // Show ellipsis if current page is far from start
+                        if (currentPage > maxVisiblePages - 1) {
+                            html += `<li class="page-item disabled">
+                                        <span class="page-link">...</span>
+                                    </li>`;
+                        }
+                        
+                        // Calculate start and end pages to show
+                        let startPage = Math.max(2, currentPage - Math.floor(maxVisiblePages / 2));
+                        let endPage = Math.min(totalPages - 1, currentPage + Math.floor(maxVisiblePages / 2));
+                        
+                        // Adjust if we're near the start or end
+                        if (currentPage <= maxVisiblePages - 1) {
+                            endPage = maxVisiblePages;
+                        }
+                        if (currentPage >= totalPages - Math.floor(maxVisiblePages / 2)) {
+                            startPage = totalPages - maxVisiblePages + 1;
+                        }
+                        
+                        // Show page numbers around current page
+                        for (let i = startPage; i <= endPage; i++) {
+                            if (i > 1 && i < totalPages) { // Skip if it's first or last page (we show them separately)
+                                html += `<li class="page-item ${i === currentPage ? 'active' : ''}">
+                                            <a class="page-link" href="#" data-page="${i}">${i}</a>
+                                        </li>`;
+                            }
+                        }
+                        
+                        // Show ellipsis if current page is far from end
+                        if (currentPage < totalPages - Math.floor(maxVisiblePages / 2)) {
+                            html += `<li class="page-item disabled">
+                                        <span class="page-link">...</span>
+                                    </li>`;
+                        }
+                        
+                        // Always show last page if there's more than 1 page
+                        if (totalPages > 1) {
+                            html += `<li class="page-item ${currentPage === totalPages ? 'active' : ''}">
+                                        <a class="page-link" href="#" data-page="${totalPages}">${totalPages}</a>
+                                    </li>`;
+                        }
+                        
+                        // Next button
+                        html += `<li class="page-item ${currentPage === totalPages ? 'disabled' : ''}">
+                                    <a class="page-link" href="#" data-page="${currentPage + 1}">Next</a>
+                                </li>`;
+                    }
+                    
+                    $('#pagination').html(html);
+                    
+                    // Attach pagination click handlers
+                    $('.page-link').on('click', function(e) {
+                        e.preventDefault();
+                        const page = $(this).data('page');
+                        if (!$(this).parent().hasClass('disabled')) {
+                            loadBookings(page);
+                        }
+                    });
+                }
+                // Function to format date
+                function formatDate(dateString) {
+                    const options = { year: 'numeric', month: 'short', day: 'numeric' };
+                    return new Date(dateString).toLocaleDateString('en-IN', options);
+                }
+                
+                
+            });
+    </script>
+
+
+    <script>
+        var map = L.map('map').setView([<%= property?.coordinates?.coordinates[1] %>, <%= property?.coordinates?.coordinates[0] %>], 15);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        }).addTo(map);
+        L.marker([<%= property?.coordinates?.coordinates[1] %>, <%= property?.coordinates?.coordinates[0] %>]).addTo(map);
+    </script>
+
+    <script>
+        function updateTopVacationStatus(propertyId, currentStatus) {
+            Swal.fire({
+                title: 'Change Property Status',
+                text: `Are you sure you want to mark this property as ${currentStatus ? 'STANDARD' : 'TOP VACATION'}?`,
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: '#3085d6',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Yes, update it!'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    const loadingSwal = Swal.fire({
+                        title: 'Updating...',
+                        allowOutsideClick: false,
+                        didOpen: () => {
+                            Swal.showLoading();
+                        }
+                    });
+
+                    // Debugging: Log before fetch
+                    console.log('Attempting to fetch...');
+                    
+                    fetch(`/property/${propertyId}/update-top-vacation`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content || ''
+                        },
+                        body: JSON.stringify({ status: !currentStatus })
+                    })
+                    .then(response => {
+                        console.log('Response received:', response); // Debugging
+                        if (!response.ok) {
+                            throw new Error(`HTTP error! status: ${response.status}`);
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        console.log('Data received:', data); // Debugging
+                        loadingSwal.close();
+                        if (data.success) {
+                            // Update the UI
+                            const badge = document.querySelector('.top-vacation-badge');
+                            if (badge) {
+                                badge.className = `badge bg-${data.topVacation ? 'primary' : 'secondary'}`;
+                                badge.textContent = data.topVacation ? 'TOP VACATION' : 'STANDARD';
+                            }
+                            
+                            Swal.fire(
+                                'Updated!',
+                                data.message,
+                                'success'
+                            );
+                        } else {
+                            throw new Error(data.message || 'Failed to update status');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Fetch error:', error); // Debugging
+                        loadingSwal.close();
+                        Swal.fire(
+                            'Error!',
+                            error.message || 'Failed to update status',
+                            'error'
+                        );
+                    });
+                }
+            });
+        }
+
+    </script>
+</body>

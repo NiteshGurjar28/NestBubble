@@ -1,0 +1,519 @@
+<body>
+    <div class="layout-wrapper layout-content-navbar">
+        <div class="layout-container">
+            <%- include('../../../../partials/sideBar') %>
+            <div class="layout-page">
+                <%- include('../../../../partials/header') %>
+                <div class="content-wrapper">
+                    <div class="admin-container">
+                        <div class="admin-header">
+                            <h2>Event Details</h2>
+                            <a href="/event" class="btn btn-gradient">
+                                <i class="fas fa-arrow-left mr-2"></i>Back
+                            </a>
+                        </div>
+
+                        <!-- Event Details Card -->
+                        <div class="card mb-4">
+                            <div class="card-header d-flex justify-content-between align-items-center">
+                                <span class="badge bg-<%= event.eventType === 'public' ? 'success' : event.eventType === 'private' ? 'danger' : 'info' %> me-2">
+                                    <%= event.eventType.charAt(0).toUpperCase() + event.eventType.slice(1) %>
+                                </span>
+                                <div class="d-flex">
+                                     <% if(adminPerms.includes('event-edit')) { %>
+                                        <a href="/event/<%= event._id %>/edit" class="btn btn-primary me-2">
+                                            <i class="fas fa-edit me-1"></i> Edit
+                                        </a>
+                                    <% } %>
+                                    <% if(adminPerms.includes('event-member')) { %>
+                                        <a href="/event/<%= event._id %>/member" class="btn btn-primary me-2">
+                                            <i class="fas fa-users me-1"></i> Members
+                                        </a>
+                                    <% } %>
+                                </div>
+                            </div>
+                            
+                            <div class="card-body">
+                                <!-- Main Event Info -->
+                                <div class="row">
+                                    <!-- Images Section -->
+                                    <div class="col-lg-5 mb-4">
+                                    <% if (event.images && event.images.length > 0) { %>
+                                        <div id="eventCarousel" class="carousel slide" data-bs-ride="carousel">
+                                        <div class="carousel-inner rounded-3">
+                                            <% event.images.forEach((image, index) => { %>
+                                            <div class="carousel-item <%= index === 0 ? 'active' : '' %>">
+                                                <img src="<%= image.url %>" class="d-block w-100 rounded" alt="Event image" style="height: 300px; object-fit: cover;" onerror="this.onerror=null;this.src='/assets/img/default-event.jpg'">
+                                                <% if (image.caption) { %>
+                                                <div class="carousel-caption d-none d-md-block bg-dark bg-opacity-50 rounded p-2">
+                                                    <p class="mb-0"><%= image.caption %></p>
+                                                </div>
+                                                <% } %>
+                                            </div>
+                                            <% }); %>
+                                        </div>
+                                        <% if (event.images.length > 1) { %>
+                                            <button class="carousel-control-prev" type="button" data-bs-target="#eventCarousel" data-bs-slide="prev">
+                                                <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                                                <span class="visually-hidden">Previous</span>
+                                            </button>
+                                            <button class="carousel-control-next" type="button" data-bs-target="#eventCarousel" data-bs-slide="next">
+                                                <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                                                <span class="visually-hidden">Next</span>
+                                            </button>
+                                        <% } %>
+                                        </div>
+                                    <% } else { %>
+                                        <div class="bg-light rounded d-flex align-items-center justify-content-center" style="height: 300px;">
+                                        <i class="fas fa-calendar-alt fa-4x text-muted"></i>
+                                        </div>
+                                    <% } %>
+                                    </div>
+                                    
+                                    <!-- Details Section -->
+                                    <div class="col-lg-7">
+                                        <div class="d-flex justify-content-between align-items-start mb-3">
+                                            <div>
+                                            <h2 class="mb-1"><%= event.title %></h2>
+                                                <div class="d-flex align-items-center mb-2">
+                                                    <span class="badge bg-<%= event.status === 'upcoming' ? 'success' : event.status === 'cancelled' ? 'danger' : 'info' %> me-2">
+                                                        <%= event.status.charAt(0).toUpperCase() + event.status.slice(1) %>
+                                                    </span>
+
+                                                    <span class="text-muted">
+                                                        <i class="fas fa-tag me-1"></i><%= event.categoryId.name %>
+                                                    </span>
+                                                </div>
+                                            </div>
+                                            <h3 class="text-primary mb-0">
+                                                <%= formatPrice(event.price) %>
+                                            </h3>
+                                        </div>
+                                        
+                                        <div class="mb-4">
+                                            <div class="d-flex align-items-center mb-2">
+                                                <i class="fas fa-calendar-alt text-primary me-2"></i>
+                                                <span>
+                                                    <%= formatDate(event.startDate, { format: 'full' }) %> - <%= formatDate(event.endDate, { format: 'full' }) %>
+                                                </span>
+                                            </div>
+
+                                            <div class="d-flex align-items-center mb-2">
+                                                <i class="fas fa-clock text-primary me-2"></i>
+                                                <span>
+                                                    <% function formatTime(timeString) {
+                                                        if (!timeString) return '';
+                                                        
+                                                        // Split into hours and minutes
+                                                        const [hours, minutes] = timeString.split(':');
+                                                        const hourNum = parseInt(hours);
+                                                        
+                                                        // Convert to 12-hour format
+                                                        const period = hourNum >= 12 ? 'PM' : 'AM';
+                                                        const displayHour = hourNum % 12 || 12; // Convert 0 to 12
+                                                        
+                                                        return `${displayHour}:${minutes} ${period}`;
+                                                    } %>
+                                                    <%= formatTime(event.startTime) %> - <%= formatTime(event.endTime) %>
+                                                </span>
+                                            </div>
+                                            
+                                            <div class="d-flex align-items-center mb-2">
+                                                <i class="fas fa-users text-primary me-2"></i>
+                                                <span>
+                                                    <%= event.currentAttendees %>/<%= event.maxParticipants %> attendees
+                                                    <% if (event.ageRestriction !== 'All Ages') { %>
+                                                    (Age <%= event.ageRestriction %>+)
+                                                    <% } %>
+                                                </span>
+                                            </div>
+                                            
+                                            <div class="d-flex align-items-center mb-2">
+                                                <i class="fas fa-map-marker-alt text-primary me-2"></i>
+                                                <span>
+                                                    <%= event?.location?.address || 'Location not provided' %>
+                                                </span>
+                                            </div>
+                                            
+                                            
+                                            <div class="d-flex align-items-center">
+                                                <i class="fas fa-user-circle text-primary me-2"></i>
+                                                <span>
+                                                 <% if (event.createdBy.userId) { %>
+                                                    <div class="d-flex align-items-center mt-2">
+                                                        <div class="me-2">
+                                                            <div class="position-relative">
+                                                                <% if (event.createdBy.userId.profileImage) { %>
+                                                                    <img src="<%= event.createdBy.userId.profileImage %>" 
+                                                                        class="rounded-circle" 
+                                                                        width="32" 
+                                                                        height="32" 
+                                                                        alt="profile image" onerror="this.onerror=null;this.src='/temp/default-user.png'">
+                                                                <% } else { %>
+                                                                        <img src="/temp/default-user.png" 
+                                                                        class="rounded-circle" 
+                                                                        width="32" 
+                                                                        height="32" 
+                                                                        alt="profile image">
+                                                                <% } %>
+                                                                <% if (event?.createdBy?.userId?.hostVerified) { %>
+                                                                    <span class="position-absolute bottom-0 end-0 rounded-circle p-0">
+                                                                        <i class="fas fa-check-circle text-primary"></i>
+                                                                    </span>
+                                                                <% } %>
+                                                            </div>
+                                                        </div>
+                                                        <div>
+                                                            <% if(event.createdBy.role === 'guest'){ %>
+                                                                <a href="/guest/<%= event.createdBy.userId._id %>/show" 
+                                                                    class="text-decoration-none">
+                                                                    <%= event.createdBy.userId.firstName %> <%= event.createdBy.userId.lastName %>
+                                                                </a>
+                                                            <% } else if(event.createdBy.role === 'host'){ %>
+                                                                <a href="/host/<%= event.createdBy.userId._id %>/show" 
+                                                                    class="text-decoration-none">
+                                                                    <%= event.createdBy.userId.firstName %> <%= event.createdBy.userId.lastName %>
+                                                                </a>
+                                                            <% } %>
+                                                            <div class="text-muted small">
+                                                                <%= event.createdBy.role.toUpperCase() %>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <% } else { %>
+                                                    <span class="text-muted">System-generated</span>
+                                                    <% } %>
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="row mt-4">
+                                    <!-- Organizer Details Sections -->
+                                    <div class="col-md-6 mb-4">
+                                        <div class="card h-100">
+                                            <div class="card-body">
+                                                <div class="row">
+                                                    <div class="col-md-6">
+                                                        <h6>Organizer Details:</h6>
+                                                        <ul class="list-unstyled">
+                                                            <li class="mb-2">
+                                                                <i class="fas fa-user text-primary me-2"></i>
+                                                                <% event.organizer?.firstName %> <%= event.organizer?.lastName %> 
+                                                            </li>
+                                                            <li class="mb-2">
+                                                                <i class="fas fa-envelope text-primary me-2"></i>
+                                                                <%= event.organizer?.email %>
+                                                            </li>
+                                                            <li class="mb-2">
+                                                                <i class="fas fa-phone text-primary me-2"></i>
+                                                                <%= event.organizer?.mobileNumber %>
+                                                            </li>
+                                                        </ul>
+                                                    </div>
+                                                    <div class="col-md-6">
+                                                        <% if (event.eventLanguage && event.eventLanguage.length > 0) { %>
+                                                            <h6>Languages:</h6>
+                                                            <div class="d-flex flex-wrap gap-2">
+                                                                <% event.eventLanguage.forEach(lang => { %>
+                                                                <span class="badge bg-info"><%= lang %></span>
+                                                                <% }); %>
+                                                            </div>
+                                                        <% } %>
+                                                    </div>
+                                                    <div class="col-md-12">
+                                                        <h6>Description: </h6>
+                                                        <p class="text-muted"><%= event.description %></p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="col-md-6 mb-4">
+                                        <div class="card h-100">
+                                            <div class="card-body">
+                                                <div class="row"> 
+                                                    <div class="col-md-6">
+                                                        <h6>Included Items:</h6>
+                                                        <% if (event.includedItems && event.includedItems.length > 0) { %>
+                                                            <ul class="list-unstyled">
+                                                            <% event.includedItems.forEach(item => { %>
+                                                                <li class="mb-2">
+                                                                <i class="fas fa-check-circle text-success me-2"></i>
+                                                                <%= item %>
+                                                                </li>
+                                                            <% }); %>
+                                                            </ul>
+                                                        <% } else { %>
+                                                            <p class="text-muted">No special Included Items</p>
+                                                        <% } %>
+                                                    </div>
+
+                                                     <div class="col-md-6">
+                                                        <h6>What To Bring:</h6>
+                                                        <% if (event.whatToBring && event.whatToBring.length > 0) { %>
+                                                            <ul class="list-unstyled">
+                                                            <% event.whatToBring.forEach(item => { %>
+                                                                <li class="mb-2">
+                                                                <i class="fas fa-check-circle text-success me-2"></i>
+                                                                <%= item %>
+                                                                </li>
+                                                            <% }); %>
+                                                            </ul>
+                                                        <% } else { %>
+                                                            <p class="text-muted">No special What To Bring listed</p>
+                                                        <% } %>
+                                                    </div>
+                                                    <div class="col-md-12">
+                                                        <h6 class="mt-3 mb-2">Terms Agreement:</h6>
+                                                        <p class="text-muted"><%= event?.termsAgreement %></p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                </div>
+                            
+                                <!-- Additional Sections -->
+                                <div class="row mt-4">
+                                    <div class="col-md-6 mb-4">
+                                        <div class="card h-100">
+                                            <div class="card-header d-flex justify-content-between align-items-center">
+                                                <h5 class="mb-0">Cancellation Details</h5>
+                                                <% if (event.status === 'cancelled') { %>
+                                                    <span class="badge bg-danger">Cancelled</span>
+                                                <% } else if (event.cancelRequest) { %>
+                                                    <span class="badge bg-warning text-dark">Cancellation Requested</span>
+                                                <% } %>
+                                            </div>
+                                            <div class="card-body">
+                                                <% if (event.status === 'cancelled') { %>
+                                                    <!-- Show cancellation details if already cancelled -->
+                                                    <div class="mb-3">
+                                                        <h6>Cancellation Information</h6>
+                                                        <p><strong>Reason:</strong> <%= event.cancellationReason %></p>
+                                                        <p><strong>Cancelled By:</strong> 
+                                                            <%= event.cancelledBy.role === 'admin' ? 'Admin' : 'Host' %>
+                                                        </p>
+                                                        <p><strong>Cancelled At:</strong> 
+                                                            <%= formatDate(event.cancelledAt) %>
+                                                        </p>
+                                                    </div>
+                                                <% } else if (event.cancelRequest) { %>
+                                                    <!-- Show cancellation request and action buttons -->
+                                                    <% if(adminPerms.includes('event-cancel-request')) { %>
+                                                        <div class="mb-3">
+                                                            <p><strong>Requested By:</strong> Host</p>
+                                                            <p><strong>Requested At:</strong> 
+                                                                <%= formatDate(event.requestedAt) %>
+                                                            </p>
+                                                            <p><strong>Reason:</strong> <%= event.cancellationReason %></p>
+                                                        </div>
+                                                        
+                                                        <div class="d-flex gap-2">
+                                                            <button class="btn btn-danger" onclick="processCancellation('<%= event._id %>', 'approve')">
+                                                                Approve Cancellation
+                                                            </button>
+                                                        </div>
+                                                    <% } %>
+                                                <% } %>
+                                                
+                                                <!-- Admin direct cancellation (always shown if event isn't cancelled) -->
+                                                <% if(adminPerms.includes('event-cancel')) { %>
+                                                    <% if (event.status == 'upcoming') { %>
+                                                        <h6>Admin Cancellation</h6>
+                                                        <form id="adminCancelForm">
+                                                            <input type="hidden" name="eventId" value="<%= event._id %>">
+                                                            <div class="mb-3">
+                                                                <label for="cancelReason" class="form-label">Cancellation Reason</label>
+                                                                <textarea class="form-control" id="cancelReason" name="reason" rows="3" required></textarea>
+                                                            </div>
+                                                            <button type="submit" class="btn btn-danger">Cancel Event</button>
+                                                        </form>
+                                                    <% } %>
+                                                <% } %>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="card">
+                                            <div class="card-header d-flex justify-content-between align-items-center">
+                                                <h5 class="mb-0">Video</h5>
+                                            </div>
+                                            <div class="card-body">
+                                                <div class="ratio ratio-16x9">
+                                                    <video src="<%= event?.video %>" controls></video>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            
+                                <div class="row mt-2">
+                                    <div class="col-12">
+                                        <div class="card">
+                                            <div class="card-body">
+                                                <h4 class="card-title">Event Ratings</h4>
+                                                <div class="d-flex align-items-center mb-3">
+                                                    <div class="display-4 me-3">
+                                                        <%= averageRating %> <small class="text-muted">/ 5</small>
+                                                    </div>
+                                                    <div>
+                                                        <div class="star-rating">
+                                                        <% for(let i = 1; i <= 5; i++) { %>
+                                                            <i class="fas fa-star <%= i <= averageRating ? 'text-warning' : 'text-secondary' %>"></i>
+                                                        <% } %>
+                                                        </div>
+                                                        <p class="mb-0 text-muted"><%= ratingCount %> reviews</p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Reviews List -->
+                                <div class="mb-4">
+                                <h5 class="mb-3">Reviews</h5>
+                                
+                                    <% if (ratings.length === 0) { %>
+                                        <div class="alert alert-info">No reviews yet. Be the first to review!</div>
+                                    <% } else { %>
+                                        <div class="row">
+                                        <% ratings.forEach(rating => { %>
+                                            <div class="col-md-6 mb-3">
+                                            <div class="card h-100">
+                                                <div class="card-body">
+                                                    <div class="d-flex align-items-center mb-3">
+                                                        <% if (rating.userId.profileImage) { %>
+                                                        <img src="<%= rating.userId.profileImage %>" 
+                                                            class="rounded-circle me-3" 
+                                                            width="50" 
+                                                            height="50" 
+                                                            alt="<%= rating.userId.firstName %>"  onerror="this.onerror=null;this.src='/temp/default-user.png'">
+                                                        <% } else { %>
+                                                        <div class="rounded-circle bg-light text-center me-3" 
+                                                            style="width: 50px; height: 50px; line-height: 50px;">
+                                                            <i class="fas fa-user text-muted"></i>
+                                                        </div>
+                                                        <% } %>
+                                                        <div>
+                                                        <h6 class="mb-0"><%= rating.userId.firstName %> <%= rating.userId.lastName %></h6>
+                                                        <div class="star-rating small">
+                                                            <% for(let i = 1; i <= 5; i++) { %>
+                                                            <i class="fas fa-star <%= i <= rating.rating ? 'text-warning' : 'text-secondary' %>"></i>
+                                                            <% } %>
+                                                        </div>
+                                                        </div>
+                                                    </div>
+                                                    
+                                                    <% if (rating.review) { %>
+                                                        <p class="mb-2"><%= rating.review %></p>
+                                                    <% } %>
+                                                    
+                                                    <small class="text-muted">
+                                                        Reviewed on  <%=  formatDate(rating.createdAt) %>
+                                                    </small>
+                                                </div>
+                                            </div>
+                                            </div>
+                                        <% }); %>
+                                        </div>
+                                    <% } %>
+                                </div>
+
+
+
+                            </div>
+                        </div>
+                    </div>
+        
+                    <%- include('../../../../partials/footer') %>
+                    <div class="content-backdrop fade"></div>
+                </div>
+            </div>
+        </div>
+        <div class="layout-overlay layout-menu-toggle"></div>
+    </div>
+</body>
+
+<script>
+// Handle cancellation request approval/rejection
+function processCancellation(eventId, action) {
+    const reason = action === 'approve' ? 
+        `Approved: ${event.cancellationReason}` : 
+        'Cancellation request rejected by admin';
+    
+    Swal.fire({
+        title: `Are you sure you want to ${action} this cancellation?`,
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonText: `Yes, ${action}`,
+        cancelButtonText: 'Cancel'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            $.ajax({
+                url: `/event/${eventId}/cancel-request`,
+                method: 'POST',
+                data: { action },
+                success: function() {
+                    Swal.fire(
+                        'Success!',
+                        `Cancellation request ${action}d`,
+                        'success'
+                    ).then(() => location.reload());
+                },
+                error: function(xhr) {
+                    Swal.fire(
+                        'Error!',
+                        xhr.responseJSON?.message || 'Action failed',
+                        'error'
+                    );
+                }
+            });
+        }
+    });
+}
+
+// Handle admin direct cancellation
+$('#adminCancelForm').submit(function(e) {
+    e.preventDefault();
+    const formData = $(this).serialize();
+    
+    Swal.fire({
+        title: 'Confirm Event Cancellation',
+        text: 'This will cancel the event and notify all participants',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonText: 'Yes, cancel event',
+        cancelButtonText: 'Cancel'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            $.ajax({
+                url: '/event/cancel',
+                method: 'POST',
+                data: formData,
+                success: function() {
+                    Swal.fire(
+                        'Cancelled!',
+                        'Event has been cancelled',
+                        'success'
+                    ).then(() => location.reload());
+                },
+                error: function(xhr) {
+                    Swal.fire(
+                        'Error!',
+                        xhr.responseJSON?.message || 'Cancellation failed',
+                        'error'
+                    );
+                }
+            });
+        }
+    });
+});
+</script>
+
+

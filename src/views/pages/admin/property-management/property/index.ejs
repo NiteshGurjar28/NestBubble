@@ -1,0 +1,554 @@
+
+<body>
+<style>
+  .filter-indicator {
+    position: absolute;
+    top: -5px;
+    right: -5px;
+    width: 10px;
+    height: 10px;
+    background-color: #dc3545;
+    border-radius: 50%;
+    border: 2px solid #fff;
+  }
+  
+</style>
+    <div class="layout-wrapper layout-content-navbar">
+        <div class="layout-container">
+            <%- include('../../../../partials/sideBar') %>
+            <div class="layout-page">
+                <%- include('../../../../partials/header') %>
+                <div class="content-wrapper">
+                    <div class="admin-container">
+                        <div class="admin-header">
+                            <h2>Properties Management</h2>
+                            <button class="btn btn-primary position-relative" data-bs-toggle="collapse" data-bs-target="#filterPanel">
+                                <i class="bx bx-filter-alt"></i> Filters
+                                <% const hasActiveFilters = Object.keys(filterValues).some(key => 
+                                    key !== 'page' && key !== 'limit' && filterValues[key] !== '' && filterValues[key] !== undefined
+                                ); %>
+                                <% if (hasActiveFilters) { %>
+                                <span class="position-absolute top-0 start-100 translate-middle p-1 bg-danger border border-light rounded-circle">
+                                    <span class="visually-hidden">Active filters</span>
+                                </span>
+                                <% } %>
+                            </button>
+                        </div>
+                        <!-- Filter Panel -->
+                        <div class="card mb-4 collapse" id="filterPanel">
+                            <div class="card-body">
+                                <form id="propertyFilterForm" method="GET" action="/property">
+                                    <div class="row">
+                                        <div class="col-md-3">
+                                            <div class="form-group">
+                                                <label>Search</label>
+                                                <input type="text" class="form-control" name="search" 
+                                                    value="<%= filterValues.search || '' %>" 
+                                                    placeholder="Name, description, location...">
+                                            </div>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <div class="form-group">
+                                                <label>Host</label>
+                                                <select class="form-control" name="hostId">
+                                                    <option value="">All Hosts</option>
+                                                    <% hosts.forEach(host => { %>
+                                                        <option value="<%= host._id %>" 
+                                                            <%= filterValues.hostId == host._id.toString() ? 'selected' : '' %>>
+                                                            <%= host.firstName %> <%= host.lastName %>
+                                                        </option>
+                                                    <% }); %>
+                                                </select>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <div class="form-group">
+                                                <label>Location</label>
+                                                <input type="text" class="form-control" name="location" 
+                                                    value="<%= filterValues.location || '' %>" 
+                                                    placeholder="City or state">
+                                            </div>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <div class="form-group">
+                                                <label>Property Type</label>
+                                                <select class="form-control" name="propertyType">
+                                                    <option value="">All Types</option>
+                                                    <% propertyTypes.forEach(type => { %>
+                                                        <option value="<%= type._id %>" 
+                                                            <%= filterValues.propertyType == type._id.toString() ? 'selected' : '' %>>
+                                                            <%= type.name %>
+                                                        </option>
+                                                    <% }); %>
+                                                </select>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="row mt-3">
+                                        <div class="col-md-2">
+                                            <div class="form-group">
+                                                <label>Status</label>
+                                                <select class="form-control" name="status">
+                                                    <option value="">All</option>
+                                                    <option value="active" <%= filterValues.status === 'active' ? 'selected' : '' %>>Active</option>
+                                                    <option value="inactive" <%= filterValues.status === 'inactive' ? 'selected' : '' %>>Inactive</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-2">
+                                            <div class="form-group">
+                                                <label>Admin Status</label>
+                                                <select class="form-control" name="adminStatus">
+                                                    <option value="">All</option>
+                                                    <option value="pending" <%= filterValues.adminStatus === 'pending' ? 'selected' : '' %>>Pending</option>
+                                                    <option value="approved" <%= filterValues.adminStatus === 'approved' ? 'selected' : '' %>>Approved</option>
+                                                    <option value="rejected" <%= filterValues.adminStatus === 'rejected' ? 'selected' : '' %>>Rejected</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-2">
+                                            <div class="form-group">
+                                                <label>Min Price</label>
+                                                <input type="number" class="form-control" name="minPrice" 
+                                                    value="<%= filterValues.minPrice || '' %>" 
+                                                    placeholder="Min price">
+                                            </div>
+                                        </div>
+                                        <div class="col-md-2">
+                                            <div class="form-group">
+                                                <label>Max Price</label>
+                                                <input type="number" class="form-control" name="maxPrice" 
+                                                    value="<%= filterValues.maxPrice || '' %>" 
+                                                    placeholder="Max price">
+                                            </div>
+                                        </div>
+                                        <div class="col-md-2">
+                                            <div class="form-group">
+                                                <label>Rating</label>
+                                                <select class="form-control" name="rating">
+                                                    <option value="">All</option>
+                                                    <option value="top" <%= filterValues.rating === 'top' ? 'selected' : '' %>>Top Rated (4+)</option>
+                                                    <option value="low" <%= filterValues.rating === 'low' ? 'selected' : '' %>>Low Rated (2-)</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-2">
+                                            <div class="form-group">
+                                                <label></label>
+                                                <div class="form-check">
+                                                    <input class="form-check-input" type="checkbox" name="topVacation" 
+                                                        id="topVacation" value="true" 
+                                                        <%= filterValues.topVacation === 'true' ? 'checked' : '' %>>
+                                                    <label class="form-check-label" for="topVacation">
+                                                        Top Vacation
+                                                    </label>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="row mt-3">
+                                        <div class="col-md-2">
+                                            <div class="form-group">
+                                                <label>Guests</label>
+                                                <input type="number" class="form-control" name="guests" 
+                                                    value="<%= filterValues.guests || '' %>" 
+                                                    placeholder="Min guests">
+                                            </div>
+                                        </div>
+                                        <div class="col-md-2">
+                                            <div class="form-group">
+                                                <label>Bedrooms</label>
+                                                <input type="number" class="form-control" name="bedrooms" 
+                                                    value="<%= filterValues.bedrooms || '' %>" 
+                                                    placeholder="Min bedrooms">
+                                            </div>
+                                        </div>
+                                        <div class="col-md-2">
+                                            <div class="form-group">
+                                                <label>Bathrooms</label>
+                                                <input type="number" class="form-control" name="bathrooms" 
+                                                    value="<%= filterValues.bathrooms || '' %>" 
+                                                    placeholder="Min bathrooms">
+                                            </div>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <div class="form-group">
+                                                <label>Available From</label>
+                                                <input type="date" class="form-control" name="availableFrom" 
+                                                    value="<%= filterValues.availableFrom || '' %>">
+                                            </div>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <div class="form-group">
+                                                <label>Available To</label>
+                                                <input type="date" class="form-control" name="availableTo" 
+                                                    value="<%= filterValues.availableTo || '' %>">
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="row mt-3">
+                                        <div class="col-md-12 text-end">
+                                            <a href="/property" class="btn btn-secondary">Reset</a>
+                                            <button type="submit" class="btn btn-primary">Apply Filters</button>
+                                        </div>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+
+                        <!-- Properties Table -->
+                        <div class="card">
+                            <div class="card-body">
+                                <div class="table-responsive">
+                                    <table class="table table-bordered">
+                                        <thead class="table-light">
+                                            <tr>
+                                                <th>ID</th>
+                                                <th>Host</th>
+                                                <th>Thumbnail</th>
+                                                <th>Title</th>
+                                                <th>Type</th>
+                                                <th>Location</th>
+                                                <th>Price</th>
+                                                <th>Guests</th>
+                                                <th>Beds/Baths</th>
+                                                <th>Rating</th>
+                                                <th>Status</th>
+                                                <th>Admin Status</th>
+                                                <th>Actions</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <% if (properties.length === 0) { %>
+                                                <tr>
+                                                    <td colspan="13" class="text-center py-4">No properties found matching your filters</td>
+                                                </tr>
+                                            <% } %>
+                                            
+                                            <% properties.forEach(property => { %>
+                                            <tr>
+                                                <td><%= property.propertyUID %></td>
+                                               <td>
+                                                    <div class="d-flex align-items-center">
+                                                        <div class="position-relative">
+                                                            <a href="/host/<%= property?.owner?._id %>/show">
+                                                                <% if (property?.owner?.profileImage) { %>
+                                                                    <img src="<%= property?.owner?.profileImage %>" 
+                                                                        class="rounded-circle me-2" 
+                                                                        width="40" height="40" 
+                                                                        alt="<%= property?.owner?.firstName %>"
+                                                                        onerror="this.onerror=null;this.src='/temp/default-user.png'">
+                                                                <% } else { %>
+                                                                    <div class="avatar-placeholder rounded-circle me-2">
+                                                                        <img src="/temp/default-user.png" 
+                                                                            class="rounded-circle me-2" 
+                                                                            width="40" height="40" 
+                                                                            alt="<%= property?.owner?.firstName %>">
+                                                                    </div>
+                                                                <% } %>
+                                                                <% if (property?.owner?.hostVerified) { %>
+                                                                    <span class="position-absolute bottom-0 end-0 bg-white rounded-circle p-1">
+                                                                        <i class="fas fa-check-circle text-primary"></i>
+                                                                    </span>
+                                                                <% } %>
+                                                            </a>
+                                                        </div>
+                                                        <div>
+                                                            <div class="fw-bold">
+                                                                <%= property?.owner?.firstName %> <%= property?.owner?.lastName %>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </td>
+                                                <td>
+                                                    <% const featuredImage = property.images.find(img => img.isFeatured) || property.images[0] %>
+                                                    <% if (featuredImage) { %>
+                                                        <img src="<%= featuredImage.url %>" class="img-thumbnail" style="width:80px;height:60px;object-fit:cover" onerror="this.onerror=null;this.src='/assets/img/default-event.jpg'">
+                                                    <% } else { %>
+                                                        <div class="bg-secondary text-white d-flex align-items-center justify-content-center" 
+                                                            style="width:80px;height:60px">
+                                                            No Image
+                                                        </div>
+                                                    <% } %>
+                                                </td>
+                                                <td><%= property.name %></td>
+                                                <td><%= property.propertyType.name %></td>
+                                                <td><%= property.address.city %>, <%= property.address.state %></td>
+                                                <td><%= formatPrice(property.pricing.baseAmount) %></td>
+                                                <td><%= property.capacity.guestsAllowed %></td>
+                                                <td><%= property.capacity.bedrooms %>/<%= property.capacity.bathrooms %></td>
+                                                <td>
+                                                    <% if (property.averageRating > 0) { %>
+                                                        <span class="badge bg-<%= property.averageRating >= 4 ? 'success' : property.averageRating >= 3 ? 'info' : 'warning' %>">
+                                                            <%= property.averageRating.toFixed(1) %> ★
+                                                        </span>
+                                                    <% } else { %>
+                                                        <span class="badge bg-secondary">No ratings</span>
+                                                    <% } %>
+                                                </td>
+                                                <td>
+                                                    <span class="badge <%= property.status === 'active' ? 'bg-success' : 'bg-secondary' %> status-toggle" 
+                                                        <% if(adminPerms.includes('property-status-update')) { %>
+                                                            onclick="updateStatus('<%= property._id %>', '<%= property.status %>')"
+                                                            style="cursor: pointer;"
+                                                        <% } %>   >
+                                                        <%= property.status.charAt(0).toUpperCase() + property.status.slice(1) %>
+                                                    </span>
+                                                </td>
+                                                <td>
+                                                    <% if (property.adminApprovalStatus === 'pending') { %>
+                                                        <% if(adminPerms.includes('property-admin-status')) { %>
+                                                            <a href="javascript:void(0)" 
+                                                                class="badge bg-secondary pending-approval-btn" 
+                                                                data-property-id="<%= property._id %>"
+                                                                onclick="showApprovalPopup('<%= property._id %>')">
+                                                                <%= property.adminApprovalStatus.charAt(0).toUpperCase() + property.adminApprovalStatus.slice(1) %>
+                                                            </a>
+                                                        <% } else{ %>
+                                                            <span class="badge bg-secondary">
+                                                                <%= property.adminApprovalStatus.charAt(0).toUpperCase() + property.adminApprovalStatus.slice(1) %>
+                                                            </span>
+                                                        <% } %>
+                                                    <% } else { %>
+                                                        <span class="badge <%= property.adminApprovalStatus === 'approved' ? 'bg-success' : 'bg-danger' %>">
+                                                        <%= property.adminApprovalStatus.charAt(0).toUpperCase() + property.adminApprovalStatus.slice(1) %>
+                                                        </span>
+                                                    <% } %>
+                                                </td>
+                                                <td>
+                                                    <% if(adminPerms.includes('property-show')) { %>
+                                                        <a href="/property/<%= property._id %>/show" class="btn btn-sm btn-icon btn-outline-primary"><i class="bx bx-show"></i> </a>
+                                                    <% } %>
+                                                </td>
+                                            </tr>
+                                            <% }) %>
+                                        </tbody>
+                                    </table>
+                                </div>
+
+                                <!-- Pagination -->
+                                <% if (totalPages > 1) { %>
+                                <nav aria-label="Page navigation" class="mt-4">
+                                    <ul class="pagination justify-content-center">
+                                        <% if (currentPage > 1) { %>
+                                            <li class="page-item">
+                                                <a class="page-link" 
+                                                    href="/property?<%= new URLSearchParams({...filterValues, page: currentPage - 1}) %>">
+                                                    Previous
+                                                </a>
+                                            </li>
+                                        <% } %>
+                                        
+                                        <% for (let i = 1; i <= totalPages; i++) { %>
+                                            <li class="page-item <%= currentPage === i ? 'active' : '' %>">
+                                                <a class="page-link" 
+                                                    href="/property?<%= new URLSearchParams({...filterValues, page: i}) %>">
+                                                    <%= i %>
+                                                </a>
+                                            </li>
+                                        <% } %>
+                                        
+                                        <% if (currentPage < totalPages) { %>
+                                            <li class="page-item">
+                                                <a class="page-link" 
+                                                    href="/property?<%= new URLSearchParams({...filterValues, page: currentPage + 1}) %>">
+                                                    Next
+                                                </a>
+                                            </li>
+                                        <% } %>
+                                    </ul>
+                                </nav>
+                                <% } %>
+                            </div>
+                        </div>
+                    </div>
+
+                    <%- include('../../../../partials/footer') %>
+                    <div class="content-backdrop fade"></div>
+                </div>
+            </div>
+        </div>
+        <div class="layout-overlay layout-menu-toggle"></div>
+    </div> 
+
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+    // Function to check if any real filters are active (ignoring page/limit)
+    function hasRealFilters() {
+        const params = new URLSearchParams(window.location.search);
+        let hasFilters = false;
+        
+        params.forEach((value, key) => {
+        if (key !== 'page' && key !== 'limit' && value !== '') {
+            hasFilters = true;
+        }
+        });
+        
+        return hasFilters;
+    }
+
+    // Update filter indicator
+    function updateFilterIndicator() {
+        const filterBtn = document.querySelector('.admin-header button[data-bs-target="#filterPanel"]');
+        const indicator = filterBtn.querySelector('.filter-indicator');
+        
+        if (hasRealFilters()) {
+        if (!indicator) {
+            const dot = document.createElement('span');
+            dot.className = 'filter-indicator position-absolute top-0 start-100 translate-middle p-1 bg-danger border border-light rounded-circle';
+            filterBtn.appendChild(dot);
+        }
+        } else {
+        if (indicator) {
+            indicator.remove();
+        }
+        }
+    }
+
+    // Initialize
+    updateFilterIndicator();
+
+    // Update when URL changes (for SPA)
+    window.addEventListener('popstate', updateFilterIndicator);
+    });
+    // Function to show SweetAlert popup
+    function showApprovalPopup(propertyId) {
+        Swal.fire({
+            title: 'Update Approval Status',
+            html: `
+            <div class="text-start">
+                <div class="form-check mb-2">
+                <input class="form-check-input" type="radio" name="approvalStatus" id="approveRadio" value="approved" checked>
+                <label class="form-check-label" for="approveRadio">
+                    Approve Property
+                </label>
+                </div>
+                <div class="form-check mb-2">
+                <input class="form-check-input" type="radio" name="approvalStatus" id="rejectRadio" value="rejected">
+                <label class="form-check-label" for="rejectRadio">
+                    Reject Property
+                </label>
+                </div>
+                <div id="rejectReasonContainer" class="mt-2" style="display: none;">
+                <label for="rejectReason" class="form-label">Reason for rejection:</label>
+                <textarea class="form-control" id="rejectReason" rows="2"></textarea>
+                </div>
+            </div>
+            `,
+            showCancelButton: true,
+            confirmButtonText: 'Update Status',
+            cancelButtonText: 'Cancel',
+            preConfirm: () => {
+            const status = document.querySelector('input[name="approvalStatus"]:checked').value;
+            const reason = status === 'rejected' ? document.getElementById('rejectReason').value : '';
+            
+            if (status === 'rejected' && !reason.trim()) {
+                Swal.showValidationMessage('Please provide a reason for rejection');
+                return false;
+            }
+            
+            return { status, reason };
+            },
+            didOpen: () => {
+            // Show/hide reason textarea based on selection
+            const radios = document.querySelectorAll('input[name="approvalStatus"]');
+            radios.forEach(radio => {
+                radio.addEventListener('change', (e) => {
+                document.getElementById('rejectReasonContainer').style.display = 
+                    e.target.value === 'rejected' ? 'block' : 'none';
+                });
+            });
+            }
+        }).then((result) => {
+            if (result.isConfirmed) {
+            updateApprovalStatus(propertyId, result.value.status, result.value.reason);
+            }
+        });
+    }
+
+    // AJAX function to update status
+    function updateApprovalStatus(propertyId, status, rejectionReason = '') {
+        fetch('/property-status', {
+            method: 'POST',
+                headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                propertyId,
+                status,
+                rejectionReason
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.status) {
+                Swal.fire({
+                    title: 'Success!',
+                    text: 'Property status updated successfully',
+                    icon: 'success'
+                }).then(() => {
+                    // Refresh the page or update the UI dynamically
+                    window.location.reload();
+                });
+            } else {
+                Swal.fire({
+                    title: 'Error!',
+                    text: data.message || 'Failed to update status',
+                    icon: 'error'
+                });
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            Swal.fire({
+                title: 'Error!',
+                text: 'An error occurred while updating status',
+                icon: 'error'
+            });
+        });
+    }
+</script>
+
+<script>
+    function updateStatus(propertyId, currentStatus) {
+        const newStatus = currentStatus === 'active' ? 'inactive' : 'active';
+        
+        Swal.fire({
+            title: 'Change Status?',
+            text: `Change status from ${currentStatus} to ${newStatus}?`,
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonText: 'Yes',
+            cancelButtonText: 'No'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                fetch(`/property/${propertyId}/status`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ status: newStatus })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        Swal.fire('Updated!', data.message, 'success').then(() => {
+                            location.reload(); // Refresh page after update
+                        });
+                    } else {
+                        Swal.fire('Error', data.message || 'Update failed', 'error');
+                    }
+                })
+                .catch(error => {
+                    Swal.fire('Error', 'Failed to update status', 'error');
+                });
+            }
+        });
+    }
+</script>
+
+

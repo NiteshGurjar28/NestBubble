@@ -1,0 +1,701 @@
+
+<script src="https://cdn.ckeditor.com/ckeditor5/36.0.1/classic/ckeditor.js"></script>
+<body>
+    <div class="layout-wrapper layout-content-navbar">
+        <div class="layout-container">
+            <%- include('../../../../partials/sideBar') %>
+            <div class="layout-page">
+                <%- include('../../../../partials/header') %>
+                <div class="content-wrapper">
+                    <div class="admin-container">
+                        <div class="admin-header">
+                          <h2><%= formTitle %></h2>
+                            <a href="/event" class="btn btn-gradient">Back</a>
+                        </div>
+
+                        <div class="row g-4 mb-4">
+                            <div class="col-md-12 col-lg-12">
+                                <div class="stats-card">
+                                    <div class="card-body"> 
+                                      <form id="eventForm" method="POST" enctype="multipart/form-data" 
+                                            action="<%= isEditMode ? `/event/${formData._id}/edit` : '/event' %>">
+                                        
+                                        <!-- Basic Information -->
+                                        <div class="card mb-4">
+                                          <div class="card-header">
+                                            <h5>Basic Information</h5>
+                                          </div>
+                                          <div class="card-body">
+                                            <div class="row">
+                                              <div class="col-md-6 mb-3">
+                                                <label for="title" class="form-label">Event Title *</label>
+                                                <input type="text" class="form-control" id="title" name="title" 
+                                                      value="<%= formData.title || '' %>" required>
+                                              </div>
+                                              <div class="col-md-6 mb-3">
+                                                <label for="categoryId" class="form-label">Category *</label>
+                                                <select class="form-select" id="categoryId" name="categoryId" required>
+                                                  <option value="">Select Category</option>
+                                                  <% eventCategories.forEach(category => { %>
+                                                    <option value="<%= category._id %>" 
+                                                      <%= formData.categoryId && formData.categoryId.toString() === category._id.toString() ? 'selected' : '' %>>
+                                                      <%= category.name %>
+                                                    </option>
+                                                  <% }); %>
+                                                </select>
+                                              </div>
+                                            </div>
+                                            
+                                            <div class="row">
+                                              <div class="col-md-6 mb-3">
+                                                <label for="eventType" class="form-label">Event Type *</label>
+                                                 <select class="form-select" id="eventType" name="eventType" required>
+                                                    <option value="">Select Event Type</option>
+                                                    <option value="public" <%= formData.eventType === 'public' ? 'selected' : '' %>>Public</option>
+                                                    <option value="private"  <%= formData.eventType === 'private' ? 'selected' : '' %>>Private</option>
+                                                </select>
+                                              </div>
+                                              <div class="col-md-6 mb-3">
+                                                <label for="maxParticipants" class="form-label">Max Participants *</label>
+                                                <input type="number" class="form-control" id="maxParticipants" name="maxParticipants" required
+                                                      value="<%= formData.maxParticipants || 20 %>" min="1">
+                                              </div>
+                                            </div>
+
+                                            <div class="row">
+                                              <div class="col-md-6 mb-3">
+                                                <label for="startDate" class="form-label">Start Date *</label>
+                                                <input type="date" class="form-control" id="startDate" name="startDate"
+                                                      value="<%= formData.startDate|| '' %>" required>
+                                              </div>
+                                              <div class="col-md-6 mb-3">
+                                                <label for="endDate" class="form-label">End Date *</label>
+                                                <input type="date" class="form-control" id="endDate" name="endDate"
+                                                      value="<%= formData.endDate|| '' %>" required>
+                                              </div>
+                                            </div>
+
+                                            <div class="row">
+                                              <div class="col-md-6 mb-3">
+                                                <label for="startTime" class="form-label">Start Time *</label>
+                                                <input type="time" class="form-control" id="startTime" name="startTime"
+                                                      value="<%= formData.startTime|| '' %>" required>
+                                              </div>
+                                              <div class="col-md-6 mb-3">
+                                                <label for="endTime" class="form-label">End Time *</label>
+                                                <input type="time" class="form-control" id="endTime" name="endTime"
+                                                      value="<%= formData.endTime|| '' %>" required>
+                                              </div>
+                                            </div>
+                                 
+                                            <div class="row">
+                                              <div class="col-md-6 mb-3">
+                                                <label for="ageRestriction" class="form-label">Age Restriction</label>
+                                                <input type="number" class="form-control" id="ageRestriction" name="ageRestriction" 
+                                                      min="1" max="100" value="<%= formData.ageRestriction || 18 %>">
+                                              </div>
+                                              <div class="col-md-6 mb-3">
+                                                <label for="duration" class="form-label">Duration*</label>
+                                                <input type="number" class="form-control" id="duration" name="duration" 
+                                                      min="1"  value="<%= formData.duration || 1 %>" required>
+                                              </div>
+
+
+                                            </div>
+
+                                            <div class="row">
+                                              <div class="col-md-12 mb-3">
+                                                <label for="eventLanguage" class="form-label">Languages</label>
+                                                <input type="text" class="form-control" id="eventLanguage" name="eventLanguage"
+                                                      value="<%= Array.isArray(formData.eventLanguage) ? formData.eventLanguage.join(', ') : '' %>"
+                                                      placeholder="English, Spanish, French">
+                                                <small class="text-muted">Separate languages with commas</small>
+                                              </div>
+                                            </div>
+                                          </div>
+                                        </div>
+                                        
+                                        <!-- Location Information -->
+                                        <div class="card mb-4">
+                                          <div class="card-header">
+                                            <h5>Location Details</h5>
+                                          </div>
+                                          <div class="card-body">
+                                            <div class="row">
+                                              <div class="col-md-12 mb-3">
+                                                <label for="autocomplete" class="form-label">Search Address *</label>
+                                                <input type="text" class="form-control" id="autocomplete" required
+                                                      placeholder="Start typing your address..." 
+                                                      value="<%= formData.location?.address || '' %>">
+                                                <input type="hidden" id="address" name="location[address]">
+                                              </div>
+                                            </div>
+                                            <div class="mt-3">
+                                              <div id="map" style="height: 300px; width: 100%; border-radius: 8px;"></div>
+                                            </div>
+                                            <input type="hidden" name="location[type]" value="Point">
+                                            <input type="hidden" id="coordinates" name="location[coordinates]"
+                                                  value="<%= formData.location?.coordinates ? JSON.stringify(formData.location.coordinates) : '' %>">
+                                          </div>
+                                        </div>
+                                        
+                                        <!-- Pricing -->
+                                        <div class="card mb-4">
+                                          <div class="card-header">
+                                            <h5>Pricing</h5>
+                                          </div>
+                                          <div class="card-body">
+                                            <div class="row">
+                                              <div class="col-md-6 mb-3">
+                                                <label for="price" class="form-label">Price *</label>
+                                                <input type="number" step="0.01" class="form-control" id="price" name="price" required
+                                                      value="<%= formData.price || 0 %>" min="0">
+                                              </div>
+                                            </div>
+                                          </div>
+                                        </div>
+                                        
+                                        <!-- Organizer Information -->
+                                        <div class="card mb-4">
+                                          <div class="card-header">
+                                            <h5>Organizer Details</h5>
+                                          </div>
+                                          <div class="card-body">
+                                            <div class="row">
+                                              <div class="col-md-6 mb-3">
+                                                <label for="organizerFirstName" class="form-label">First Name *</label>
+                                                <input type="text" class="form-control" id="organizerFirstName" name="organizerFirstName" required
+                                                      value="<%= formData.organizer?.firstName || '' %>">
+                                              </div>
+                                              <div class="col-md-6 mb-3">
+                                                <label for="organizerLastName" class="form-label">Last Name *</label>
+                                                <input type="text" class="form-control" id="organizerLastName" name="organizerLastName" required
+                                                      value="<%= formData.organizer?.lastName || '' %>">
+                                              </div>
+                                            </div>
+                                            
+                                            <div class="row">
+                                              <div class="col-md-6 mb-3">
+                                                <label for="organizerEmail" class="form-label">Email *</label>
+                                                <input type="email" class="form-control" id="organizerEmail" name="organizerEmail" required
+                                                      value="<%= formData.organizer?.email || '' %>">
+                                              </div>
+                                              <div class="col-md-6 mb-3">
+                                                <label for="organizerMobile" class="form-label">Mobile Number *</label>
+                                                <input type="tel" class="form-control" id="organizerMobile" name="organizerMobile" required
+                                                      value="<%= formData.organizer?.mobileNumber || '' %>">
+                                              </div>
+                                            </div>
+                                          </div>
+                                        </div>
+                                        
+                                        <!-- Media -->
+                                        <div class="card mb-4">
+                                          <div class="card-header">
+                                            <h5>Media</h5>
+                                          </div>
+                                          <div class="card-body">
+                                            <!-- Images Section -->
+                                            <div class="mb-4">
+                                              <h6 class="mb-3">Images</h6>
+                                              
+                                              <!-- Existing Images (Edit Mode) -->
+                                              <% if (isEditMode && formData.images && formData.images.length > 0) { %>
+                                                <div class="mb-3">
+                                                  <label class="form-label">Current Images</label>
+                                                  <div class="d-flex flex-wrap gap-2 mb-3 existing-images-container">
+                                                    <% formData.images.forEach((image, index) => { %>
+                                                      <div class="position-relative existing-image-item" style="width: 150px;">
+                                                        <img src="<%= image.url %>" class="img-thumbnail w-100" 
+                                                            style="height: 100px; object-fit: cover;" alt="Event image">
+                                                          <input type="hidden" class="oldimage" value="<%= image.url %>">
+                                                        <div class="form-check mt-1">
+                                                          <input class="form-check-input remove-image-checkbox" type="checkbox" 
+                                                                name="removeImages" 
+                                                                value="<%= image.url %>"
+                                                                id="removeImage<%= index %>">
+                                                          <label class="form-check-label text-danger" for="removeImage<%= index %>">
+                                                            Remove
+                                                          </label>
+                                                        </div>
+                                                      </div>
+                                                    <% }); %>
+                                                  </div>
+                                                </div>
+                                              <% } %>
+                                              <!-- New Image Uploads -->
+                                              <div id="new-images-container">
+                                                <div class="new-image-group mb-3 p-3 border rounded">
+                                                  <div class="row g-2">
+                                                    <div class="col-md-12">
+                                                      <label class="form-label">New Image</label>
+                                                      <input type="file" class="form-control" name="images" accept="image/*">
+                                                    </div>
+                                                  </div>
+                                                </div>
+                                              </div>
+
+                                              <button type="button" class="btn btn-sm btn-outline-primary" id="add-image-btn">
+                                                <i class="fas fa-plus"></i> Add Another Image
+                                              </button>
+                                            </div>
+                                                                                          
+                                            <!-- Single Video Section -->
+                                            <div class="mb-4">
+                                              <h6 class="mb-3">Video (Single MP4 only)</h6>
+                                              
+                                              <!-- Existing Video (Edit Mode) -->
+                                              <% if (isEditMode && formData.video) { %>
+                                                <div class="mb-3">
+                                                  <label class="form-label">Current Video</label>
+                                                  <div class="border p-2 rounded" style="max-width: 400px;">
+                                                    <div class="ratio ratio-16x9 mb-2 bg-dark">
+                                                      <video controls class="w-100">
+                                                        <source src="<%= formData.video %>" type="video/mp4">
+                                                        Your browser does not support the video tag.
+                                                      </video>
+                                                    </div>
+                                                    
+                                                  </div>
+                                                </div>
+                                              <% } %>
+                                              
+                                              <!-- New Video Upload -->
+                                              <div class="new-video-group mb-3 p-3 border rounded">
+                                                <div class="row g-2">
+                                                  <div class="col-md-12">
+                                                    <label class="form-label">Upload New Video</label>
+                                                    <input type="file" class="form-control" name="videos" accept="video/mp4" maxcount="1">
+                                                    <small class="text-muted">Only MP4 format allowed. Max 1 video.</small>
+                                                  </div>
+                                                </div>
+                                              </div>
+                                            </div>
+                                          </div>
+                                        </div>
+                                        
+                                        <!-- Additional Information -->
+                                        <div class="card mb-4">
+                                          <div class="card-header">
+                                            <h5>Additional Information</h5>
+                                          </div>
+                                          <div class="card-body">
+                                            <div class="mb-3">
+                                              <label for="description" class="form-label">Description *</label>
+                                              <textarea class="form-control" id="description" name="description" rows="5" required><%= formData.description || '' %></textarea>
+                                            </div>
+                                            
+                                            <!-- Included Items with Add More -->
+                                            <div class="mb-3">
+                                              <label class="form-label">Included Items</label>
+                                              <div id="included-items-container">
+                                                <% if (formData.includedItems && formData.includedItems.length > 0) { %>
+                                                  <% formData.includedItems.forEach((item, index) => { %>
+                                                    <div class="input-group mb-2">
+                                                      <input type="text" class="form-control" name="includedItems" value="<%= item %>" placeholder="Enter included item">
+                                                      <button type="button" class="btn btn-outline-danger remove-item-btn">
+                                                        <i class="fas fa-times"></i>
+                                                      </button>
+                                                    </div>
+                                                  <% }); %>
+                                                <% } else { %>
+                                                  <div class="input-group mb-2">
+                                                    <input type="text" class="form-control" name="includedItems" placeholder="Enter included item">
+                                                    <button type="button" class="btn btn-outline-danger remove-item-btn">
+                                                      <i class="fas fa-times"></i>
+                                                    </button>
+                                                  </div>
+                                                <% } %>
+                                              </div>
+                                              <button type="button" class="btn btn-sm btn-outline-primary" id="add-included-item-btn">
+                                                <i class="fas fa-plus"></i> Add More Items
+                                              </button>
+                                            </div>
+
+                                            <!-- What to Bring with Add More -->
+                                            <div class="mb-3">
+                                              <label class="form-label">What to Bring</label>
+                                              <div id="what-to-bring-container">
+                                                <% if (formData.whatToBring && formData.whatToBring.length > 0) { %>
+                                                  <% formData.whatToBring.forEach((item, index) => { %>
+                                                    <div class="input-group mb-2">
+                                                      <input type="text" class="form-control" name="whatToBring" value="<%= item %>" placeholder="Enter what to bring">
+                                                      <button type="button" class="btn btn-outline-danger remove-item-btn">
+                                                        <i class="fas fa-times"></i>
+                                                      </button>
+                                                    </div>
+                                                  <% }); %>
+                                                <% } else { %>
+                                                  <div class="input-group mb-2">
+                                                    <input type="text" class="form-control" name="whatToBring" placeholder="Enter what to bring">
+                                                    <button type="button" class="btn btn-outline-danger remove-item-btn">
+                                                      <i class="fas fa-times"></i>
+                                                    </button>
+                                                  </div>
+                                                <% } %>
+                                              </div>
+                                              <button type="button" class="btn btn-sm btn-outline-primary" id="add-what-to-bring-btn">
+                                                <i class="fas fa-plus"></i> Add More Items
+                                              </button>
+                                            </div>
+
+                                            <!-- Safety Info with Add More -->
+                                            <div class="mb-3">
+                                              <label class="form-label">Safety Information</label>
+                                              <div id="safety-info-container">
+                                                <% if (formData.safetyInfo && formData.safetyInfo.length > 0) { %>
+                                                  <% formData.safetyInfo.forEach((info, index) => { %>
+                                                    <div class="input-group mb-2">
+                                                      <input class="form-control" name="safetyInfo" value="<%= info %>" placeholder="Enter safety info">
+                                                      <button type="button" class="btn btn-outline-danger remove-item-btn">
+                                                        <i class="fas fa-times"></i>
+                                                      </button>
+                                                    </div>
+                                                  <% }); %>
+                                                <% } else { %>
+                                                  <div class="input-group mb-2">
+                                                    <input class="form-control" name="safetyInfo"  placeholder="Enter safety info">
+                                                    <button type="button" class="btn btn-outline-danger remove-item-btn">
+                                                      <i class="fas fa-times"></i>
+                                                    </button>
+                                                  </div>
+                                                <% } %>
+                                              </div>
+                                              <button type="button" class="btn btn-sm btn-outline-primary" id="add-safety-info-btn">
+                                                <i class="fas fa-plus"></i> Add More Safety Info
+                                              </button>
+                                            </div>
+                                            
+                                            <div class="mb-3">
+                                              <label for="termsAgreement" class="form-label">Terms & Agreement</label>
+                                              <textarea class="form-control" id="ckeditor" name="termsAgreement" rows="8"><%= formData.termsAgreement || '' %></textarea>
+                                            </div>
+                                          </div>
+                                        </div>
+                                        
+                                        <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                                          <a href="/event" class="btn btn-secondary me-md-2">Cancel</a>
+                                          <button type="submit" class="btn btn-primary">
+                                            <%= isEditMode ? 'Update Event' : 'Create Event' %>
+                                          </button>
+                                        </div>
+                                      </form>
+
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                  <%- include('../../../../partials/footer') %>
+                  <div class="content-backdrop fade"></div>
+                </div>
+            </div>
+        </div>
+        <div class="layout-overlay layout-menu-toggle"></div>
+    </div> 
+
+</body>
+
+<script>
+  ClassicEditor
+    .create(document.querySelector('#ckeditor'), {
+      toolbar: ['heading', '|', 'bold', 'italic', 'link', 'bulletedList', 'numberedList', 'blockQuote'],
+      heading: {
+        options: [
+          { model: 'paragraph', title: 'Paragraph', class: 'ck-heading_paragraph' },
+          { model: 'heading1', view: 'h1', title: 'Heading 1', class: 'ck-heading_heading1' },
+          { model: 'heading2', view: 'h2', title: 'Heading 2', class: 'ck-heading_heading2' }
+        ]
+      }
+    })
+    .catch(error => {
+      console.error(error);
+    });
+</script>
+
+<!-- Load Google Maps API -->
+<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyC--y7FdTXwrqQkp9_pe2hCwnzQQRunbtI&libraries=places&callback=initMap" async defer></script>
+
+
+<script>
+  let map;
+  let marker;
+  let autocomplete;
+
+  function initMap() {
+    // Initialize map
+    map = new google.maps.Map(document.getElementById("map"), {
+      center: { lat: 26.9124336, lng: 75.7872709 }, // Default to India
+      zoom: 5,
+    });
+
+    // Initialize autocomplete
+    autocomplete = new google.maps.places.Autocomplete(
+      document.getElementById("autocomplete"),
+      {
+        types: ["geocode"],
+        componentRestrictions: { country: "in" }, // Restrict to India
+      }
+    );
+
+    // Add marker
+    marker = new google.maps.Marker({
+      map: map,
+      draggable: true,
+    });
+
+    // Listen for place selection
+    autocomplete.addListener("place_changed", () => {
+      const place = autocomplete.getPlace();
+      if (!place.geometry) {
+        alert("No details available for input: '" + place.name + "'");
+        return;
+      }
+
+      // Update form fields
+      document.getElementById("address").value = place.formatted_address;
+      document.getElementById("coordinates").value = JSON.stringify([
+        place.geometry.location.lng(),
+        place.geometry.location.lat(),
+      ]);
+
+      // Update map
+      map.setCenter(place.geometry.location);
+      map.setZoom(15);
+      marker.setPosition(place.geometry.location);
+    });
+
+    // Listen for marker drag
+    marker.addListener("dragend", () => {
+      const position = marker.getPosition();
+      document.getElementById("coordinates").value = JSON.stringify([
+        position.lng(),
+        position.lat(),
+      ]);
+
+      // Reverse geocode to get address
+      new google.maps.Geocoder()
+        .geocode({ location: position })
+        .then((response) => {
+          if (response.results[0]) {
+            document.getElementById("autocomplete").value = response.results[0].formatted_address;
+            document.getElementById("address").value = response.results[0].formatted_address;
+          }
+        });
+    });
+
+    // Allow clicking on map to set location
+    map.addListener("click", (event) => {
+      marker.setPosition(event.latLng);
+      document.getElementById("coordinates").value = JSON.stringify([
+        event.latLng.lng(),
+        event.latLng.lat(),
+      ]);
+
+      // Reverse geocode
+      new google.maps.Geocoder()
+        .geocode({ location: event.latLng })
+        .then((response) => {
+          if (response.results[0]) {
+            document.getElementById("autocomplete").value = response.results[0].formatted_address;
+            document.getElementById("address").value = response.results[0].formatted_address;
+          }
+        });
+    });
+
+    // Initialize with existing values if any
+    `<% if (formData.location?.coordinates) { %>`
+      const initialCoords = {
+        lat: `<%= formData.location.coordinates[1] %>`,
+        lng: `<%= formData.location.coordinates[0] %>`
+      };
+      map.setCenter(initialCoords);
+      map.setZoom(15);
+      marker.setPosition(initialCoords);
+      document.getElementById("autocomplete").value = `<%= formData.location.address || '' %>`;
+      document.getElementById("address").value = `<%= formData.location.address || '' %>`;
+    `<% } %>`
+  }
+</script>
+
+<style>
+  /* Improve autocomplete dropdown */
+  .pac-container {
+    z-index: 1051 !important; /* Make sure it appears above Bootstrap modals */
+    border-radius: 0 0 8px 8px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+  }
+  
+  /* Hide Google logo and terms */
+  .gm-style-cc { display: none; }
+  
+  /* Style the map container */
+  #map {
+    border: 1px solid #ddd;
+  }
+
+  .input-group .remove-item-btn {
+    border-left: none;
+  }
+</style>
+
+<script>
+  // Add new image field
+  document.getElementById('add-image-btn').addEventListener('click', function() {
+    const container = document.getElementById('new-images-container');
+    const newGroup = document.createElement('div');
+    newGroup.className = 'new-image-group mb-3 p-3 border rounded position-relative';
+    newGroup.innerHTML = `
+      <div class="row g-2">
+        <div class="col-md-12">
+          <label class="form-label">New Image</label>
+          <input type="file" class="form-control" name="images" accept="image/*">
+        </div>
+      </div>
+      <button type="button" class="btn btn-sm btn-outline-danger remove-group-btn" 
+              style="position: absolute; top: 5px; right: 5px;">
+        <i class="fas fa-times"></i>
+      </button>
+    `;
+    container.appendChild(newGroup);
+  });
+
+  // Add more functionality for dynamic fields
+  function addMoreField(containerId, fieldName, isTextarea = false) {
+    const container = document.getElementById(containerId);
+    const newGroup = document.createElement('div');
+    newGroup.className = 'input-group mb-2';
+    
+    if (isTextarea) {
+      newGroup.innerHTML = `
+        <textarea class="form-control" name="${fieldName}" rows="2" 
+                  placeholder="Enter ${fieldName.replace(/([A-Z])/g, ' $1').toLowerCase()}"></textarea>
+        <button type="button" class="btn btn-outline-danger remove-item-btn">
+          <i class="fas fa-times"></i>
+        </button>
+      `;
+    } else {
+      newGroup.innerHTML = `
+        <input type="text" class="form-control" name="${fieldName}" 
+               placeholder="Enter ${fieldName.replace(/([A-Z])/g, ' $1').toLowerCase()}">
+        <button type="button" class="btn btn-outline-danger remove-item-btn">
+          <i class="fas fa-times"></i>
+        </button>
+      `;
+    }
+    
+    container.appendChild(newGroup);
+  }
+
+  // Event listeners for add more buttons
+  document.getElementById('add-included-item-btn').addEventListener('click', function() {
+    addMoreField('included-items-container', 'includedItems');
+  });
+
+  document.getElementById('add-what-to-bring-btn').addEventListener('click', function() {
+    addMoreField('what-to-bring-container', 'whatToBring');
+  });
+
+  document.getElementById('add-safety-info-btn').addEventListener('click', function() {
+    addMoreField('safety-info-container', 'safetyInfo');
+  });
+
+  // Remove buttons (event delegation)
+  document.addEventListener('click', function(e) {
+    if (e.target.classList.contains('remove-item-btn') || e.target.closest('.remove-item-btn')) {
+      const btn = e.target.classList.contains('remove-item-btn') ? e.target : e.target.closest('.remove-item-btn');
+      const container = btn.closest('.input-group');
+      
+      // Don't remove if it's the only field
+      const parent = container.parentElement;
+      if (parent.querySelectorAll('.input-group').length > 1) {
+        container.remove();
+      } else {
+        // Clear the input instead
+        const input = container.querySelector('input, textarea');
+        if (input) input.value = '';
+      }
+    }
+    
+    if (e.target.classList.contains('remove-group-btn') || e.target.closest('.remove-group-btn')) {
+      const btn = e.target.classList.contains('remove-group-btn') ? e.target : e.target.closest('.remove-group-btn');
+      btn.closest('.new-image-group').remove();
+    }
+  });
+</script>
+
+
+<script>
+  $(document).ready(function() {
+    $('#eventForm').on('submit', function(e) {
+      e.preventDefault();
+      
+      const form = this;
+      const formData = new FormData(form);
+      const url = $(form).attr('action');
+      const isEditMode = '<%= isEditMode %>' === 'true';
+
+      // Add existing data to formData for edit mode
+      if (isEditMode) {
+         const existingImages = [];
+        document.querySelectorAll('.existing-image-item').forEach(item => {
+          // const url = item.querySelector('img').src;
+          const url = item.querySelector('.oldimage').value;
+          existingImages.push({ url: url });
+        });
+        
+        const existingVideo = <%- JSON.stringify(formData.video || null) %>;
+
+        // Append directly, no extra stringify
+        formData.append('existingImages', JSON.stringify(existingImages));
+        if (existingVideo) {
+          formData.append('existingVideo', JSON.stringify(existingVideo));
+        }
+      }
+      
+      // Show loading indicator
+      const submitBtn = $(form).find('button[type="submit"]');
+      submitBtn.prop('disabled', true).html('<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Processing...');
+      
+      $.ajax({
+        url: url,
+        type: 'POST',
+        data: formData,
+        processData: false,
+        contentType: false,
+        success: function(result) {
+          if (result.success) {
+            Swal.fire({
+              title: 'Success!',
+              text: isEditMode ? 'Event updated successfully' : 'Event created successfully',
+              icon: 'success',
+              confirmButtonText: 'OK'
+            }).then(() => {
+              window.location.href = isEditMode ? `/event/${result.eventId}/edit` : '/event';
+            });
+          } else {
+            Swal.fire({
+              title: 'Error!',
+              text: result.message || 'Something went wrong',
+              icon: 'error',
+              confirmButtonText: 'OK'
+            });
+          }
+        },
+        error: function(xhr) {
+          const errorMsg = xhr.responseJSON?.message || 'An error occurred';
+          Swal.fire({
+            title: 'Error!',
+            text: errorMsg,
+            icon: 'error',
+            confirmButtonText: 'OK'
+          });
+        },
+        complete: function() {
+          submitBtn.prop('disabled', false).html(isEditMode ? 'Update Event' : 'Create Event');
+        }
+      });
+    });
+  });
+</script>

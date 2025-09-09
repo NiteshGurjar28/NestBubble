@@ -1,0 +1,279 @@
+
+<body>
+    <div class="layout-wrapper layout-content-navbar">
+        <div class="layout-container">
+            <%- include('../../../partials/sideBar') %>
+            <div class="layout-page">
+                <%- include('../../../partials/header') %>
+                <div class="content-wrapper">
+                    <div class="admin-container">
+                        <div class="admin-header">
+                          <h2>Profile</h2>
+                        </div>
+
+                        <div class="row g-4 mb-4">
+                            <div class="col-md-12 col-lg-12">
+                                <div class="card">
+                                    <div class="card-body">
+                                        <div class="col-lg-12">
+                                            <!-- <h5 style="margin-bottom: 15px; font-weight: bold; color: #2471B7;">Admin Profile</h5> -->
+                                            <div class="row">
+                                                <!----Profile image udpate-->
+                                                <div class="col-md-12">
+                                                    <div class="d-flex justify-content-center">
+                                                            <label for="profileImageInput" style="cursor: pointer;">
+                                                            <% if (user.profileImage) { %>
+                                                                <img src="<%= user.profileImage %>" alt="Profile Image" class="w-px-60 h-auto rounded-circle" id="profileImage">
+                                                            <% } else { %>
+                                                                <img src="../assets/img/avatars/1.png" alt="Default Image" class="w-px-60 h-auto rounded-circle" id="profileImage">
+                                                            <% } %>
+                                                        </label>
+                                                        <input type="file" id="profileImageInput" style="display: none;" accept="image/*">
+                                                    </div>
+                                                    <div class="d-flex justify-content-center mt-3">
+                                                        <h5 class="text-center"><%= user.firstName %> <%= user.lastName %></h5>
+                                                    </div>
+                                                </div>
+                                                <!-- profile update -->
+                                                <div class="col-md-12">
+                                                    <form id="profileForm">
+                                                        <div class="row">
+                                                            <!-- First Name -->
+                                                            <div class="form-group col-md-6">
+                                                                <div class="mb-3">
+                                                                    <label for="firstName" class="form-label">First Name:</label>
+                                                                    <input type="text" class="form-control" id="firstName" value="<%= user.firstName %>" required>
+                                                                </div>
+                                                            </div>
+
+                                                            <!-- Last Name -->
+                                                            <div class="form-group col-md-6">
+                                                                <div class="mb-3">
+                                                                    <label for="lastName" class="form-label">Last Name:</label>
+                                                                    <input type="text" class="form-control" id="lastName" value="<%= user.lastName %>" required>
+                                                                </div>
+                                                            </div>
+
+                                                            <!-- Email (readonly) -->
+                                                            <div class="form-group col-md-6">
+                                                                <div class="mb-3">
+                                                                    <label for="emailAddress" class="form-label">Email:</label>
+                                                                    <input type="text" class="form-control" id="emailAddress" value="<%= user.email %>" disabled>
+                                                                </div>
+                                                            </div>
+
+                                                            <!-- Mobile -->
+                                                            <div class="form-group col-md-6">
+                                                                <div class="mb-3">
+                                                                    <label for="mobile" class="form-label">Mobile:</label>
+                                                                    <input type="text" class="form-control" id="mobile" value="<%= user.mobile %>">
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                        
+
+                                                        <!-- Address -->
+                                                        <div class="form-group row">
+                                                            <div class="mb-3 col-md-6">
+                                                                <label for="street" class="form-label">Street:</label>
+                                                                <input type="text" class="form-control" id="street" value="<%= user.address?.street %>">
+                                                            </div>
+                                                            <div class="mb-3 col-md-6">
+                                                                <label for="city" class="form-label">City:</label>
+                                                                <input type="text" class="form-control" id="city" value="<%= user.address?.city %>">
+                                                            </div>
+                                                            <div class="mb-3 col-md-6">
+                                                                <label for="state" class="form-label">State:</label>
+                                                                <input type="text" class="form-control" id="state" value="<%= user.address?.state %>">
+                                                            </div>
+                                                            <div class="mb-3 col-md-6">
+                                                                <label for="postalCode" class="form-label">Postal Code:</label>
+                                                                <input type="text" class="form-control" id="postalCode" value="<%= user.address?.postalCode %>">
+                                                            </div>
+                                                        </div>
+
+                                                        <!-- Submit -->
+                                                        <div class="form-group">
+                                                            <button type="submit" class="btn btn-primary">Update Profile</button>
+                                                        </div>
+                                                    </form>
+
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                    </div>
+                                </div>
+                                <div class="card mt-3">
+                                    <div class="card-body">
+                                        <div class="col-lg-12">     
+                                            <small class="error-message text-success" id="passwordSuccess"></small>      
+                                            <form id="changePasswordForm">
+                                                <div class="form-group">
+                                                    <div class="mb-3">
+                                                        <label for="oldPassword" class="form-label">Old Password:</label>
+                                                        <input type="password" class="form-control" id="oldPassword" name="oldPassword" required>
+                                                        <small class="error-message text-danger" id="oldPasswordError"></small>
+                                                    </div>
+                                                </div>
+                                                <div class="form-group">
+                                                    <div class="mb-3">
+                                                        <label for="newPassword" class="form-label">New Password:</label>
+                                                        <input type="password" class="form-control" id="newPassword" name="newPassword" required>
+                                                        <small class="error-message text-danger" id="newPasswordError"></small>
+                                                    </div>
+                                                </div>
+                                                <div class="form-group">
+                                                    <div class="mb-3">
+                                                        <label for="confirmPassword" class="form-label">Confirm Password:</label>
+                                                        <input type="password" class="form-control" id="confirmPassword" name="confirmPassword" required>
+                                                        <small class="error-message text-danger" id="confirmPasswordError"></small>
+                                                    </div>
+                                                </div>
+                                                <!-- submit -->
+                                                <div class="form-group">
+                                                    <button type="submit" class="btn btn-primary">Change Password</button>
+                                                </div>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                  <%- include('../../../partials/footer') %>
+                  <div class="content-backdrop fade"></div>
+                </div>
+            </div>
+        </div>
+        <div class="layout-overlay layout-menu-toggle"></div>
+    </div> 
+
+
+
+    <script>
+        $(document).ready(function () {
+
+            // Global CSRF token
+            const CSRF_TOKEN = $('meta[name="csrf-token"]').attr('content');
+
+            // Helper function to show alerts
+            const showAlert = (icon, title, message) => {
+                Swal.fire({
+                    icon: icon,
+                    title: title,
+                    text: message,
+                    timer: 2000,
+                    showConfirmButton: false
+                });
+            };
+
+            // ------------------- PROFILE UPDATE -------------------
+            $('#profileForm').on('submit', function (e) {
+                e.preventDefault();
+
+                const formData = {
+                    firstName: $('#firstName').val().trim(),
+                    lastName: $('#lastName').val().trim(),
+                    mobile: $('#mobile').val().trim(),
+                    address: {
+                        street: $('#street').val().trim(),
+                        city: $('#city').val().trim(),
+                        state: $('#state').val().trim(),
+                        postalCode: $('#postalCode').val().trim()
+                    }
+                };
+
+                $.ajax({
+                    url: '/profile',
+                    method: 'POST',
+                    data: formData,
+                    headers: { 'X-CSRF-Token': CSRF_TOKEN },
+                    success: (res) => {
+                        if (res.status) {
+                            showAlert('success', 'Profile Updated', res.message);
+                            setTimeout(() => window.location.reload(), 2000);
+                        } else {
+                            showAlert('error', 'Error', res.message);
+                        }
+                    },
+                    error: () => showAlert('error', 'Error', 'Failed to update profile. Please try again.')
+                });
+            });
+
+            // ------------------- CHANGE PASSWORD -------------------
+            $('#changePasswordForm').on('submit', function (e) {
+                e.preventDefault();
+
+                $('.error-message').text('');
+
+                const oldPassword = $('#oldPassword').val().trim();
+                const newPassword = $('#newPassword').val().trim();
+                const confirmPassword = $('#confirmPassword').val().trim();
+
+                if (newPassword !== confirmPassword) {
+                    $('#confirmPasswordError').text('New Password and Confirm Password do not match.');
+                    return;
+                }
+
+                $.ajax({
+                    url: '/profile/change-password',
+                    method: 'POST',
+                    data: { oldPassword, newPassword },
+                    headers: { 'X-CSRF-Token': CSRF_TOKEN },
+                    success: (res) => {
+                        if (res.status) {
+                            // showAlert('success', 'Password Changed', res.message);
+                            $('#passwordSuccess').text(res.message);
+                            $('#changePasswordForm')[0].reset();
+            
+                        } else {
+                            $('#oldPasswordError').text(res.message);
+                        }
+                    },
+                    error: () => showAlert('error', 'Error', 'Error changing password. Please try again.')
+                });
+            });
+
+            // ------------------- PROFILE IMAGE UPLOAD -------------------
+            $('#profileImageInput').on('change', function () {
+                const file = this.files[0];
+
+                if (!file) return;
+
+                const formData = new FormData();
+                formData.append('file', file);
+
+                $.ajax({
+                    url: '/profile/image',
+                    method: 'POST',
+                    data: formData,
+                    processData: false,
+                    contentType: false,
+                    headers: { 'X-CSRF-Token': CSRF_TOKEN },
+                    beforeSend: () => $('#loader').show(),
+                    success: (res) => {
+                        $('#loader').hide();
+
+                        if (res.status && res.data?.profileImage) {
+                            $('#profileImage').attr('src', res.data.profileImage);
+                            $('.profileImageHeader').attr('src', res.data.profileImage);
+                            // Optional success alert
+                            showAlert('success', 'Image Updated', res.message);
+                        } else {
+                            showAlert('error', 'Upload Failed', res.message);
+                        }
+                    },
+                    error: () => {
+                        $('#loader').hide();
+                        showAlert('error', 'Error', 'Failed to upload profile image.');
+                    }
+                });
+            });
+        });
+
+    </script>
+
+</body>
+

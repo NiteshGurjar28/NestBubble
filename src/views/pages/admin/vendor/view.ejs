@@ -1,0 +1,603 @@
+<style>
+    .vendor-card {
+        border: none;
+        box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.1);
+    }
+    
+    .vendor-header {
+        background: linear-gradient(179deg, #8e4bd78c 0%, #2575fc 100%);
+        color: white;
+        padding: 1.5rem;
+        border-radius: 0.5rem 0.5rem 0 0;
+    }
+    
+    .vendor-avatar-container {
+        position: relative;
+        width: 100px;
+    }
+    
+    .vendor-avatar {
+        width: 100px;
+        height: 100px;
+        object-fit: cover;
+        border: 3px solid white;
+        border-radius: 50%;
+        box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.1);
+    }
+    
+    .vendor-type-badge {
+        position: absolute;
+        bottom: -5px;
+        right: -5px;
+        padding: 0.25rem 0.5rem;
+        border-radius: 1rem;
+        font-size: 0.75rem;
+        font-weight: bold;
+    }
+    
+    .badge-individual {
+        background-color: #6f42c1;
+        color: white;
+    }
+    
+    .badge-business {
+        background-color: #fd7e14;
+        color: white;
+    }
+    
+    .status-badge {
+        font-size: 0.75rem;
+        padding: 0.35rem 0.65rem;
+        border-radius: 0.25rem;
+    }
+    
+    .badge-draft { background-color: #6c757d; color: white; }
+    .badge-submitted { background-color: #17a2b8; color: white; }
+    .badge-under_review { background-color: #ffc107; color: #212529; }
+    .badge-approved { background-color: #28a745; color: white; }
+    .badge-rejected { background-color: #dc3545; color: white; }
+    
+    .info-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1rem;
+    }
+    
+    .info-item {
+        margin-bottom: 0.5rem;
+    }
+    
+    .info-label {
+        display: block;
+        font-size: 0.875rem;
+        color: #6c757d;
+    }
+    
+    .info-value {
+        font-weight: 500;
+    }
+    
+    .document-card {
+        text-align: center;
+        padding: 1.5rem;
+        border: 1px solid #dee2e6;
+        border-radius: 0.5rem;
+        height: 100%;
+    }
+    
+    .document-icon {
+        font-size: 2rem;
+        color: #6a11cb;
+        margin-bottom: 1rem;
+    }
+    
+    .agreements-list {
+        border: 1px solid #dee2e6;
+        border-radius: 0.5rem;
+        overflow: hidden;
+    }
+    
+    .agreement-item {
+        padding: 0.75rem 1.25rem;
+        border-bottom: 1px solid #dee2e6;
+    }
+    
+    .agreement-item:last-child {
+        border-bottom: none;
+    }
+    
+    .agreement-accepted {
+        background-color: rgba(40, 167, 69, 0.1);
+        color: #28a745;
+    }
+    
+    .agreement-not-accepted {
+        background-color: rgba(220, 53, 69, 0.1);
+        color: #dc3545;
+    }
+    
+    .activity-log {
+        list-style: none;
+        padding-left: 0;
+    }
+    
+    .activity-log li {
+        padding: 0.5rem 0;
+        border-bottom: 1px dashed #dee2e6;
+    }
+    
+    .nav-tabs .nav-link {
+        font-weight: 500;
+    }
+    
+    .tab-content {
+        padding: 1.5rem 0;
+    }
+</style>
+<body>
+    <div class="layout-wrapper layout-content-navbar">
+        <div class="layout-container">
+            <%- include('../../../partials/sideBar') %>
+            <div class="layout-page">
+                <%- include('../../../partials/header') %>
+                <div class="content-wrapper">
+                    <div class="admin-container">
+                        <div class="admin-header">
+                            <h2>Vendor Details</h2>
+                            <a href="/vendor" class="btn btn-gradient">
+                                <i class="fas fa-arrow-left me-2"></i>Back to List
+                            </a>
+                        </div>
+
+                       <div class="card vendor-card mb-4">
+                                <!-- Vendor Header Section -->
+                                <div class="vendor-header d-flex align-items-start p-4">
+                                    <div class="vendor-avatar-container me-4">
+                                        <% if (vendor.documents?.profilePhoto) { %>
+                                            <img src="<%= vendor.documents.profilePhoto %>" alt="Profile" class="vendor-avatar rounded-circle">
+                                        <% } else { %>
+                                            <div class="vendor-avatar rounded-circle bg-light d-flex align-items-center justify-content-center">
+                                                <i class="fas fa-user-tie fa-2x text-muted"></i>
+                                            </div>
+                                        <% } %>
+                                        <span class="vendor-type-badge <%= vendor.vendorType === 'individual' ? 'badge-individual' : 'badge-business' %>">
+                                            <%= vendor.vendorType.toUpperCase() %>
+                                        </span>
+                                    </div>
+                                    
+                                    <div class="vendor-basic-info flex-grow-1">
+                                        <h3 class="mb-1">
+                                            <%= vendor.vendorType === 'individual' ? 
+                                                `${vendor.firstName} ${vendor.lastName}` : 
+                                                vendor.businessInfo?.businessName %>
+                                        </h3>
+                                        
+                                        <div class="d-flex flex-wrap align-items-center gap-3 mb-2">
+                                            <span class="status-badge badge-<%= vendor.status %>">
+                                                <%= vendor.status.split('_').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ') %>
+                                            </span>
+                                            
+                                            <div class="contact-info">
+                                                <i class="fas fa-phone-alt me-1"></i>
+                                                <%= vendor.phoneNumber %>
+                                                <% if (vendor.personalInfo?.alternatePhoneNumber) { %>
+                                                    / <%= vendor.personalInfo.alternatePhoneNumber %>
+                                                <% } %>
+                                                <% if (vendor.businessInfo?.businessPhoneNumber) { %>
+                                                    / <%= vendor.businessInfo.businessPhoneNumber %>
+                                                <% } %>
+                                            </div>
+                                            
+                                            <div class="email-info">
+                                                <i class="fas fa-envelope me-1"></i>
+                                                <%= vendor.emailAddress %>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="d-flex flex-wrap gap-2">
+                                            <% if (vendor.yearsOfExperience) { %>
+                                                <span class="badge bg-info">
+                                                    <i class="fas fa-briefcase me-1"></i>
+                                                    <%= vendor.yearsOfExperience %>+ years experience
+                                                </span>
+                                            <% } %>
+                                            
+                                            <% if (vendor.languageSpoken?.length) { %>
+                                                <span class="badge bg-secondary">
+                                                    <i class="fas fa-language me-1"></i>
+                                                    <%= vendor.languageSpoken.join(', ') %>
+                                                </span>
+                                            <% } %>
+                                            
+                                            <% if (vendor.serviceableLocations?.length) { %>
+                                                <span class="badge bg-primary">
+                                                    <i class="fas fa-map-marker-alt me-1"></i>
+                                                    Serves <%= vendor.serviceableLocations.length %> areas
+                                                </span>
+                                            <% } %>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Main Content Tabs -->
+                                <div class="card-body">
+                                    <ul class="nav nav-tabs mb-4" id="vendorTabs" role="tablist">
+                                        <li class="nav-item" role="presentation">
+                                            <button class="nav-link active" id="details-tab" data-bs-toggle="tab" data-bs-target="#details" type="button" role="tab">Details</button>
+                                        </li>
+                                        <li class="nav-item" role="presentation">
+                                            <button class="nav-link" id="services-tab" data-bs-toggle="tab" data-bs-target="#services" type="button" role="tab">Services</button>
+                                        </li>
+                                        <li class="nav-item" role="presentation">
+                                            <button class="nav-link" id="financial-tab" data-bs-toggle="tab" data-bs-target="#financial" type="button" role="tab">Financial</button>
+                                        </li>
+                                        <% if(adminPerms.includes('vendor-document')) { %>
+                                            <li class="nav-item" role="presentation">
+                                                <button class="nav-link" id="documents-tab" data-bs-toggle="tab" data-bs-target="#documents" type="button" role="tab">Documents</button>
+                                            </li>
+                                        <% } %>
+                                        <li class="nav-item" role="presentation">
+                                            <button class="nav-link" id="agreements-tab" data-bs-toggle="tab" data-bs-target="#agreements" type="button" role="tab">Agreements</button>
+                                        </li>
+                                    </ul>
+
+                                    <div class="tab-content" id="vendorTabContent">
+                                        <!-- Details Tab -->
+                                        <div class="tab-pane fade show active" id="details" role="tabpanel">
+                                            <div class="row">
+                                                <!-- Personal/Business Info Column -->
+                                                <div class="col-md-6">
+                                                    <% if (vendor.vendorType === 'individual') { %>
+                                                        <h5 class="mb-3"><i class="fas fa-user me-2"></i>Personal Information</h5>
+                                                        <div class="info-grid">
+                                                            <div class="info-item">
+                                                                <span class="info-label">Date of Birth</span>
+                                                                <span class="info-value"><%= vendor.personalInfo?.dateOfBirth ? new Date(vendor.personalInfo.dateOfBirth).toLocaleDateString() : 'N/A' %></span>
+                                                            </div>
+                                                            <div class="info-item">
+                                                                <span class="info-label">Gender</span>
+                                                                <span class="info-value"><%= vendor.personalInfo?.gender?.toUpperCase() || 'N/A' %></span>
+                                                            </div>
+                                                            <div class="info-item">
+                                                                <span class="info-label">Experience</span>
+                                                                <span class="info-value"><%= vendor.yearsOfExperience || '0' %> years</span>
+                                                            </div>
+                                                            <div class="info-item">
+                                                                <span class="info-label">Languages</span>
+                                                                <span class="info-value"><%= vendor.languageSpoken?.join(', ') || 'N/A' %></span>
+                                                            </div>
+                                                        </div>
+                                                    <% } else { %>
+                                                        <h5 class="mb-3"><i class="fas fa-building me-2"></i>Business Information</h5>
+                                                        <div class="info-grid">
+                                                            <div class="info-item">
+                                                                <span class="info-label">First Name</span>
+                                                                <span class="info-value"><%= vendor.firstName || 'N/A' %></span>
+                                                            </div>
+                                                            <div class="info-item">
+                                                                <span class="info-label">Last Name</span>
+                                                                <span class="info-value"><%= vendor.lastName || 'N/A' %></span>
+                                                            </div>
+                                                            <div class="info-item">
+                                                                <span class="info-label">Business Type</span>
+                                                                <span class="info-value"><%= vendor.businessInfo?.businessType || 'N/A' %></span>
+                                                            </div>
+                                                            <div class="info-item">
+                                                                <span class="info-label">Phone</span>
+                                                                <span class="info-value"><%= vendor.businessInfo?.businessPhoneNumber || 'N/A' %></span>
+                                                            </div>
+                                                            <div class="info-item">
+                                                                <span class="info-label">Established</span>
+                                                                <span class="info-value"><%= vendor.yearsOfExperience ? `${vendor.yearsOfExperience} years` : 'N/A' %></span>
+                                                            </div>
+                                                        
+                                                        </div>
+                                                    <% } %>
+                                                </div>
+                                                
+                                                <!-- Address Column -->
+                                                <div class="col-md-6">
+                                                    <h5 class="mb-3"><i class="fas fa-map-marked-alt me-2"></i>Address</h5>
+                                                    <div class="address-card">
+                                                        <!-- Residential Address -->
+                                                        <div class="residential-address mb-4">
+                                                        <h6><i class="fas fa-home me-2"></i>Residential Address</h6>
+                                                        <% if (vendor.residentialAddress) { %>
+                                                            <p><%= vendor.residentialAddress.address %></p>
+                                                            <p>Coordinates: <%= vendor.residentialAddress.location.coordinates.join(', ') %></p>
+                                                            <a href="https://www.google.com/maps?q=<%= vendor.residentialAddress.location.coordinates[1] %>,<%= vendor.residentialAddress.location.coordinates[0] %>" 
+                                                            target="_blank" 
+                                                            class="btn btn-sm btn-outline-primary mt-2">
+                                                            <i class="fas fa-map-marked-alt me-1"></i> View on Map
+                                                            </a>
+                                                        <% } else { %>
+                                                            <p class="text-muted">Not specified</p>
+                                                        <% } %>
+                                                        </div>
+
+                                                        <!-- Business Address -->
+                                                        <div class="business-address mb-4">
+                                                        <h6><i class="fas fa-building me-2"></i>Business Address</h6>
+                                                        <p><%= vendor.address %></p>
+                                                        <p><%= vendor.cityDistrict %>, <%= vendor.state %></p>
+                                                        <p>PIN: <%= vendor.pinCode %></p>
+                                                        </div>
+
+                                                        <!-- Serviceable Areas -->
+                                                        <div class="mt-3">
+                                                        <h6><i class="fas fa-truck me-2"></i>Serviceable Areas</h6>
+                                                        <div class="service-areas">
+                                                            <% if (vendor.serviceableLocations?.length) { %>
+                                                            <div class="row g-2">
+                                                                <% vendor.serviceableLocations.forEach(location => { %>
+                                                                <div class="col-md-6">
+                                                                    <div class="card mb-2">
+                                                                    <div class="card-body p-2">
+                                                                        <p class="mb-1"><%= location.address %></p>
+                                                                        <a href="https://www.google.com/maps?q=<%= location.location.coordinates[1] %>,<%= location.location.coordinates[0] %>" 
+                                                                        target="_blank" 
+                                                                        class="btn btn-sm btn-outline-primary">
+                                                                        <i class="fas fa-map-marker-alt me-1"></i> Map
+                                                                        </a>
+                                                                    </div>
+                                                                    </div>
+                                                                </div>
+                                                                <% }); %>
+                                                            </div>
+                                                            <% } else { %>
+                                                            <span class="text-muted">Not specified</span>
+                                                            <% } %>
+                                                        </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <!-- Services Tab -->
+                                        <div class="tab-pane fade" id="services" role="tabpanel">
+                                            <div class="row">
+                                            <div class="col-md-6">
+                                                <h5 class="mb-3"><i class="fas fa-list-alt me-2"></i>Service Categories</h5>
+                                                <div class="service-categories">
+                                                    <% if (vendor.serviceCategories?.length) { %>
+                                                        <div class="row">
+                                                            <% vendor.serviceCategories.forEach(category => { %>
+                                                                <div class="col-md-6 mb-3">
+                                                                    <div class="card h-100">
+                                                                        <% if (category.image) { %>
+                                                                            <img src="<%= category.image %>" class="card-img-top" alt="<%= category.name %>" >
+                                                                        <% } %>
+                                                                        <div class="card-body">
+                                                                            <h6 class="card-title"><a href="/concierge-service/<%= category._id %>/show"><%= category.name %></a></h6>
+                                                                            <p class="card-text text-muted small"><%= category.description %></p>
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                            <% }); %>
+                                                        </div>
+                                                    <% } else { %>
+                                                        <div class="alert alert-light">No service categories specified</div>
+                                                    <% } %>
+                                                </div>
+                                                
+                                                <h5 class="mt-4 mb-3"><i class="fas fa-clock me-2"></i>Working Hours</h5>
+                                                <div class="card">
+                                                    <div class="card-body">
+                                                        <%= vendor.workingDaysAndHours || 'Not specified' %>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                                
+                                                <div class="col-md-6">
+                                                    <h5 class="mb-3"><i class="fas fa-money-bill-wave me-2"></i>Pricing Information</h5>
+                                                    <% if (vendor.pricing) { %>
+                                                        <div class="info-grid">
+                                                            <div class="info-item">
+                                                                <span class="info-label">Pricing Structure</span>
+                                                                <span class="info-value"><%= vendor.pricing.pricingStructure || 'N/A' %></span>
+                                                            </div>
+                                                            <div class="info-item">
+                                                                <span class="info-label">Price Range</span>
+                                                                <span class="info-value"><%= vendor.pricing.priceRange ? `₹${vendor.pricing.priceRange}` : 'N/A' %></span>
+                                                            </div>
+                                                            <div class="info-item">
+                                                                <span class="info-label">Discount Code</span>
+                                                                <span class="info-value">
+                                                                    <%= vendor.pricing.discountCodeId ? 
+                                                                        `${vendor?.pricing?.discountCodeId?.codeName}% (${vendor?.pricing?.discountCodeId?.codeValue || 'No code'})` : 
+                                                                        'No' %>
+                                                                </span>
+                                                            </div>
+                                                            <div class="info-item">
+                                                                <span class="info-label">Cancellation Policy</span>
+                                                                <span class="info-value"><%= vendor.pricing.refundPolicyId ? 
+                                                                    `${vendor?.pricing?.refundPolicyId?.timeValue} ${vendor?.pricing?.refundPolicyId?.timeUnit} (${vendor?.pricing?.refundPolicyId?.percentage}%)` : 
+                                                                    'No' %></span>
+                                                            </div>
+                                                        </div>
+                                                        <% if (vendor.pricing.additionalNotes) { %>
+                                                            <div class="mt-3">
+                                                                <h6>Additional Notes</h6>
+                                                                <p class="text-muted"><%= vendor.pricing.additionalNotes %></p>
+                                                            </div>
+                                                        <% } %>
+                                                    <% } else { %>
+                                                        <p class="text-muted">No pricing information provided</p>
+                                                    <% } %>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <!-- Financial Tab -->
+                                        <div class="tab-pane fade" id="financial" role="tabpanel">
+                                            <div class="row">
+                                                <div class="col-md-6">
+                                                    <h5 class="mb-3"><i class="fas fa-university me-2"></i>Banking Details</h5>
+                                                    <% if (vendor.bankingDetails) { %>
+                                                        <div class="info-grid">
+                                                            <div class="info-item">
+                                                                <span class="info-label">Bank Name</span>
+                                                                <span class="info-value"><%= vendor.bankingDetails.bankName || 'N/A' %></span>
+                                                            </div>
+                                                            <div class="info-item">
+                                                                <span class="info-label">Account Number</span>
+                                                                <span class="info-value">
+                                                                    <%= vendor.bankingDetails.accountNumber ? 
+                                                                        '••••••••' + vendor.bankingDetails.accountNumber.slice(-4) : 
+                                                                        'N/A' %>
+                                                                </span>
+                                                            </div>
+                                                            <div class="info-item">
+                                                                <span class="info-label">IFSC Code</span>
+                                                                <span class="info-value"><%= vendor.bankingDetails.ifscCode || 'N/A' %></span>
+                                                            </div>
+                                                            <div class="info-item">
+                                                                <span class="info-label">UPI ID</span>
+                                                                <span class="info-value"><%= vendor.bankingDetails.upiId || 'N/A' %></span>
+                                                            </div>
+                                                            <div class="info-item">
+                                                                <span class="info-label">Preferred Payment</span>
+                                                                <span class="info-value"><%= vendor.bankingDetails.preferredPaymentMode || 'N/A' %></span>
+                                                            </div>
+                                                        </div>
+                                                    <% } else { %>
+                                                        <p class="text-muted">No banking details provided</p>
+                                                    <% } %>
+                                                </div>
+                                                
+                                                <div class="col-md-6">
+                                                    <h5 class="mb-3"><i class="fas fa-comments-dollar me-2"></i>Payment Communication</h5>
+                                                    <p>Primary Mode: <strong><%= vendor.paymentModeOfCommunication || 'Not specified' %></strong></p>
+                                                    
+                                                    <h5 class="mt-4 mb-3"><i class="fas fa-file-invoice me-2"></i>Pricing Policy</h5>
+                                                    <% if (vendor.pricing) { %>
+                                                        <div class="pricing-policy">
+                                                            <p><strong>Structure:</strong> <%= vendor.pricing.pricingStructure || 'Not specified' %></p>
+                                                            <% if (vendor.pricing.providingDiscount) { %>
+                                                                <p><strong>Discount:</strong> <%= vendor.pricing.discountPercentage %>% 
+                                                                    <% if (vendor.pricing.discountCode) { %>
+                                                                        (Code: <%= vendor.pricing.discountCode %>)
+                                                                    <% } %>
+                                                                </p>
+                                                            <% } %>
+                                                            <p><strong>Cancellation Policy:</strong> <%= vendor.pricing.cancellationRefundPolicy || 'Standard' %></p>
+                                                        </div>
+                                                    <% } else { %>
+                                                        <p class="text-muted">No pricing policy provided</p>
+                                                    <% } %>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <% if(adminPerms.includes('vendor-document')) { %>
+                                            <!-- Documents Tab -->
+                                            <div class="tab-pane fade" id="documents" role="tabpanel">
+                                                <div class="row">
+                                                    <!-- Profile/Business Photos -->
+                                                    <div class="col-md-4 mb-4">
+                                                        <div class="document-card">
+                                                            <div class="document-icon">
+                                                                <i class="fas fa-id-card"></i>
+                                                            </div>
+                                                            <h6>Profile Photo</h6>
+                                                            <% if (vendor.documents?.profilePhoto) { %>
+                                                                <a href="<%= vendor.documents.profilePhoto %>" target="_blank" class="btn btn-sm btn-outline-primary mt-2">View</a>
+                                                            <% } else { %>
+                                                                <span class="text-muted">Not uploaded</span>
+                                                            <% } %>
+                                                        </div>
+                                                    </div>
+                                                    
+                                                    <% if (vendor.vendorType === 'business' && vendor.documents?.businessPhoto) { %>
+                                                    <div class="col-md-4 mb-4">
+                                                        <div class="document-card">
+                                                            <div class="document-icon">
+                                                                <i class="fas fa-building"></i>
+                                                            </div>
+                                                            <h6>Business Photo</h6>
+                                                            <a href="<%= vendor.documents.businessPhoto %>" target="_blank" class="btn btn-sm btn-outline-primary mt-2">View</a>
+                                                        </div>
+                                                    </div>
+                                                    <% } %>
+                                                    
+                                                    <!-- Other Documents -->
+                                                    <% if (vendor.documents?.uploadDocuments?.length) { %>
+                                                        <% vendor.documents.uploadDocuments.forEach((doc, index) => { %>
+                                                        <div class="col-md-4 mb-4">
+                                                            <div class="document-card">
+                                                                <div class="document-icon">
+                                                                    <i class="fas fa-file-alt "></i>
+                                                                </div>
+                                                                <h6><%= doc.type || `Document ${index+1}` %></h6>
+                                                                <small class="text-muted"><%= doc.name %></small><br>
+                                                                <a href="<%= doc.file %>" target="_blank" class="btn btn-sm btn-outline-primary mt-2">View</a>
+                                                            </div>
+                                                        </div>
+                                                        <% }); %>
+                                                    <% } else { %>
+                                                        <div class="col-12">
+                                                            <p class="text-muted">No additional documents uploaded</p>
+                                                        </div>
+                                                    <% } %>
+                                                </div>
+                                            </div>
+                                        <% } %>
+
+                                        <!-- Agreements Tab -->
+                                        <div class="tab-pane fade" id="agreements" role="tabpanel">
+                                            <h5 class="mb-3"><i class="fas fa-file-signature me-2"></i>Terms & Agreements</h5>
+                                            <% if (vendor.agreements) { %>
+                                                <div class="agreements-list">
+                                                    <div class="agreement-item <%= vendor?.agreements?.termsAndConditions ? 'agreement-accepted' : 'agreement-not-accepted' %>">
+                                                        <i class="fas fa-<%= vendor?.agreements?.termsAndConditions ? 'check-circle' : 'times-circle' %> me-2"></i>
+                                                        Terms & Conditions Accepted
+                                                    </div>
+                                                    <div class="agreement-item <%= vendor?.agreements?.authenticityOfDocuments ? 'agreement-accepted' : 'agreement-not-accepted' %>">
+                                                        <i class="fas fa-<%= vendor?.agreements?.authenticityOfDocuments ? 'check-circle' : 'times-circle' %> me-2"></i>
+                                                        Document Authenticity Verified
+                                                    </div>
+                                                    <div class="agreement-item <%= vendor?.agreements?.conductBackgroundVerification ? 'agreement-accepted' : 'agreement-not-accepted' %>">
+                                                        <i class="fas fa-<%= vendor?.agreements?.conductBackgroundVerification ? 'check-circle' : 'times-circle' %> me-2"></i>
+                                                        Background Verification Allowed
+                                                    </div>
+                                                    <div class="agreement-item <%= vendor?.agreements?.serviceLevelAgreement ? 'agreement-accepted' : 'agreement-not-accepted' %>">
+                                                        <i class="fas fa-<%= vendor?.agreements?.serviceLevelAgreement ? 'check-circle' : 'times-circle' %> me-2"></i>
+                                                        Service Level Agreement Accepted
+                                                    </div>
+                                                </div>
+                                            <% } else { %>
+                                                <p class="text-muted">No agreement information available</p>
+                                            <% } %>
+                                            
+                                            <div class="mt-4">
+                                                <h5><i class="fas fa-history me-2"></i>Activity Log</h5>
+                                                <ul class="activity-log">
+                                                    <li>
+                                                        <i class="fas fa-circle-plus text-success me-2"></i>
+                                                        Profile created on <%= formatDate(vendor.createdAt) %>
+                                                    </li>
+                                                    <li>
+                                                        <i class="fas fa-pen text-primary me-2"></i>
+                                                        Last updated on <%= formatDate(vendor.updatedAt) %>
+                                                    </li>
+                                                </ul>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+          
+                            </div>
+
+                    </div>
+
+                    <%- include('../../../partials/footer') %>
+                    <div class="content-backdrop fade"></div>
+                </div>
+            </div>
+        </div>
+        <div class="layout-overlay layout-menu-toggle"></div>
+    </div>
+</body> 
+
+

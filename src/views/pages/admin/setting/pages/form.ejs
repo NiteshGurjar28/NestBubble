@@ -1,0 +1,120 @@
+<body>
+    <script src="https://cdn.ckeditor.com/ckeditor5/36.0.1/classic/ckeditor.js"></script>
+
+    <div class="layout-wrapper layout-content-navbar">
+        <div class="layout-container">
+            <%- include('../../../../partials/sideBar') %>
+            <div class="layout-page">
+                <%- include('../../../../partials/header') %>
+                <div class="content-wrapper">
+                    <div class="admin-container">
+                        <div class="admin-header">
+                            <h2><%= title %></h2>
+                        </div>
+                        <div class="row g-4 mb-4">
+                            <div class="col-md-12 col-lg-12">
+                                <div class="card">
+                                    <div class="card-body">
+                                        <form id="pageForm" enctype="multipart/form-data">
+                                            <input type="hidden" name="pageType" value="<%= page?.pageType || '' %>">
+                                            
+                                            <div class="row">
+                                                <div class="mb-3 col-md-6">
+                                                    <label class="form-label">Title</label>
+                                                    <input type="text" class="form-control" name="title" value="<%= page?.title || '' %>" required>
+                                                </div>
+                                                <div class="mb-3 col-md-6">
+                                                    <label class="form-label">Subtitle</label>
+                                                    <input type="text" class="form-control" name="subtitle" value="<%= page?.subtitle || '' %>">
+                                                </div>
+                                            </div>
+
+                                            <div class="mb-3">
+                                                <label class="form-label">Content</label>
+                                                <textarea class="form-control" name="content" id="ckeditor" rows="5"><%= page?.content || '' %></textarea>
+                                            </div>
+
+                                            <div class="mt-4">
+                                                <button type="submit" class="btn btn-primary me-2" id="savePageBtn">
+                                                    <span class="spinner-border spinner-border-sm d-none" role="status"></span>
+                                                    Save Changes
+                                                </button>
+                                                <button type="reset" class="btn btn-outline-secondary">Reset</button>
+                                            </div>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <%- include('../../../../partials/footer') %>
+                    <div class="content-backdrop fade"></div>
+                </div>
+            </div>
+        </div>
+        <div class="layout-overlay layout-menu-toggle"></div>
+    </div>
+</body>
+
+<script>
+  ClassicEditor
+    .create(document.querySelector('#ckeditor'), {
+      toolbar: ['heading', '|', 'bold', 'italic', 'link', 'bulletedList', 'numberedList', 'blockQuote'],
+      heading: {
+        options: [
+          { model: 'paragraph', title: 'Paragraph', class: 'ck-heading_paragraph' },
+          { model: 'heading1', view: 'h1', title: 'Heading 1', class: 'ck-heading_heading1' },
+          { model: 'heading2', view: 'h2', title: 'Heading 2', class: 'ck-heading_heading2' }
+        ]
+      }
+    })
+    .catch(error => {
+      console.error(error);
+    });
+</script>
+
+<script>
+    $(document).ready(function() {
+        // Form submission
+        $('#pageForm').on('submit', function(e) {
+            e.preventDefault();
+            const btn = $('#savePageBtn');
+            btn.prop('disabled', true);
+            btn.find('.spinner-border').removeClass('d-none');
+
+            const formData = new FormData(this);
+
+            $.ajax({
+                url: '/pages/<%= page?.pageType || req.params.pageType %>',
+                method: 'POST',
+                data: formData,
+                processData: false,
+                contentType: false,
+                success: function(response) {
+                    Swal.fire({
+                        title: 'Success!',
+                        text: response.message,
+                        icon: 'success',
+                        confirmButtonText: 'OK'
+                    }).then(() => {
+                        window.location.reload();
+                    });
+                },
+                error: function(xhr) {
+                    Swal.fire({
+                        title: 'Error!',
+                        text: xhr.responseJSON?.message || 'Failed to save page',
+                        icon: 'error',
+                        confirmButtonText: 'OK'
+                    });
+                },
+                complete: function() {
+                    btn.prop('disabled', false);
+                    btn.find('.spinner-border').addClass('d-none');
+                }
+            });
+        });
+    });
+</script>
+

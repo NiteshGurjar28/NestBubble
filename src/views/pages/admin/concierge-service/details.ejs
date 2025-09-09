@@ -1,0 +1,673 @@
+
+<body>
+    <style>
+        /* Booking Services Styles */
+        .stats-card {
+          border-radius: 10px;
+          box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+          transition: all 0.3s ease;
+        }
+
+        .stats-card:hover {
+          transform: translateY(-3px);
+          box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .table-hover tbody tr:hover {
+          background-color: rgba(0,0,0,0.02);
+        }
+
+        .badge {
+          font-weight: 500;
+          padding: 5px 10px;
+        }
+
+        .btn-gradient {
+          background: linear-gradient(135deg, #3a7bd5, #00d2ff);
+          color: white;
+          border: none;
+        }
+
+        .page-item.active .page-link {
+          background-color: #3a7bd5;
+          border-color: #3a7bd5;
+        }
+
+        .page-link {
+          color: #3a7bd5;
+        }
+
+        .view-booking {
+          transition: all 0.2s;
+        }
+
+        .view-booking:hover {
+          transform: translateY(-2px);
+        }
+    </style>
+    <div class="layout-wrapper layout-content-navbar">
+        <div class="layout-container">
+            <%- include('../../../partials/sideBar') %>
+            <div class="layout-page">
+                <%- include('../../../partials/header') %>
+                <div class="content-wrapper">
+                    <div class="admin-container">
+                        <div class="admin-header">
+                            <h2>Concierge Service Details</h2>
+                            <a href="/concierge-service" class="btn btn-gradient">
+                                <i class="fas fa-arrow-left me-2"></i> Back
+                            </a>
+                        </div>
+
+                        <div class="row g-4 mb-4">
+                            <div class="col-md-12 col-lg-12">
+                                <div class="stats-card">
+                                    <div class="card-body">
+                                         <div class="row">
+                                            <div class="col-md-8">
+                                                <table class="table table-bordered">
+                                                    <tr>
+                                                        <th width="30%">Name</th>
+                                                        <td><%= service.name %></td>
+                                                    </tr>
+                                                    <tr>
+                                                        <th>Description</th>
+                                                        <td><%= service.description || 'N/A' %></td>
+                                                    </tr>
+                                                    <tr>
+                                                        <th>Status</th>
+                                                        <td>
+                                                            <span class="badge bg-<%= service.status ? 'success' : 'danger' %>">
+                                                                <%= service.status ? 'Active' : 'Inactive' %>
+                                                            </span>
+                                                        </td>
+                                                    </tr>
+                                                    <tr>
+                                                        <th>Created At</th>
+                                                        <td><%= formatDate(service.createdAt) %></td>
+                                                    </tr>
+                                                    <% if (service.updatedAt) { %>
+                                                    <tr>
+                                                        <th>Last Updated</th>
+                                                        <td><%=  formatDate(service.updatedAt) %></td>
+                                                    </tr>
+                                                    <% } %>
+                                                </table>
+                                            </div>
+                                             <div class="col-md-4">
+                                                <% if (service.image) { %>
+                                                    <div class="text-center">
+                                                        <img src="<%= service.image %>" 
+                                                            alt="<%= service.name %>" 
+                                                            class="img-fluid rounded"
+                                                            style="max-height: 300px;">
+                                                    </div>
+                                                <% } else { %>
+                                                    <div class="text-center py-5 bg-light rounded">
+                                                        <i class="fas fa-image fa-3x text-muted"></i>
+                                                        <p class="mt-2">No Image Available</p>
+                                                    </div>
+                                                <% } %>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <% if(adminPerms.includes('concierge-service-booking-list')) { %>
+                          <div class="card mb-4">
+                              <div class="card-body">
+                              <div class="row g-3">
+                                  <!-- <div class="col-md-6">
+                                    <div class="input-group">
+                                        <span class="input-group-text bg-white"><i class="fas fa-search"></i></span>
+                                        <input type="text" class="form-control" id="searchInput" placeholder="Search by name, email or phone...">
+                                    </div>
+                                  </div> -->
+                                  <div class="col-md-3">
+                                  <select class="form-select" id="statusFilter">
+                                      <option value="">All Statuses</option>
+                                      <option value="pending">Pending</option>
+                                      <option value="confirmed">Confirmed</option>
+                                      <option value="cancelled">Cancelled</option>
+                                      <option value="completed">Completed</option>
+                                  </select>
+                                  </div>
+                                  <div class="col-md-3">
+                                  <button class="btn btn-primary w-100" id="resetFilters">Reset Filters</button>
+                                  </div>
+                              </div>
+                              </div>
+                          </div>
+
+                          <!-- Booking Services Table -->
+                          <div class="card">
+                              <div class="card-body">
+                              <div class="table-responsive">
+                                  <table class="table table-hover">
+                                  <thead class="table-light">
+                                      <tr>
+                                        <th>Booking ID</th>
+                                        <th>User</th>
+                                        <th>Service</th>
+                                        <th>Status</th>
+                                        <th>Actions</th>
+                                      </tr>
+                                  </thead>
+                                  <tbody id="bookingServicesTable">
+                                      <!-- Data will be loaded via AJAX -->
+                                      <tr>
+                                      <td colspan="7" class="text-center py-4">
+                                          <div class="spinner-border text-primary" role="status">
+                                          <span class="visually-hidden">Loading...</span>
+                                          </div>
+                                      </td>
+                                      </tr>
+                                  </tbody>
+                                  </table>
+                              </div>
+
+                              <!-- Pagination -->
+                              <nav aria-label="Page navigation" class="mt-4">
+                                  <ul class="pagination justify-content-center" id="pagination">
+                                  <!-- Pagination will be loaded via AJAX -->
+                                  </ul>
+                              </nav>
+                              </div>
+                          </div>
+                        <% } %>
+                    </div>
+
+                  <%- include('../../../partials/footer') %>
+                  <div class="content-backdrop fade"></div>
+                </div>
+            </div>
+        </div>
+        <div class="layout-overlay layout-menu-toggle"></div>
+    </div> 
+
+  <!-- View Details Modal -->
+  <div class="modal fade" id="viewBookingModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content">
+        <div class="modal-header">
+          <!-- <h5 class="modal-title">Booking Details</h5> -->
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body" id="bookingDetailsContent">
+          <!-- Content will be loaded dynamically -->
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal/Popup HTML -->
+  <div class="modal fade" id="bookingFormModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Booking Form</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body" id="bookingFormContent">
+          <div class="text-center py-4">
+            <div class="spinner-border text-primary" role="status">
+              <span class="visually-hidden">Loading...</span>
+            </div>
+            <p class="mt-2">Loading form...</p>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</body>
+
+
+<script>
+  $(document).ready(function() {
+    let currentPage = 1;
+    const limit = 10;
+    const serviceId = '<%= service._id %>';
+
+    // Load booking services
+    function loadBookingServices(page = 1, search = '', status = '') {
+      currentPage = page;
+      $('#bookingServicesTable').html(`
+        <tr>
+          <td colspan="7" class="text-center py-4">
+            <div class="spinner-border text-primary" role="status">
+              <span class="visually-hidden">Loading...</span>
+            </div>
+          </td>
+        </tr>
+      `);
+
+      $.get('/concierge-service/booking', {
+        page,
+        limit,
+        search,
+        status,
+        serviceId,
+      }, function(data) {
+        if (data.bookingServices.length === 0) {
+          $('#bookingServicesTable').html(`
+            <tr>
+              <td colspan="7" class="text-center py-4">No booking services found</td>
+            </tr>
+          `);
+          $('#pagination').empty();
+          return;
+        }
+
+        let tableHtml = '';
+        data.bookingServices.forEach(booking => {
+          const user = booking.userId || {};
+          const service = booking.serviceId || {};
+          
+          // Get important fields from formData for table display
+
+          
+          tableHtml += `
+            <tr>
+              <td><a href="/property/booking/${booking?.booking?._id}/show">${booking?.bookingId}</a></td>
+              <td>
+                <div class="d-flex align-items-center">
+                  ${user.profileImage ? 
+                    `<img src="${user.profileImage}" class="rounded-circle me-2" width="40" height="40" alt="${user.firstName}">` : 
+                    `<div class="rounded-circle bg-light d-flex align-items-center justify-content-center me-2" style="width: 40px; height: 40px;">
+                      <i class="fas fa-user text-muted"></i>
+                    </div>`}
+                  <div>
+                    <div class="fw-semibold">${user.firstName || ''} ${user.lastName || ''}</div>
+                    <small class="text-muted">${booking.email || ''}</small>
+                  </div>
+                </div>
+              </td>
+              <td>${service.name || 'N/A'}</td>
+              <td>
+                <span class="badge bg-${getStatusColor(booking.status)} status-badge" 
+                      style="cursor: pointer;"
+                      data-booking-id="${booking._id}"
+                      data-status="${booking.status}">
+                  ${booking.status.charAt(0).toUpperCase() + booking.status.slice(1)}
+                </span>
+              </td>
+              <td>
+                <button class="btn btn-sm btn-outline-primary view-booking" 
+                        data-booking-id="${booking._id}"
+                        data-bs-toggle="modal" 
+                        data-bs-target="#viewBookingModal">
+                 <i class="bx bx-show"></i>
+                </button>
+              </td>
+            </tr>
+          `;
+        });
+
+        $('#bookingServicesTable').html(tableHtml);
+        renderPagination(data.totalPages, currentPage);
+      }).fail(function() {
+        $('#bookingServicesTable').html(`
+          <tr>
+            <td colspan="7" class="text-center py-4 text-danger">
+              Failed to load booking services. Please try again.
+            </td>
+          </tr>
+        `);
+      });
+    }
+
+    // Get status color
+    function getStatusColor(status) {
+      switch(status) {
+        case 'pending': return 'warning';
+        case 'confirmed': return 'success';
+        case 'cancelled': return 'danger';
+        case 'completed': return 'info';
+        default: return 'secondary';
+      }
+    }
+
+    // Render pagination
+    function renderPagination(totalPages, currentPage) {
+      let paginationHtml = '';
+      const maxVisiblePages = 5;
+      let startPage, endPage;
+
+      if (totalPages <= maxVisiblePages) {
+        startPage = 1;
+        endPage = totalPages;
+      } else {
+        const maxPagesBeforeCurrent = Math.floor(maxVisiblePages / 2);
+        const maxPagesAfterCurrent = Math.ceil(maxVisiblePages / 2) - 1;
+        
+        if (currentPage <= maxPagesBeforeCurrent) {
+          startPage = 1;
+          endPage = maxVisiblePages;
+        } else if (currentPage + maxPagesAfterCurrent >= totalPages) {
+          startPage = totalPages - maxVisiblePages + 1;
+          endPage = totalPages;
+        } else {
+          startPage = currentPage - maxPagesBeforeCurrent;
+          endPage = currentPage + maxPagesAfterCurrent;
+        }
+      }
+
+      // Previous button
+      paginationHtml += `
+        <li class="page-item ${currentPage === 1 ? 'disabled' : ''}">
+          <a class="page-link" href="#" data-page="${currentPage - 1}">
+            <i class="fas fa-chevron-left"></i>
+          </a>
+        </li>
+      `;
+
+      // First page and ellipsis
+      if (startPage > 1) {
+        paginationHtml += `
+          <li class="page-item">
+            <a class="page-link" href="#" data-page="1">1</a>
+          </li>
+        `;
+        if (startPage > 2) {
+          paginationHtml += `
+            <li class="page-item disabled">
+              <span class="page-link">...</span>
+            </li>
+          `;
+        }
+      }
+
+      // Page numbers
+      for (let i = startPage; i <= endPage; i++) {
+        paginationHtml += `
+          <li class="page-item ${i === currentPage ? 'active' : ''}">
+            <a class="page-link" href="#" data-page="${i}">${i}</a>
+          </li>
+        `;
+      }
+
+      // Last page and ellipsis
+      if (endPage < totalPages) {
+        if (endPage < totalPages - 1) {
+          paginationHtml += `
+            <li class="page-item disabled">
+              <span class="page-link">...</span>
+            </li>
+          `;
+        }
+        paginationHtml += `
+          <li class="page-item">
+            <a class="page-link" href="#" data-page="${totalPages}">${totalPages}</a>
+          </li>
+        `;
+      }
+
+      // Next button
+      paginationHtml += `
+        <li class="page-item ${currentPage === totalPages ? 'disabled' : ''}">
+          <a class="page-link" href="#" data-page="${currentPage + 1}">
+            <i class="fas fa-chevron-right"></i>
+          </a>
+        </li>
+      `;
+
+      $('#pagination').html(paginationHtml);
+    }
+
+    // Search input handler
+    $('#searchInput').on('keyup', debounce(function() {
+      const search = $(this).val();
+      const status = $('#statusFilter').val();
+      loadBookingServices(1, search, status);
+    }, 500));
+
+    // Status filter handler
+    $('#statusFilter').on('change', function() {
+      const status = $(this).val();
+      const search = $('#searchInput').val();
+      loadBookingServices(1, search, status);
+    });
+
+    // Reset filters
+    $('#resetFilters').on('click', function() {
+      $('#searchInput').val('');
+      $('#statusFilter').val('');
+      loadBookingServices(1);
+    });
+
+    // Pagination click handler
+    $(document).on('click', '.page-link', function(e) {
+      e.preventDefault();
+      const page = $(this).data('page');
+      if (page < 1 || page > $(this).closest('.page-item').siblings().last().find('.page-link').data('page')) {
+        return;
+      }
+      const search = $('#searchInput').val();
+      const status = $('#statusFilter').val();
+      loadBookingServices(page, search, status);
+    });
+
+    // View booking details
+    $(document).on('click', '.view-booking', function() {
+      const bookingId = $(this).data('booking-id');
+      $('#bookingDetailsContent').html(`
+        <div class="text-center py-4">
+          <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Loading...</span>
+          </div>
+        </div>
+      `);
+
+      $.get(`/concierge-service/booking/${bookingId}`, function(data) {
+        const booking = data.data;
+        const user = booking.userId || {};
+        const service = booking.serviceId || {};
+      
+
+        const html = `
+          <div class="row">
+            <div class="col-md-12">
+              <h5 class="mb-3">Booking Information</h5>
+              <table class="table table-bordered">
+                <tr>
+                  <th width="30%">Booking ID</th>
+                  <td>${booking.bookingId}</td>
+                </tr>
+                <tr>
+                  <th width="30%">Name</th>
+                  <td>${booking.name}</td>
+                </tr>
+                <tr>
+                  <th width="30%">Email</th>
+                  <td>${booking.email}</td>
+                </tr>
+                <tr>
+                  <th width="30%">Phone</th>
+                  <td>${booking.phoneNumber}</td>
+                </tr>
+                <tr>
+                  <th width="30%">Event Type</th>
+                  <td>${booking?.eventType?.name}</td>
+                </tr>
+                <tr>
+                  <th width="30%">Guests</th>
+                  <td>${booking.numberOfGuests}</td>
+                </tr>
+                <tr>
+                  <th width="30%">Event Date</th>
+                  <td>${new Date(booking.eventDate).toLocaleDateString('en-IN')}</td>
+                </tr>
+                <tr>
+                  <th width="30%">Message</th>
+                  <td>${booking.message}</td>
+                </tr>
+                <tr>
+                  <th width="30%">Booking Form</th>
+                  <td>
+                    ${ booking.bookingForm || 'N/A'}
+                  </td>
+                </tr>
+                <tr>
+                  <th>Created At</th>
+                  <td>${new Date(booking.createdAt).toLocaleString()}</td>
+                </tr>
+              </table>
+            </div>
+            <div class="col-md-6">
+              <h5 class="mb-3">Guest Details</h5>
+              <div class="d-flex align-items-start mb-4">
+                ${user.profileImage ? 
+                  `<img src="${user.profileImage}" class="rounded-circle me-3" width="80" height="80" alt="${user.firstName}">` : 
+                  `<div class="rounded-circle bg-light d-flex align-items-center justify-content-center me-3" style="width: 80px; height: 80px;">
+                    <i class="fas fa-user fa-2x text-muted"></i>
+                  </div>`}
+                <div>
+                  <h5>${user.firstName || ''} ${user.lastName || ''}</h5>
+                  <p class="mb-1"><i class="fas fa-envelope me-2"></i> ${user.email || ''}</p>
+                  <p class="mb-1"><i class="fas fa-phone me-2"></i> ${user.mobile || ''}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+
+          
+          ${booking.notes ? `
+            <div class="card mt-4">
+              <div class="card-header">
+                <h5 class="mb-0">Additional Notes</h5>
+              </div>
+              <div class="card-body">
+                <p>${booking.notes}</p>
+              </div>
+            </div>
+          ` : ''}
+        `;
+
+        $('#bookingDetailsContent').html(html);
+      }).fail(function() {
+        $('#bookingDetailsContent').html(`
+          <div class="alert alert-danger">
+            Failed to load booking details. Please try again.
+          </div>
+        `);
+      });
+    });
+
+    // Debounce function for search input
+    function debounce(func, wait) {
+      let timeout;
+      return function() {
+        const context = this, args = arguments;
+        clearTimeout(timeout);
+        timeout = setTimeout(function() {
+          func.apply(context, args);
+        }, wait);
+      };
+    }
+
+    // Initial load
+    loadBookingServices();
+
+      $(document).on('click', '.status-badge', function() {
+        const bookingId = $(this).data('booking-id');
+        const currentStatus = $(this).data('status');
+        
+        Swal.fire({
+          title: 'Booking Status',
+          html: `Current status: <strong>${currentStatus.charAt(0).toUpperCase() + currentStatus.slice(1)}</strong>`,
+          icon: 'info',
+          showCancelButton: true,
+          confirmButtonText: 'Change Status',
+          cancelButtonText: 'Close',
+          showDenyButton: true,
+          denyButtonText: 'View Details',
+          buttonsStyling: false,
+          customClass: {
+            confirmButton: 'btn btn-primary me-2',
+            denyButton: 'btn btn-secondary me-2',
+            cancelButton: 'btn btn-light'
+          }
+        }).then((result) => {
+          if (result.isConfirmed) {
+            // Show status change options
+            showStatusChangeOptions(bookingId, currentStatus);
+          } else if (result.isDenied) {
+            // Trigger the view booking modal
+            $(`button[data-booking-id="${bookingId}"]`).click();
+          }
+        });
+      });
+
+      function showStatusChangeOptions(bookingId, currentStatus) {
+        const statusOptions = ['pending', 'confirmed', 'completed', 'cancelled'];
+        
+        Swal.fire({
+          title: 'Update Booking Status',
+          input: 'select',
+          inputOptions: statusOptions.reduce((acc, status) => {
+            acc[status] = status.charAt(0).toUpperCase() + status.slice(1);
+            return acc;
+          }, {}),
+          inputValue: currentStatus,
+          showCancelButton: true,
+          confirmButtonText: 'Update',
+          cancelButtonText: 'Cancel',
+          buttonsStyling: false,
+          customClass: {
+            confirmButton: 'btn btn-primary me-2',
+            cancelButton: 'btn btn-light'
+          },
+          inputValidator: (value) => {
+            if (!value) {
+              return 'You need to select a status!';
+            }
+          }
+        }).then((result) => {
+          if (result.isConfirmed) {
+            const newStatus = result.value;
+            if (newStatus !== currentStatus) {
+              updateBookingStatus(bookingId, newStatus);
+            }
+          }
+        });
+      }
+
+      function updateBookingStatus(bookingId, newStatus) {
+        $.ajax({
+          url: `/concierge-service/booking/${bookingId}/status`,
+          method: 'PUT',
+          data: { status: newStatus },
+          success: function(response) {
+            if (response.success) {
+              Swal.fire({
+                title: 'Success!',
+                text: 'Booking status updated successfully',
+                icon: 'success',
+                timer: 2000,
+                showConfirmButton: false
+              }).then(() => {
+                location.reload(); // Refresh to show updated status
+              });
+            } else {
+              Swal.fire('Error', response.message || 'Failed to update status', 'error');
+            }
+          },
+          error: function(xhr) {
+            Swal.fire('Error', xhr.responseJSON?.message || 'Failed to update status', 'error');
+          }
+        });
+      }
+  });
+</script>
+
+

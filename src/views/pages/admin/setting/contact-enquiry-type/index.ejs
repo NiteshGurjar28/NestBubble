@@ -1,0 +1,281 @@
+<body>
+    <div class="layout-wrapper layout-content-navbar">
+        <div class="layout-container">
+            <%- include('../../../../partials/sideBar') %>
+            <div class="layout-page">
+                <%- include('../../../../partials/header') %>
+                <div class="content-wrapper">
+                    <div class="admin-container">
+                        <div class="admin-header">
+                            <h2>Contact Enquiry Types</h2>
+                            <a href="#" data-bs-toggle="modal" data-bs-target="#createEnquiryTypeModal" class="btn btn-gradient">Add New</a>
+                        </div>
+
+                        <div class="row g-4 mb-4">
+                            <div class="col-md-12 col-lg-12">
+                                <div class="card">
+                                    <div class="card-body">
+                                        <div class="">
+                                            <table class="table table-hover" id="enquiryTypeTable">
+                                                <thead>
+                                                    <tr>
+                                                        <th>S.No</th>
+                                                        <th>Name</th>
+                                                        <th>Status</th>
+                                                        <th>Actions</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    <% contactEnquiryTypes.forEach((type, index) => { %>
+                                                        <tr>
+                                                            <td><%= index + 1 %></td>
+                                                            <td><%= type.name %></td>
+                                                            <td>
+                                                                <div class="form-check form-switch">
+                                                                    <input class="form-check-input status-toggle" type="checkbox" 
+                                                                        data-id="<%= type._id %>" <%= type.status ? 'checked' : '' %>>
+                                                                </div>
+                                                            </td>
+                                                            <td>
+                                                                <button class="btn btn-sm btn-icon btn-outline-primary edit-btn" 
+                                                                    data-id="<%= type._id %>" data-name="<%= type.name %>" 
+                                                                    data-status="<%= type.status %>">
+                                                                    <i class="bx bx-edit"></i>
+                                                                </button>
+                                                            </td>
+                                                        </tr>
+                                                    <% }); %>
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <%- include('../../../../partials/footer') %>
+                    <div class="content-backdrop fade"></div>
+                </div>
+            </div>
+        </div>
+        <div class="layout-overlay layout-menu-toggle"></div>
+    </div>
+
+    <!-- Create Modal -->
+    <div class="modal fade" id="createEnquiryTypeModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Create New Enquiry Type</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form id="createEnquiryTypeForm">
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label class="form-label">Name</label>
+                            <input type="text" class="form-control" name="name" required>
+                            <div class="invalid-feedback" id="nameError"></div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Status</label>
+                            <select class="form-select" name="status" required>
+                                <option value="true">Active</option>
+                                <option value="false">Inactive</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Close</button>
+                        <button type="submit" class="btn btn-gradient">Save</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Modal -->
+    <div class="modal fade" id="editEnquiryTypeModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Edit Enquiry Type</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form id="editEnquiryTypeForm">
+                    <input type="hidden" name="id" id="editEnquiryTypeId">
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label class="form-label">Name</label>
+                            <input type="text" class="form-control" name="name" id="editEnquiryTypeName" required>
+                            <div class="invalid-feedback" id="editNameError"></div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Status</label>
+                            <select class="form-select" name="status" id="editEnquiryTypeStatus" required>
+                                <option value="true">Active</option>
+                                <option value="false">Inactive</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Close</button>
+                        <button type="submit" class="btn btn-gradient">Update</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+
+    <script>
+        $(document).ready(function () {
+            $('#enquiryTypeTable').DataTable({
+                responsive: true
+            });
+
+            // Status toggle
+            $('.status-toggle').change(function() {
+                const id = $(this).data('id');
+                const status = $(this).is(':checked');
+                
+                $.ajax({
+                    url: `/contact-enquiry-type/status/${id}`,
+                    method: 'PUT',
+                    data: { status },
+                    success: function(response) {
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Success!',
+                            text: response.message,
+                            timer: 2000,
+                            showConfirmButton: false
+                        });
+                    },
+                    error: function(error) {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error',
+                            text: error.responseJSON?.message || 'Something went wrong'
+                        });
+                        // Revert toggle if error
+                        $(this).prop('checked', !status);
+                    }
+                });
+            });
+
+            // Create form submission
+            $('#createEnquiryTypeForm').submit(async function(e) {
+                e.preventDefault();
+                const form = $(this);
+                const submitButton = form.find('button[type="submit"]');
+                const originalText = submitButton.html();
+                
+                try {
+                    submitButton.prop('disabled', true).html('<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Saving...');
+                    
+                    const response = await $.ajax({
+                        url: '/contact-enquiry-type',
+                        method: 'POST',
+                        data: form.serialize(),
+                        dataType: 'json'
+                    });
+                    
+                    $('#createEnquiryTypeModal').modal('hide');
+                    form.trigger('reset');
+                    
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Success!',
+                        text: response.message,
+                        timer: 2000,
+                        showConfirmButton: false
+                    });
+                    
+                    setTimeout(() => location.reload(), 2000);
+                    
+                } catch (error) {
+                    if (error.responseJSON?.errors?.name) {
+                        $('#createEnquiryTypeForm [name="name"]').addClass('is-invalid');
+                        $('#nameError').text(error.responseJSON.errors.name);
+                    } else {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error',
+                            text: error.responseJSON?.message || 'Something went wrong'
+                        });
+                    }
+                } finally {
+                    submitButton.prop('disabled', false).html(originalText);
+                }
+            });
+
+            // Edit button click
+            $('.edit-btn').click(function() {
+                const id = $(this).data('id');
+                const name = $(this).data('name');
+                const status = $(this).data('status');
+                
+                $('#editEnquiryTypeId').val(id);
+                $('#editEnquiryTypeName').val(name);
+                $('#editEnquiryTypeStatus').val(status.toString());
+                $('#editEnquiryTypeModal').modal('show');
+            });
+
+            // Edit form submission
+            $('#editEnquiryTypeForm').submit(async function(e) {
+                e.preventDefault();
+                const form = $(this);
+                const submitButton = form.find('button[type="submit"]');
+                const originalText = submitButton.html();
+                
+                try {
+                    submitButton.prop('disabled', true).html('<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Updating...');
+                    
+                    const response = await $.ajax({
+                        url: `/contact-enquiry-type/${$('#editEnquiryTypeId').val()}`,
+                        method: 'PUT',
+                        data: form.serialize(),
+                        dataType: 'json'
+                    });
+                    
+                    $('#editEnquiryTypeModal').modal('hide');
+                    
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Success!',
+                        text: response.message,
+                        timer: 2000,
+                        showConfirmButton: false
+                    });
+                    
+                    setTimeout(() => location.reload(), 2000);
+                    
+                } catch (error) {
+                    if (error.responseJSON?.errors?.name) {
+                        $('#editEnquiryTypeName').addClass('is-invalid');
+                        $('#editNameError').text(error.responseJSON.errors.name);
+                    } else {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error',
+                            text: error.responseJSON?.message || 'Something went wrong'
+                        });
+                    }
+                } finally {
+                    submitButton.prop('disabled', false).html(originalText);
+                }
+            });
+
+            // Delete button click
+         
+
+            // Reset forms when modals are closed
+            $('.modal').on('hidden.bs.modal', function() {
+                $(this).find('form').trigger('reset');
+                $(this).find('.is-invalid').removeClass('is-invalid');
+                $(this).find('.invalid-feedback').text('');
+            });
+        });
+    </script>
+</body>

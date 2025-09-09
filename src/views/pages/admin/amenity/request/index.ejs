@@ -1,0 +1,284 @@
+
+<body>
+    <div class="layout-wrapper layout-content-navbar">
+        <div class="layout-container">
+            <%- include('../../../../partials/sideBar') %>
+            <div class="layout-page">
+                <%- include('../../../../partials/header') %>
+                <div class="content-wrapper">
+                    <div class="admin-container">
+                        <div class="admin-header">
+                             <h2>Amenity Request</h2>
+                        </div>
+
+                        <div class="row g-4 mb-4">
+                            <div class="col-md-12 col-lg-12">
+                                <div class="stats-card">
+                                    <div class="card-body">
+                                        <div class="">
+                                            <table class="table table-striped table-hover" id="amenitysTable">
+                                                <thead>
+                                                    <tr>
+                                                        <th>#</th>
+                                                        <th>Host</th>
+                                                        <th>Req Name</th>
+                                                        <th>Category</th>
+                                                        <th>Status</th>
+                                                        <th>Created</th>
+                                                        <th>Actions</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    <% if(list.length > 0){ %>
+                                                          <% list.forEach((amenity, index) => { %>
+                                                            <tr>
+                                                                <td><%= index + 1 %></td>
+                                                                <td>
+                                                                    <div class="d-flex align-items-center">
+                                                                        <a href="/host/<%= amenity?.user?._id %>/show">
+                                                                            <% if (amenity?.user?.profileImage) { %>
+                                                                                <img src="<%= amenity?.user?.profileImage %>" 
+                                                                                    class="rounded-circle me-2" 
+                                                                                    width="40" height="40" 
+                                                                                    alt="<%= amenity?.user?.firstName %>" onerror="this.onerror=null;this.src='/temp/default-user.png'">
+                                                                            <% } else { %>
+                                                                               <img src="/temp/default-user.png" 
+                                                                                    class="rounded-circle me-2" 
+                                                                                    width="40" height="40" 
+                                                                                    alt="<%= amenity?.user?.firstName %>" >
+                                                                            <% } %>
+                                                                            <div>
+                                                                                <div class="fw-bold">
+                                                                                    <%= amenity?.user?.firstName %> <%= amenity?.user?.lastName %>
+                                                                                </div>
+                                                                            </div>
+                                                                        </a>
+                                                                    </div>
+                                                                </td>
+                                                                <td><%= amenity.reqName %></td>
+                                                                <td><%= amenity.category %></td>
+                                                               <td>
+                                                                    <% if (amenity.reqStatus === 'Pending') { %>
+                                                                        <% if(adminPerms.includes('amenity-request-status')) { %>
+                                                                            <button class="btn btn-sm btn-warning status-btn" 
+                                                                                    data-id="<%= amenity._id %>">
+                                                                                <i class="fas fa-edit"></i> Change Status
+                                                                            </button>
+                                                                        <% } else { %>
+                                                                              <span class="badge bg-warning">Pending</span>
+                                                                        <% } %>
+                                                                        
+                                                                    <% } else { %>
+                                                                        <span class="badge bg-<%= amenity.reqStatus === 'Approved' ? 'success' : 'danger' %>">
+                                                                        <%= amenity.reqStatus %>
+                                                                        <% if (amenity.responseMessage) { %>
+                                                                            <i class="fas fa-comment-dots ms-1" 
+                                                                            title="<%= amenity.responseMessage %>"></i>
+                                                                        <% } %>
+                                                                        </span>
+                                                                    <% } %>
+                                                                </td>
+                                                                <td> 
+                                                                    <%= formatDate(amenity.createdAt) %>
+                                                                </td>
+                                                                <td>
+                                                                    <button class="btn btn-sm btn-icon btn-outline-primary view-amenity-btn" data-id="<%= amenity._id %>">
+                                                                        <i class="bx bx-show"></i>
+                                                                    </button>
+                                                                </td>
+                                                            </tr>
+                                                        <% }); %>
+                                                    <% }  %>
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                  <%- include('../../../../partials/footer') %>
+                  <div class="content-backdrop fade"></div>
+                </div>
+            </div>
+        </div>
+        <div class="layout-overlay layout-menu-toggle"></div>
+    </div> 
+
+
+   <!-- Amenity Details Modal -->
+<div class="modal fade" id="amenityDetailsModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Amenity Request Details</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body" id="amenityDetailsContent">
+        <!-- Content will be loaded here via AJAX -->
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
+</div> 
+
+</body>
+<script>
+    $(document).ready(function() {
+        $('#amenitysTable').DataTable();
+
+        // Status change handler
+        $(document).on('click', '.status-btn', async function() {
+            const amenityId = $(this).data('id');
+            const btn = $(this);
+            
+            const { value: result } = await Swal.fire({
+            title: 'Change Request Status',
+            input: 'select',
+            inputOptions: {
+                'Approved': 'Approve',
+                'Rejected': 'Reject'
+            },
+            inputPlaceholder: 'Select status',
+            showCancelButton: true,
+            inputValidator: (value) => {
+                if (!value) return 'Please select a status';
+            }
+            });
+
+            if (result) {
+            const isRejection = result === 'Rejected';
+            const { value: response } = await Swal.fire({
+                title: `${result} Request`,
+                input: 'textarea',
+                inputLabel: isRejection ? 'Reason for rejection (Required)' : 'Response message (Optional)',
+                inputPlaceholder: isRejection ? 'Please specify reason...' : 'You can add a message...',
+                showCancelButton: true,
+                inputValidator: (value) => {
+                if (isRejection && !value) return 'Rejection reason is required';
+                }
+            });
+
+            console.log('Response:', response);
+
+            if (response !== undefined) {
+                try {
+                const responseData = await $.ajax({
+                        url: `/amenity/request/${amenityId}/status`,
+                        method: 'PUT',
+                        contentType: 'application/json',
+                        data: JSON.stringify({
+                        status: result,
+                        responseMessage: response || ''
+                    })
+                });
+
+                if (responseData.success) {
+                    Swal.fire({
+                    title: 'Success!',
+                    text: `Request ${result.toLowerCase()} successfully`,
+                    icon: 'success'
+                    }).then(() => {
+                    window.location.reload();
+                    });
+                }
+                } catch (error) {
+                Swal.fire({
+                    title: 'Error!',
+                    text: error.responseJSON?.message || 'Failed to update status',
+                    icon: 'error'
+                });
+                }
+            }
+            }
+        });
+   
+         $(document).on('click', '.view-amenity-btn', async function(e) {
+            e.preventDefault();
+            const amenityId = $(this).data('id');
+            
+            try {
+            // Show loading state
+            $('#amenityDetailsContent').html(`
+                <div class="text-center py-4">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                </div>
+                </div>
+            `);
+            
+            // Show modal
+            const modal = new bootstrap.Modal(document.getElementById('amenityDetailsModal'));
+            modal.show();
+
+            // Fetch amenity details
+            const response = await $.get(`/amenity/request/${amenityId}/details`);
+            
+            if (response.success) {
+                const amenity = response.data;
+                
+                // Format the HTML content
+                const html = `
+                <div class="row">
+                    <div class="col-md-12">
+                    <table class="table table-bordered">
+                        <tr>
+                        <th>Host Name</th>
+                            <td>
+                                ${amenity.user?.firstName} ${amenity.user?.lastName}
+                                ${amenity.user?.profileImage ? 
+                                `<img src="${amenity.user.profileImage}" class="rounded-circle ms-2" width="40" height="40">` : 
+                                ''}
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>Request Name</th>
+                            <td>${amenity.reqName}</td>
+                        </tr>
+                        <tr>
+                            <th>Category</th>
+                            <td>${amenity.category}</td>
+                        </tr>
+                        <tr>
+                            <th>Status</th>
+                            <td>
+                                <span class="badge bg-${amenity.reqStatus === 'Approved' ? 'success' : 
+                                                    amenity.reqStatus === 'Rejected' ? 'danger' : 'warning'}">
+                                ${amenity.reqStatus}
+                                </span>
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>Request Message</th>
+                            <td>${amenity.reqMessage || 'N/A'}</td>
+                        </tr>
+                        <tr>
+                            <th>Response Message</th>
+                            <td>${amenity.responseMessage || 'N/A'}</td>
+                        </tr>
+                        <tr>
+                            <th>Created At</th>
+                            <td>${new Date(amenity.createdAt).toLocaleDateString()}</td>
+                        </tr>
+                    </table>
+                    </div>
+                </div>
+                `;
+                
+                $('#amenityDetailsContent').html(html);
+            }
+            } catch (error) {
+            console.error('Error loading amenity details:', error);
+            $('#amenityDetailsContent').html(`
+                <div class="alert alert-danger">
+                Failed to load amenity details. Please try again.
+                </div>
+            `);
+            }
+        });
+   });
+</script>
+

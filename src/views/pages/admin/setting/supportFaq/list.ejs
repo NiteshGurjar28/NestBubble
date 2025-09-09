@@ -1,0 +1,94 @@
+<body>
+    <style>
+        .faqCheckbox {
+            cursor: pointer;
+            width: 18px;
+            height: 18px;
+        }
+
+        #selectAllCheckbox {
+            cursor: pointer;
+            width: 18px;
+            height: 18px;
+        }
+
+        #bulkDeleteBtn {
+            transition: all 0.3s ease;
+        }
+    </style>
+    <div class="layout-wrapper layout-content-navbar">
+        <div class="layout-container">
+            <%- include('../../../../partials/sideBar') %>
+            <div class="layout-page">
+                <%- include('../../../../partials/header') %>
+                <div class="content-wrapper">
+                    <div class="admin-container">
+                        <div class="admin-header">
+                            <h2>Support FAQ</h2>
+                            <% if(adminPerms.includes('support-faq-add')) { %>
+                                <a href="/support-faq/add" class="btn btn-gradient">Add New</a>
+                            <% } %>
+                        </div>
+
+                        <div class="row g-4 mb-4">
+                            <div class="col-md-12 col-lg-12">
+                                <div class="card">
+                                    <div class="card-body">
+                                        <div class="">
+                                            <table class="table table-hover" id="faqTable">
+                                                <thead>
+                                                    <tr>
+                                                        <th>S.No</th>
+                                                        <th>Question</th>
+                                                        <th>Answer</th>
+                                                        <th>Suggested Question</th>
+                                                        <th>Actions</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    <% faqs.forEach((faq, loopIndex) => { %>
+                                                    <tr>
+                                                        <td><%= loopIndex+1 %></td>
+                                                        <td><%= faq.question %></td>
+                                                        <td><%= faq.answer %></td>
+                                                        <td> <span class="badge bg-primary"><%= faq?.suggestQuestions.length  ?? 0 %></span></td>
+                                                        <td>
+                                                            <% if(adminPerms.includes('support-faq-show')) { %>
+                                                                <a href="/support-faq/<%= faq._id %>/show" class="btn btn-sm btn-icon btn-outline-primary">
+                                                                    <i class="bx bx-show"></i>
+                                                                </a>
+                                                            <% } %>
+                                                            <% if(adminPerms.includes('support-faq-edit')) { %>
+                                                                <a href="/support-faq/<%= faq._id %>/edit" class="btn btn-sm btn-icon btn-outline-primary">
+                                                                    <i class="bx bx-edit"></i>
+                                                                </a>
+                                                            <% } %>
+                                                        </td>
+                                                    </tr>
+                                                    <% }); %>
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <%- include('../../../../partials/footer') %>
+                    <div class="content-backdrop fade"></div>
+                </div>
+            </div>
+        </div>
+        <div class="layout-overlay layout-menu-toggle"></div>
+    </div>
+
+    <script>
+        $(document).ready(function() {
+            // Initialize DataTable
+            $('#faqTable').DataTable({
+                responsive: true
+            });
+        });
+    </script>
+</body>

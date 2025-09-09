@@ -1,0 +1,220 @@
+
+<body>
+    <div class="layout-wrapper layout-content-navbar">
+        <div class="layout-container">
+            <%- include('../../../partials/sideBar') %>
+            <div class="layout-page">
+                <%- include('../../../partials/header') %>
+                <div class="content-wrapper">
+                    <div class="admin-container">
+                        <div class="admin-header">
+                             <h2>Notifications</h2>
+                        </div>
+
+                        <div class="row g-4 mb-4">
+                            <div class="col-md-12 col-lg-12">
+                                  <div class="card">
+                                    <div class="card-header d-flex justify-content-between align-items-center">
+                                        <h5 class="mb-0">Notifications</h5>
+                                        <button class="btn badge bg-label-primary"  id="markAllReadBtn">Mark All Read</button>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="">
+                                        <table class="table table-hover">
+                                            <thead>
+                                            <tr>
+                                                <th>S.No</th>
+                                                <th>User</th>
+                                                <th>Title</th>
+                                                <th>Message</th>
+                                                <th>Date</th>
+                                                <th>Actions</th>
+                                            </tr>
+                                            </thead>
+                                            <tbody id="notificationsTable">
+                                            <!-- Data will be loaded here via AJAX -->
+                                            <tr>
+                                                <td colspan="6" class="text-center py-4">
+                                                    <div class="spinner-border text-primary" role="status">
+                                                        <span class="visually-hidden">Loading...</span>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                            </tbody>
+                                        </table>
+                                        </div>
+
+                                        <nav aria-label="Page navigation" id="paginationContainer" class="d-none">
+                                        <ul class="pagination justify-content-center" id="paginationList">
+                                            <!-- Pagination will be added here via JS -->
+                                        </ul>
+                                        </nav>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                  <%- include('../../../partials/footer') %>
+                  <div class="content-backdrop fade"></div>
+                </div>
+            </div>
+        </div>
+        <div class="layout-overlay layout-menu-toggle"></div>
+    </div> 
+
+</body>
+
+
+<script>
+$(document).ready(function() {
+  // Load notifications immediately when page loads
+  loadNotifications(1);
+
+  function loadNotifications(page) {
+    $.ajax({
+      url: '/notification-list',
+      type: 'GET',
+      data: {
+        page: page,
+        limit: 10
+      },
+      success: function(response) {
+        if (response.status) {
+          updateNotificationsUI(response.data);
+        }
+      },
+      error: function(xhr) {
+        console.error('Error loading notifications:', xhr);
+        $('#notificationsTable').html(`
+          <tr>
+            <td colspan="6" class="text-center py-4 text-danger">
+              Failed to load notifications. Please try again.
+            </td>
+          </tr>
+        `);
+      }
+    });
+  }
+
+  function updateNotificationsUI(data) {
+    const { notifications, pagination, unreadCount } = data;
+    
+    // Update unread count
+    $('#unreadCountBadge').text(`Unread: ${unreadCount}`);
+    
+    // Update notifications table
+    if (notifications.length === 0) {
+      $('#notificationsTable').html(`
+        <tr>
+          <td colspan="6" class="text-center py-4">
+            No notifications found
+          </td>
+        </tr>
+      `);
+      return;
+    }
+    
+    let tableHtml = '';
+    notifications.forEach((notification, loop) => {
+      tableHtml += `
+        <tr class="${notification.isRead ? '' : 'table-active'}">
+            <td>${loop + 1}</td>
+            <td>${notification.sender.firstName} ${notification.sender.lastName}</td>
+            <td>${notification.title}</td>
+            <td>${notification.message.substring(0, 50)}${notification.message.length > 50 ? '...' : ''}</td>
+            <td>${ formatDate(notification.createdAt)}</td>
+            <td>
+                <a href="/notifications/${notification._id}" class="btn btn-sm btn-icon btn-outline-primary">
+                  <i class="bx bx-show"></i>
+                </a>
+            </td>
+        </tr>
+      `;
+    });
+    $('#notificationsTable').html(tableHtml);
+    
+    // Update pagination
+    if (pagination.totalPages > 1) {
+      let paginationHtml = '';
+      for (let i = 1; i <= pagination.totalPages; i++) {
+        paginationHtml += `
+          <li class="page-item ${pagination.currentPage === i ? 'active' : ''}">
+            <a class="page-link" href="#" data-page="${i}">${i}</a>
+          </li>
+        `;
+      }
+      $('#paginationList').html(paginationHtml);
+      $('#paginationContainer').removeClass('d-none');
+    } else {
+      $('#paginationContainer').addClass('d-none');
+    }
+  }
+
+  // Handle pagination clicks
+  $(document).on('click', '.page-link', function(e) {
+    e.preventDefault();
+    const page = $(this).data('page');
+    loadNotifications(page);
+    window.scrollTo(0, 0);
+  });
+
+   $('#markAllReadBtn').click(function() {
+        Swal.fire({
+            title: 'Are you sure?',
+            text: "This will mark all notifications as read!",
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'Yes, mark all as read!'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                markAllNotificationsAsRead();
+            }
+        });
+    });
+
+    function markAllNotificationsAsRead() {
+        $.ajax({
+            url: '/notification/mark-all-read', // Your backend endpoint
+            type: 'POST',
+            dataType: 'json',
+            headers: {
+                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content') // For Laravel
+            },
+            success: function(response) {
+                if (response.success) {
+                  Swal.fire({
+                        title: 'Success!',
+                        text: 'All notifications marked as read',
+                        icon: 'success',
+                        confirmButtonText: 'OK'
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            window.location.reload();
+                        }
+                    });
+                } else {
+                    Swal.fire({
+                        title: 'Error!',
+                        text: response.message || 'Failed to mark notifications as read',
+                        icon: 'error',
+                        confirmButtonText: 'OK'
+                    });
+                }
+            },
+            error: function(xhr) {
+                Swal.fire({
+                    title: 'Error!',
+                    text: xhr.responseJSON?.message || 'Something went wrong',
+                    icon: 'error',
+                    confirmButtonText: 'OK'
+                });
+            }
+        });
+    }
+
+});
+</script>
+

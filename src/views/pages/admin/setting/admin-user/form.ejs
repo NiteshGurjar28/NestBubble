@@ -1,0 +1,148 @@
+<body>
+    <div class="layout-wrapper layout-content-navbar">
+        <div class="layout-container">
+            <%- include('../../../../partials/sideBar') %>
+            <div class="layout-page">
+                <%- include('../../../../partials/header') %>
+                <div class="content-wrapper">
+                    <div class="admin-container">
+                        <div class="admin-header">
+                            <h2><%= isEdit ? 'Edit' : 'Add New' %> Admin User</h2>
+                            <a href="/admin-user" class="btn btn-gradient">
+                                <i class="fas fa-arrow-left me-2"></i>Back to List
+                            </a>
+                        </div>
+
+                        <div class="card mt-4">
+                            <div class="card-body">
+                                <form id="adminUserForm">
+                                    <input type="hidden" name="id" value="<%= adminUser?._id %>">
+                                    
+                                    <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                        <label class="form-label">First Name</label>
+                                        <input type="text" class="form-control" name="firstName" 
+                                                value="<%= adminUser?.firstName %>" required>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                        <label class="form-label">Last Name</label>
+                                        <input type="text" class="form-control" name="lastName" 
+                                                value="<%= adminUser?.lastName %>" required>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                        <label class="form-label">Email</label>
+                                        <input type="email" class="form-control" name="email" 
+                                                value="<%= adminUser?.email %>" required>
+                                        </div>
+                                    </div>
+
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                        <label class="form-label">Mobile Number</label>
+                                        <input type="number" class="form-control" name="mobile" 
+                                                value="<%= adminUser?.number %>" required>
+                                        </div>
+                                    </div>
+                                    
+                                    
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                        <label class="form-label">Admin Role</label>
+                                        <select class="form-select" name="adminRole" required>
+                                            <option value="">Select Role</option>
+                                            <option value="customer_admin" <%= adminUser?.adminRole === 'customer_admin' ? 'selected' : '' %>>CUSTOMER ADMIN</option>
+                                            <option value="manager_admin" <%= adminUser?.adminRole === 'manager_admin' ? 'selected' : '' %>>MANAGER ADMIN</option>
+                                        </select>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                        <label class="form-label">Password</label>
+                                        <input type="password" class="form-control" name="password" 
+                                                <%= isEdit ? 'placeholder="Leave blank to keep unchanged"' : 'required' %>>
+                                            <% if (isEdit) { %>
+                                                <%=  isEdit %>
+                                                <small class="text-muted">Leave blank to keep current password</small>
+                                            <% } %>
+                                        </div>
+                                    </div>
+                                    </div>
+                                    
+                                    <div class="mt-4">
+                                    <button type="submit" class="btn btn-gradient">
+                                        <i class="fas fa-save me-2"></i>
+                                        <%= isEdit ? 'Update' : 'Save' %> Admin User
+                                    </button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+
+                    <%- include('../../../../partials/footer') %>
+                    <div class="content-backdrop fade"></div>
+                </div>
+            </div>
+        </div>
+        <div class="layout-overlay layout-menu-toggle"></div>
+    </div>
+<script>
+$(document).ready(function() {
+  // Form submission handler
+  $('#adminUserForm').submit(function(e) {
+    e.preventDefault();
+    const form = $(this);
+    const submitBtn = form.find('button[type="submit"]');
+    const originalText = submitBtn.html();
+    
+    // Show loading state
+    submitBtn.prop('disabled', true).html(
+      '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Processing...'
+    );
+
+    // Determine URL and method
+    const url = form.find('input[name="id"]').val() 
+      ? '/admin-user/' + form.find('input[name="id"]').val() + '/edit'
+      : '/admin-user';
+      
+    const method = form.find('input[name="id"]').val() ? 'PUT' : 'POST';
+
+    // Submit form via AJAX
+    $.ajax({
+      url: url,
+      method: method,
+      data: form.serialize(),
+      success: function(response) {
+        Swal.fire({
+          icon: 'success',
+          title: 'Success!',
+          text: response.message,
+          timer: 2000,
+          showConfirmButton: false
+        }).then(() => {
+          window.location.href = '/admin-user';
+        });
+      },
+      error: function(xhr) {
+        Swal.fire({
+          icon: 'error',
+          title: 'Error',
+          text: xhr.responseJSON?.message || 'Something went wrong'
+        });
+      },
+      complete: function() {
+        submitBtn.prop('disabled', false).html(originalText);
+      }
+    });
+  });
+});
+</script>
+</body>

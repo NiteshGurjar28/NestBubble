@@ -1,0 +1,118 @@
+<body>
+    <div class="layout-wrapper layout-content-navbar">
+        <div class="layout-container">
+            <%- include('../../../../partials/sideBar') %>
+            <div class="layout-page">
+                <%- include('../../../../partials/header') %>
+                <div class="content-wrapper">
+                    <div class="admin-container">
+                        <div class="admin-header">
+                            <h2>Admin Users</h2>
+                            <% if(adminPerms.includes('admin-user-create')) { %>
+                                <a href="/admin-user/add" class="btn btn-gradient">
+                                    <i class="fas fa-plus me-2"></i>Add New Admin
+                                </a>
+                            <% } %>
+                        </div>
+
+                        <div class="card mt-4">
+                            <div class="card-body">
+                                <div class="">
+                                    <table class="table table-hover" id="adminUsersTable">
+                                    <thead>
+                                        <tr>
+                                            <th>#</th>
+                                            <th>Name</th>
+                                            <th>Email</th>
+                                            <th>Status</th>
+                                            <th>Admin Role</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <% adminUsers.forEach((user, index) => { %>
+                                        <tr>
+                                            <td><%= index + 1 %></td>
+                                            <td><%= user.firstName %> <%= user.lastName %></td>
+                                            <td><%= user.email %></td>
+                                            <td>
+                                                <% if(adminPerms.includes('admin-user-status')) { %>
+                                                    <div class="form-check form-switch d-inline-block">
+                                                    <input class="form-check-input status-toggle" 
+                                                        type="checkbox" 
+                                                        data-id="<%= user._id %>"
+                                                        <%= user.isActive ? 'checked' : '' %>>
+                                                    </div>
+                                                <% } %>
+                                            </td>
+                                            <td>
+                                                <span class="badge bg-primary">
+                                                    <%= user.adminRole.replace(/_/g, ' ').toUpperCase() %>
+                                                </span>
+                                            </td>
+                                            <td>
+                                                <% if(adminPerms.includes('admin-user-edit')) { %>
+                                                    <a href="/admin-user/<%= user._id %>/edit" 
+                                                        class="btn btn-sm btn-outline-primary me-2">
+                                                        <i class="fas fa-edit"></i>
+                                                    </a>
+                                                <% } %>
+                                            </td>
+                                        </tr>
+                                        <% }); %>
+                                    </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <%- include('../../../../partials/footer') %>
+                    <div class="content-backdrop fade"></div>
+                </div>
+            </div>
+        </div>
+        <div class="layout-overlay layout-menu-toggle"></div>
+    </div>
+
+<script>
+    $(document).ready(function() {
+        // Initialize DataTable
+        $('#adminUsersTable').DataTable({
+            responsive: true
+        });
+
+            // Status toggle handler
+        $('.status-toggle').change(function() {
+            const guestId = $(this).data('id');
+            const isActive = $(this).is(':checked');
+            
+            $.ajax({
+                url: `/admin-user/${guestId}/status`,
+                method: 'PUT',
+                data: { isActive },
+                success: function(response) {
+                    if (response.success) {
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Success',
+                            text: response.message,
+                            timer: 1500,
+                            showConfirmButton: false
+                        });
+                    }
+                },
+                error: function(xhr) {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: xhr.responseJSON?.message || 'Failed to update status'
+                    });
+                    $(this).prop('checked', !isActive); // Revert toggle on error
+                }
+            });
+        });
+
+    });
+    </script>
+</body>

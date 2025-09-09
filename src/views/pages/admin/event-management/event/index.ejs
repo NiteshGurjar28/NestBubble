@@ -1,0 +1,566 @@
+<!-- Bootstrap 4 -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"></script>
+<style>
+    /* Event card styling */
+    .event-card {
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        border-radius: 10px;
+        overflow: hidden;
+    }
+
+    .event-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+    }
+
+    .card-img-container {
+        position: relative;
+        height: 180px;
+        overflow: hidden;
+    }
+
+    .card-img-container img {
+        object-fit: cover;
+        width: 100%;
+        height: 100%;
+        transition: transform 0.5s ease;
+    }
+
+    .event-card:hover .card-img-container img {
+        transform: scale(1.05);
+    }
+
+    .card-badge {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        display: flex;
+        flex-direction: column;
+        gap: 5px;
+    }
+
+    /* Loading spinner */
+    .loading-spinner {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 40px;
+    }
+
+    /* Empty state */
+    .empty-state {
+        text-align: center;
+        padding: 40px;
+    }
+
+    /* Filter dropdown */
+    .filter-dropdown {
+        padding: 15px;
+        width: 280px;
+    }
+
+    /* Responsive adjustments */
+    @media (max-width: 768px) {
+        .card-img-container {
+            height: 150px;
+        }
+    }
+</style>
+<body>
+    <div class="layout-wrapper layout-content-navbar">
+        <div class="layout-container">
+            <%- include('../../../../partials/sideBar') %>
+            <div class="layout-page">
+                <%- include('../../../../partials/header') %>
+                <div class="content-wrapper">
+                    <div class="admin-container">
+                        <div class="admin-header">
+                          <h2>Event Management</h2>
+                            <% if(adminPerms.includes('event-create')) { %>
+                                <a href="/event/add" class="btn btn-gradient">Add New</a>
+                            <% } %>
+                        </div>
+
+                        <div class="row g-4 mb-4">
+                            <div class="col-md-12 col-lg-12">
+                                <div class="card shadow mb-4">
+                                    <div class="card-header py-3 d-flex justify-content-between align-items-center">
+                                        <div class="d-flex align-items-center">
+                                            <!-- <h6 class="m-0 font-weight-bold text-primary" id="eventFilterTitle">All Events</h6> -->
+                                            <ul class="nav nav-tabs ml-4" id="eventStatusTabs">
+                                                <li class="nav-item">
+                                                    <a class="nav-link active" href="#" data-status="upcoming">Upcoming</a>
+                                                </li>
+                                                <li class="nav-item">
+                                                    <a class="nav-link" href="#" data-status="completed">Completed</a>
+                                                </li>
+                                                <li class="nav-item">
+                                                    <a class="nav-link" href="#" data-status="cancelled">Cancelled</a>
+                                                </li>
+                                            </ul>
+                                        </div>
+                                        <div class="dropdown no-arrow">
+                                            <a class="dropdown-toggle" href="#" role="button" id="filterDropdown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                                <i class="fas fa-filter fa-sm fa-fw text-gray-400"></i> Filters
+                                            </a>
+                                            <div class="dropdown-menu dropdown-menu-right filter-dropdown" aria-labelledby="filterDropdown">
+                                                <form id="bookingFilterForm">
+                                                    <div class="form-group">
+                                                        <label for="statusFilter">Created By</label>
+                                                        <select class="form-control" id="createdByFilter">
+                                                            <option value="all">-- Select User --</option>
+                                                            <option value="admin">Admin</option>
+                                                            <option value="host">Host</option>
+                                                        </select>
+                                                    </div>
+                                                    <div class="form-group">
+                                                        <label for="eventTypeFilter">Event Type</label>
+                                                        <select class="form-control" id="eventTypeFilter">
+                                                            <option value="all">-- Select Event Type --</option>
+                                                            <option value="public">Public</option>
+                                                            <option value="private">Private</option>
+                                                        </select>
+                                                    </div>
+                                                    <div class="form-group">
+                                                        <label for="date">Date</label>
+                                                        <input type="date" class="form-control" id="dateFilter">
+                                                    </div>
+                                                    <div class="form-group">
+                                                        <label for="categoryFilter">Category</label>
+                                                        <select class="form-control" id="categoryFilter">
+                                                            <option value="all">All Categories</option>
+                                                            <% if (eventCategorys.length > 0) { %>
+                                                                <% eventCategorys.forEach(category => { %>
+                                                                    <option value="<%= category?._id %>"><%= category?.name %></option>
+                                                                <% }); %>
+                                                            <% } %>
+                                                        </select>
+                                                    </div>
+                                                    <div class="form-group">
+                                                        <label for="sortBy">Sort By</label>
+                                                        <select class="form-control" id="sortByFilter">
+                                                            <option value="asc">Ascending</option>
+                                                            <option value="desc">Descending</option>
+                                                        </select>
+                                                    </div>
+                                                    <div class="form-group">
+                                                        <label for="rangeFilter">Amount Range</label>
+                                                        <input type="number" class="form-control" id="minAmountFilter" placeholder="Min Amount">
+                                                        <input type="number" class="form-control" id="maxAmountFilter" placeholder="Max Amount">
+                                                    </div>
+                                                    <button type="submit" class="btn btn-primary btn-block mt-3">
+                                                        <i class="fas fa-filter mr-2"></i> Apply Filters
+                                                    </button>
+                                                </form>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="loading-spinner" id="loadingSpinner">
+                                            <div class="spinner-border text-primary" role="status">
+                                                <span class="sr-only">Loading...</span>
+                                            </div>
+                                            <p class="mt-2">Loading Event...</p>
+                                        </div>
+                                        <div class="row" id="eventList">
+                                            <!-- Event will be loaded here via AJAX -->
+                                        </div>
+                                        <div class="empty-state d-none" id="emptyState">
+                                            <i class="far fa-calendar-times fa-4x text-muted mb-3"></i>
+                                            <h4>No Event Found</h4>
+                                            <p class="text-muted">No Event match your current filters.</p>
+                                        </div>
+                                        <nav aria-label="Event pagination" class="mt-4" id="paginationContainer">
+                                            <ul class="pagination justify-content-center" id="pagination">
+                                                <!-- Pagination will be loaded here via AJAX -->
+                                            </ul>
+                                        </nav>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                  <%- include('../../../../partials/footer') %>
+                  <div class="content-backdrop fade"></div>
+                </div>
+            </div>
+        </div>
+        <div class="layout-overlay layout-menu-toggle"></div>
+    </div> 
+
+<script>// Script for event management page
+    $(document).ready(function() {
+        // Initialize variables
+        let currentPage = 1;
+        const itemsPerPage = 8;
+        let isLoading = false;
+        let currentStatus = 'upcoming'; // Default tab
+        
+        // DOM elements
+        const $eventList = $('#eventList');
+        const $loadingSpinner = $('#loadingSpinner');
+        const $emptyState = $('#emptyState');
+        const $paginationContainer = $('#paginationContainer');
+        const $filterForm = $('#bookingFilterForm');
+        const $eventFilterTitle = $('#eventFilterTitle');
+        const $statusTabs = $('#eventStatusTabs .nav-link');
+        
+        // Initialize filters
+        const filters = {
+            createdBy: 'all',
+            eventType: 'all',
+            date: '',
+            category: 'all',
+            sortBy: 'desc',
+            minAmount: '',
+            maxAmount: '',
+            status: 'upcoming'
+        };
+        
+        // Load events on page load
+        loadEvents();
+
+        // Status tab click handler
+        $statusTabs.on('click', function(e) {
+            e.preventDefault();
+            
+            // Update active tab
+            $statusTabs.removeClass('active');
+            $(this).addClass('active');
+            
+            // Update status filter
+            currentStatus = $(this).data('status');
+            filters.status = currentStatus;
+            currentPage = 1;
+            
+            // Update title based on status
+            loadEvents();
+        });
+        
+        // Filter form submission
+        $filterForm.on('submit', function(e) {
+            e.preventDefault();
+            currentPage = 1;
+            
+            // Update filters
+            filters.createdBy = $('#createdByFilter').val();
+            filters.eventType = $('#eventTypeFilter').val();
+            filters.date = $('#dateFilter').val();
+            filters.category = $('#categoryFilter').val();
+            filters.sortBy = $('#sortByFilter').val();
+            filters.minAmount = $('#minAmountFilter').val();
+            filters.maxAmount = $('#maxAmountFilter').val();
+            
+            loadEvents();
+        });
+        
+        // Function to load events via AJAX
+        function loadEvents() {
+            if (isLoading) return;
+            isLoading = true;
+            
+            // Show loading state
+            $loadingSpinner.removeClass('d-none');
+            $eventList.empty();
+            $emptyState.addClass('d-none');
+            $paginationContainer.addClass('d-none');
+            
+            // Prepare query params
+            const params = new URLSearchParams();
+            params.append('page', currentPage);
+            params.append('limit', itemsPerPage);
+            params.append('status', filters.status); 
+            
+            // Add filters to params
+            if (filters.createdBy !== 'all') params.append('createdBy', filters.createdBy);
+            if (filters.eventType !== 'all') params.append('eventType', filters.eventType);
+            if (filters.date) params.append('date', filters.date);
+            if (filters.category !== 'all') params.append('category', filters.category);
+            params.append('sort', filters.sortBy);
+            if (filters.minAmount) params.append('minAmount', filters.minAmount);
+            if (filters.maxAmount) params.append('maxAmount', filters.maxAmount);
+            
+            // Make AJAX request
+            $.ajax({
+                url: `/event-filter-data?${params.toString()}`,
+                method: 'GET',
+                success: function(data) {
+                    isLoading = false;
+                    $loadingSpinner.addClass('d-none');
+                    
+                    if (data.events.length === 0) {
+                        $emptyState.removeClass('d-none');
+                        return;
+                    }
+                    
+                    renderEvents(data.events);
+                    renderPagination(data.totalEvents);
+                },
+                error: function(error) {
+                    isLoading = false;
+                    $loadingSpinner.addClass('d-none');
+                    console.error('Error loading events:', error);
+                    showErrorToast('Failed to load events. Please try again.');
+                }
+            });
+        }
+        
+        function formatTime(timeString) {
+            if (!timeString) return '';
+            
+            // Split into hours and minutes
+            const [hours, minutes] = timeString.split(':');
+            const hourNum = parseInt(hours);
+            
+            // Convert to 12-hour format
+            const period = hourNum >= 12 ? 'PM' : 'AM';
+            const displayHour = hourNum % 12 || 12; // Convert 0 to 12
+            
+            return `${displayHour}:${minutes} ${period}`;
+        }
+        
+        // Function to render events
+        function renderEvents(events) {
+            $eventList.empty();
+            
+            events.forEach(function(event) {
+                const formattedStartDate = formatDate(event.startDate, { format: 'full' });
+                const formattedEndDate =  formatDate(event.endDate, { format: 'full' });
+                
+                const featuredImage = event.images.find(img => img.isFeatured) || event.images[0];
+                const imageUrl = featuredImage ? featuredImage.url : '/assets/img/default-event.jpg';
+
+                const editButton = event.status == "upcoming" ? `<li><a class="dropdown-item" href="/event/${event._id}/edit"><i class="fas fa-edit me-2"></i>Edit</a></li>` : "";
+                
+                const eventCard = `
+                    <div class="col-md-6 col-lg-4 col-xl-3 mb-4">
+                        <div class="card h-100 event-card">
+                            <div class="card-img-container">
+                                <img src="${imageUrl}" class="card-img-top" alt="${event.title}" onerror="this.onerror=null;this.src='/assets/img/default-event.jpg'">
+                                <div class="card-badge">
+                                    <span class="badge bg-${getEventTypeBadgeClass(event.eventType)}">${event.eventType.charAt(0).toUpperCase() + event.eventType.slice(1)}</span>
+                                    <span class="badge bg-primary">${event.currentAttendees}/${event.maxParticipants}</span>
+                                </div>
+                            </div>
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <h5 class="card-title">
+                                        ${event.title}
+                                    </h5>
+                                </div>
+                                <p class="card-text text-muted">
+                                    <i class="fas fa-folder me-2"></i>${event?.categoryId?.name}
+                                </p>
+                                <p class="card-text text-muted">
+                                    <i class="fas fa-calendar-alt me-2"></i>${formattedStartDate} - ${formattedEndDate}
+                                </p>
+                                <p class="card-text text-muted">
+                                    <i class="fas fa-clock me-2"></i>${formatTime(event.startTime)} - ${formatTime(event.endTime)}
+                                </p>
+                                <p class="card-text text-muted">
+                                    <i class="fas fa-map-marker-alt me-2"></i>${event?.location?.address || 'Location not provided'}
+                                </p>
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <h5 class="mb-0 text-primary">${formatPrice(event.price)}</h5>
+                                    <div class="dropdown">
+                                        <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" 
+                                            id="eventDropdown${event._id}" data-bs-toggle="dropdown" aria-expanded="false">
+                                            <i class="fas fa-ellipsis-v"></i>
+                                        </button>
+                                        <ul class="dropdown-menu" aria-labelledby="eventDropdown${event._id}">
+                                            <li><a class="dropdown-item" href="/event/${event._id}/show"><i class="fas fa-eye me-2"></i>View</a></li>
+                                            ${editButton}
+                                            <li><hr class="dropdown-divider"></li>
+                                            <li><a class="dropdown-item" href="/event/${event._id}/member" ><i class="fas fa-users me-2"></i>Members</a></li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                
+                $eventList.append(eventCard);
+            });
+        }
+        
+        // Function to render pagination
+        function renderPagination(totalEvents) {
+            const totalPages = Math.ceil(totalEvents / itemsPerPage);
+            
+            if (totalPages <= 1) {
+                $paginationContainer.addClass('d-none');
+                return;
+            }
+            
+            $paginationContainer.removeClass('d-none');
+            const $pagination = $('#pagination');
+            $pagination.empty();
+            
+            // Previous button
+            const prevLi = $(`<li class="page-item ${currentPage === 1 ? 'disabled' : ''}">
+                                <a class="page-link" href="#" aria-label="Previous"><span aria-hidden="true">&laquo;</span></a>
+                            </li>`);
+            prevLi.on('click', function(e) {
+                e.preventDefault();
+                if (currentPage > 1) {
+                    currentPage--;
+                    loadEvents();
+                }
+            });
+            $pagination.append(prevLi);
+            
+            // Page numbers
+            const maxVisiblePages = 5;
+            let startPage, endPage;
+            
+            if (totalPages <= maxVisiblePages) {
+                startPage = 1;
+                endPage = totalPages;
+            } else {
+                const maxPagesBeforeCurrent = Math.floor(maxVisiblePages / 2);
+                const maxPagesAfterCurrent = Math.ceil(maxVisiblePages / 2) - 1;
+                
+                if (currentPage <= maxPagesBeforeCurrent) {
+                    startPage = 1;
+                    endPage = maxVisiblePages;
+                } else if (currentPage + maxPagesAfterCurrent >= totalPages) {
+                    startPage = totalPages - maxVisiblePages + 1;
+                    endPage = totalPages;
+                } else {
+                    startPage = currentPage - maxPagesBeforeCurrent;
+                    endPage = currentPage + maxPagesAfterCurrent;
+                }
+            }
+            
+            // First page and ellipsis
+            if (startPage > 1) {
+                const firstLi = $(`<li class="page-item"><a class="page-link" href="#">1</a></li>`);
+                firstLi.on('click', function(e) {
+                    e.preventDefault();
+                    currentPage = 1;
+                    loadEvents();
+                });
+                $pagination.append(firstLi);
+                
+                if (startPage > 2) {
+                    const ellipsisLi = $(`<li class="page-item disabled"><span class="page-link">...</span></li>`);
+                    $pagination.append(ellipsisLi);
+                }
+            }
+            
+            // Page numbers
+            for (let i = startPage; i <= endPage; i++) {
+                const pageLi = $(`<li class="page-item ${i === currentPage ? 'active' : ''}"><a class="page-link" href="#">${i}</a></li>`);
+                pageLi.on('click', function(e) {
+                    e.preventDefault();
+                    currentPage = i;
+                    loadEvents();
+                });
+                $pagination.append(pageLi);
+            }
+            
+            // Last page and ellipsis
+            if (endPage < totalPages) {
+                if (endPage < totalPages - 1) {
+                    const ellipsisLi = $(`<li class="page-item disabled"><span class="page-link">...</span></li>`);
+                    $pagination.append(ellipsisLi);
+                }
+                
+                const lastLi = $(`<li class="page-item"><a class="page-link" href="#">${totalPages}</a></li>`);
+                lastLi.on('click', function(e) {
+                    e.preventDefault();
+                    currentPage = totalPages;
+                    loadEvents();
+                });
+                $pagination.append(lastLi);
+            }
+            
+            // Next button
+            const nextLi = $(`<li class="page-item ${currentPage === totalPages ? 'disabled' : ''}">
+                                <a class="page-link" href="#" aria-label="Next"><span aria-hidden="true">&raquo;</span></a>
+                            </li>`);
+            nextLi.on('click', function(e) {
+                e.preventDefault();
+                if (currentPage < totalPages) {
+                    currentPage++;
+                    loadEvents();
+                }
+            });
+            $pagination.append(nextLi);
+        }
+        
+        // Helper function to get badge class based on event type
+        function getEventTypeBadgeClass(eventType) {
+            switch(eventType) {
+                case 'public': return 'success';
+                case 'private': return 'danger';
+                default: return 'secondary';
+            }
+        }
+        
+        // Global function for delete confirmation
+        window.confirmDelete = function(eventId) {
+            Swal.fire({
+                title: 'Are you sure?',
+                text: "You won't be able to revert this!",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#3085d6',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Yes, delete it!'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    deleteEvent(eventId);
+                }
+            });
+        };
+        
+        // Function to delete event
+        function deleteEvent(eventId) {
+            $.ajax({
+                url: `/api/events/${eventId}`,
+                method: 'DELETE',
+                success: function(data) {
+                    showSuccessToast('Event deleted successfully');
+                    loadEvents();
+                },
+                error: function(error) {
+                    console.error('Error deleting event:', error);
+                    showErrorToast('Failed to delete event');
+                }
+            });
+        }
+        
+        // Toast notification functions
+        function showSuccessToast(message) {
+            Toast.fire({
+                icon: 'success',
+                title: message
+            });
+        }
+        
+        function showErrorToast(message) {
+            Toast.fire({
+                icon: 'error',
+                title: message
+            });
+        }
+        
+        // Initialize Toast
+        const Toast = Swal.mixin({
+            toast: true,
+            position: 'top-end',
+            showConfirmButton: false,
+            timer: 3000,
+            timerProgressBar: true,
+            didOpen: (toast) => {
+                toast.addEventListener('mouseenter', Swal.stopTimer);
+                toast.addEventListener('mouseleave', Swal.resumeTimer);
+            }
+        });
+    });
+</script>
+</body>

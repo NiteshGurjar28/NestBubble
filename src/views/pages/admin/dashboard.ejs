@@ -1,0 +1,166 @@
+
+
+<body>
+    <div class="layout-wrapper layout-content-navbar">
+        <div class="layout-container">
+            <%- include('../../partials/sideBar') %>
+            <div class="layout-page">
+                <%- include('../../partials/header') %>
+                <div class="content-wrapper">
+                    <div class="admin-container">
+                        <div class="admin-header">
+                          <h2>Dashboard</h2>
+                        </div>
+
+                        <div class="row g-4 mb-4">
+                          <!-- Total Users Box -->
+                          <div class="col-md-6 col-lg-4">
+                            <div class="stats-card">
+                              <div class="card-body">
+                                <div class="stats-icon">
+                                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                                    <circle cx="9" cy="7" r="4"></circle>
+                                    <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                                    <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                                  </svg>
+                                </div>
+                                <h6 class="card-title">TOTAL USERS</h6>
+                                <div class="stats-value">15</div>
+                                <p class="stats-label">Active on platform</p>
+                              </div>
+                            </div>
+                          </div>
+
+                          <!-- Today's New Users Box -->
+                          <div class="col-md-6 col-lg-4">
+                            <div class="stats-card">
+                              <div class="card-body">
+                                <div class="stats-icon">
+                                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <circle cx="12" cy="12" r="10"></circle>
+                                    <line x1="12" y1="8" x2="12" y2="16"></line>
+                                    <line x1="8" y1="12" x2="16" y2="12"></line>
+                                  </svg>
+                                </div>
+                                <h6 class="card-title">NEW USERS TODAY</h6>
+                                <div class="stats-value">6</div>
+                                <p class="stats-label">Last 24 hours</p>
+                              </div>
+                            </div>
+                          </div>
+
+                          <!-- Total Managers Box -->
+                          <div class="col-md-6 col-lg-4">
+                            <div class="stats-card">
+                              <div class="card-body">
+                                <div class="stats-icon">
+                                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+                                  </svg>
+                                </div>
+                                <h6 class="card-title">Verified Users</h6>
+                                <div class="stats-value">2</div>
+                                <p class="stats-label">user who purchased code</p>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+
+                        <div class="row g-4">
+                          <!-- Bar Chart Column -->
+                          <div class="col-md-8">
+                            <div class="chart-card">
+                              <div class="card-header">
+                                <h5 class="card-title">Users Growth by Month</h5>
+                              </div>
+                              <div class="card-body">
+                                <div class="chart-container" id="usersByMonthChart"></div>
+                              </div>
+                            </div>
+                          </div>
+
+                          <!-- Donut Chart Column -->
+                          <div class="col-md-4">
+                            <div class="chart-card">
+                              <div class="card-header">
+                                <h5 class="card-title">User Distribution</h5>
+                              </div>
+                              <div class="card-body">
+                                <div class="donut-container" id="totalUsersByTypeChart"></div>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                    </div>
+
+                  <%- include('../../partials/footer') %>
+                  <div class="content-backdrop fade"></div>
+                </div>
+            </div>
+        </div>
+        <div class="layout-overlay layout-menu-toggle"></div>
+    </div> 
+
+
+
+    <script>
+        // Bar Chart - Users Growth by Month
+        const barChartOptions = {
+          chart: {
+            type: 'bar',
+            height: 350,
+            toolbar: { show: false }
+          },
+          series: [{
+            name: 'Users',
+            data: [45, 52, 38, 45, 19, 23, 50, 40, 70, 60, 55, 75]
+          }],
+          xaxis: {
+            categories: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+            labels: { style: { colors: "#555" } }
+          },
+          colors: ['#46CFC3'],
+          plotOptions: {
+            bar: {
+              columnWidth: '45%',
+              borderRadius: 6
+            }
+          },
+          dataLabels: {
+            enabled: false
+          },
+          tooltip: {
+            theme: 'light'
+          }
+        };
+
+        const barChart = new ApexCharts(document.querySelector("#usersByMonthChart"), barChartOptions);
+        barChart.render();
+
+        // Donut Chart - User Distribution
+        const donutChartOptions = {
+          chart: {
+            type: 'donut',
+            height: 350
+          },
+          series: [55, 25, 20],
+          labels: ['Students', 'Professionals', 'Admins'],
+          colors: ['#46CFC3', '#2471B7', '#B0C031'],
+          legend: {
+            position: 'bottom'
+          },
+          tooltip: {
+            theme: 'light'
+          }
+        };
+
+        const donutChart = new ApexCharts(document.querySelector("#totalUsersByTypeChart"), donutChartOptions);
+        donutChart.render();
+    </script>
+ 
+
+</body>
+
+
+

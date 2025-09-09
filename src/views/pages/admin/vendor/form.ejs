@@ -1,0 +1,556 @@
+<body>
+    <div class="layout-wrapper layout-content-navbar">
+        <div class="layout-container">
+            <%- include('../../../partials/sideBar') %>
+            <div class="layout-page">
+                <%- include('../../../partials/header') %>
+                <div class="content-wrapper">
+                    <div class="admin-container">
+                        <div class="admin-header">
+                            <h2>Edit Vendor</h2>
+                        </div>
+
+                        <div class="row g-4 mb-4">
+                            <div class="col-md-12 col-lg-12">
+                                <div class="card">
+                                    <div class="card-body">
+                                        <form id="vendorEditForm" action="/vendor/<%= vendor._id %>/edit" method="POST" enctype="multipart/form-data">
+                                            <!-- Basic Information Section -->
+                                            <div class="mb-4">
+                                                <h5 class="mb-3">Basic Information</h5>
+                                                <div class="row g-3">
+                                                    <div class="col-md-6">
+                                                        <label class="form-label">Vendor Type</label>
+                                                        <div class="form-control bg-light">
+                                                            <%= vendor.vendorType === 'individual' ? 'Individual' : 'Business' %>
+                                                        </div>
+                                                    </div>
+                                                    
+                                                    <div class="col-md-6">
+                                                        <label class="form-label">Status</label>
+                                                        <div class="form-control bg-light">
+                                                            <%= vendor.status.charAt(0).toUpperCase() + vendor.status.slice(1) %>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <!-- Contact Information -->
+                                            <div class="mb-4">
+                                                <h5 class="mb-3">Contact Information</h5>
+                                                <div class="row g-3">
+                                                    <div class="col-md-4">
+                                                        <label class="form-label">First Name*</label>
+                                                        <input type="text" class="form-control" name="firstName" value="<%= vendor.firstName || '' %>" required>
+                                                    </div>
+                                                    <div class="col-md-4">
+                                                        <label class="form-label">Last Name*</label>
+                                                        <input type="text" class="form-control" name="lastName" value="<%= vendor.lastName || '' %>" required>
+                                                    </div>
+                                                    <div class="col-md-4">
+                                                        <label class="form-label">Phone Number*</label>
+                                                        <input type="tel" class="form-control" name="phoneNumber" value="<%= vendor.phoneNumber || '' %>" required>
+                                                    </div>
+                                                    <div class="col-md-6">
+                                                        <label class="form-label">Email Address</label>
+                                                        <input type="email" class="form-control" name="emailAddress" value="<%= vendor.emailAddress || '' %>">
+                                                    </div>
+                                                    <div class="col-md-6">
+                                                        <label class="form-label">Payment Communication Mode</label>
+                                                        <input type="text" class="form-control" name="paymentModeOfCommunication" value="<%= vendor.paymentModeOfCommunication || '' %>">
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <!-- Personal/Business Information -->
+                                            <% if(vendor.vendorType === 'individual') { %>
+                                            <div class="mb-4">
+                                                <h5 class="mb-3">Personal Information</h5>
+                                                <div class="row g-3">
+                                                    <div class="col-md-4">
+                                                        <label class="form-label">Gender</label>
+                                                        <select class="form-select" name="personalInfo[gender]">
+                                                            <option value="">Select</option>
+                                                            <option value="male" <%= vendor.personalInfo?.gender === 'male' ? 'selected' : '' %>>Male</option>
+                                                            <option value="female" <%= vendor.personalInfo?.gender === 'female' ? 'selected' : '' %>>Female</option>
+                                                            <option value="other" <%= vendor.personalInfo?.gender === 'other' ? 'selected' : '' %>>Other</option>
+                                                        </select>
+                                                    </div>
+                                                    <div class="col-md-4">
+                                                        <label class="form-label">Date of Birth</label>
+                                                        <input type="date" class="form-control" name="personalInfo[dateOfBirth]" value="<%= vendor.personalInfo?.dateOfBirth ? new Date(vendor.personalInfo.dateOfBirth).toISOString().split('T')[0] : '' %>">
+                                                    </div>
+                                                    <div class="col-md-4">
+                                                        <label class="form-label">Alternate Phone</label>
+                                                        <input type="tel" class="form-control" name="personalInfo[alternatePhoneNumber]" value="<%= vendor.personalInfo?.alternatePhoneNumber || '' %>">
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <% } else { %>
+                                            <div class="mb-4">
+                                                <h5 class="mb-3">Business Information</h5>
+                                                <div class="row g-3">
+                                                    <div class="col-md-6">
+                                                        <label class="form-label">Business Name*</label>
+                                                        <input type="text" class="form-control" name="businessInfo[businessName]" value="<%= vendor.businessInfo?.businessName || '' %>" required>
+                                                    </div>
+                                                    <div class="col-md-6">
+                                                        <label class="form-label">Business Type</label>
+                                                        <input type="text" class="form-control" name="businessInfo[businessType]" value="<%= vendor.businessInfo?.businessType || '' %>">
+                                                    </div>
+                                                    <div class="col-md-6">
+                                                        <label class="form-label">Business Phone</label>
+                                                        <input type="tel" class="form-control" name="businessInfo[businessPhoneNumber]" value="<%= vendor.businessInfo?.businessPhoneNumber || '' %>">
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <% } %>
+
+
+                                            <!-- Address Information -->
+                                            <div class="mb-4">
+                                                <h5 class="mb-3">Address Information</h5>
+                                                <div class="row g-3">
+                                                    <!-- Business Address -->
+                                                    <div class="col-md-12">
+                                                        <label class="form-label">Business Address*</label>
+                                                        <input type="text" class="form-control" name="address" value="<%= vendor.address || '' %>" required>
+                                                    </div>
+                                                    <div class="col-md-4">
+                                                        <label class="form-label">City/District*</label>
+                                                        <input type="text" class="form-control" name="cityDistrict" value="<%= vendor.cityDistrict || '' %>" required>
+                                                    </div>
+                                                    <div class="col-md-4">
+                                                        <label class="form-label">State*</label>
+                                                        <input type="text" class="form-control" name="state" value="<%= vendor.state || '' %>" required>
+                                                    </div>
+                                                    <div class="col-md-4">
+                                                        <label class="form-label">PIN Code*</label>
+                                                        <input type="text" class="form-control" name="pinCode" value="<%= vendor.pinCode || '' %>" required>
+                                                    </div>
+
+                                                    <!-- Residential Address -->
+                                                    <div class="col-md-6 mt-3">
+                                                        <label class="form-label">Residential Address*</label>
+                                                        <input type="text" class="form-control" name="residentialAddress[address]" 
+                                                            value="<%= vendor.residentialAddress?.address || '' %>" required>
+                                                    </div>
+                                                    <div class="col-md-6">
+                                                        <label class="form-label">Coordinates (latitude,longitude)*</label>
+                                                        <div class="input-group">
+                                                            <input type="text" class="form-control" name="residentialAddress[location][coordinates]" 
+                                                                value="<%= residentialCoords %>" 
+                                                                placeholder="e.g. 19.0760,72.8777" required>
+                                                        </div>
+                                                        <small class="text-muted">Enter coordinates in "latitude,longitude" format</small>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <!-- Service Information -->
+                                            <div class="mb-4">
+                                                <h5 class="mb-3">Service Information</h5>
+                                                <div class="row g-3">
+                                                    <div class="col-md-6">
+                                                        <label class="form-label">Service Categories*</label>
+                                                        <select class="form-select select2" name="serviceCategories" multiple required>
+                                                            <% serviceCategories.forEach(category => { %>
+                                                                <option value="<%= category._id %>" 
+                                                                    <%= vendor.serviceCategories?.some(sc => sc._id.toString() === category._id.toString()) ? 'selected' : '' %>>
+                                                                    <%= category.name %>
+                                                                </option>
+                                                            <% }); %>
+                                                        </select>
+                                                        <small class="text-muted">Hold Ctrl/Cmd to select multiple</small>
+                                                    </div>
+
+                                                    <div class="col-md-6">
+                                                        <label class="form-label">Serviceable Locations*</label>
+                                                        <div id="serviceableLocationsContainer">
+                                                            <% if (vendor.serviceableLocations?.length) { %>
+                                                                <% vendor.serviceableLocations.forEach((loc, index) => { %>
+                                                                    <div class="location-entry mb-2">
+                                                                        <div class="input-group">
+                                                                            <input type="text" class="form-control" 
+                                                                                name="serviceableLocations[<%= index %>][address]" 
+                                                                                value="<%= loc.address %>" placeholder="Address" required>
+                                                                            <input type="text" class="form-control" 
+                                                                                name="serviceableLocations[<%= index %>][location][coordinates]" 
+                                                                                value="<%= loc.location.coordinates.join(',') %>" 
+                                                                                placeholder="lat,long" required>
+                                                                            <!-- <button type="button" class="btn btn-outline-danger remove-location">
+                                                                                <i class="fas fa-times"></i>
+                                                                            </button> -->
+                                                                        </div>
+                                                                    </div>
+                                                                <% }); %>
+                                                            <% } else { %>
+                                                                <div class="location-entry mb-2">
+                                                                    <div class="input-group">
+                                                                        <input type="text" class="form-control" 
+                                                                            name="serviceableLocations[0][address]" 
+                                                                            placeholder="Address" required>
+                                                                        <input type="text" class="form-control" 
+                                                                            name="serviceableLocations[0][location][coordinates]" 
+                                                                            placeholder="lat,long" required>
+                                                                        <button type="button" class="btn btn-outline-danger remove-location">
+                                                                            <i class="fas fa-times"></i>
+                                                                        </button>
+                                                                    </div>
+                                                                </div>
+                                                            <% } %>
+                                                        </div>
+                                                        <button type="button" class="btn btn-sm btn-outline-primary mt-2" id="addLocation">
+                                                            <i class="fas fa-plus"></i> Add Location
+                                                        </button>
+                                                    </div>
+
+                                                    <div class="col-md-6">
+                                                        <label class="form-label">Years of Experience</label>
+                                                        <input type="number" class="form-control" name="yearsOfExperience" 
+                                                            value="<%= vendor.yearsOfExperience || '' %>">
+                                                    </div>
+                                                    <div class="col-md-6">
+                                                        <label class="form-label">Working Days & Hours</label>
+                                                        <input type="text" class="form-control" name="workingDaysAndHours" 
+                                                            value="<%= vendor.workingDaysAndHours || '' %>">
+                                                    </div>
+                                                    <div class="col-md-6">
+                                                        <label class="form-label">Languages Spoken</label>
+                                                        <input type="text" class="form-control" name="languageSpoken" 
+                                                            value="<%= vendor.languageSpoken?.join(', ') || '' %>" 
+                                                            placeholder="Comma separated languages">
+                                                    </div>
+                                                </div>
+                                            </div>
+
+
+                                            <!-- Banking Details -->
+                                            <div class="mb-4">
+                                            <h5 class="mb-3">Banking Details</h5>
+                                                <div class="row g-3">
+                                                    <div class="col-md-6">
+                                                        <label class="form-label">Bank Name*</label>
+                                                        <input type="text" class="form-control" name="bankingDetails[bankName]" value="<%= vendor.bankingDetails?.bankName || '' %>" required>
+                                                    </div>
+                                                    <div class="col-md-6">
+                                                        <label class="form-label">Account Number*</label>
+                                                        <input type="text" class="form-control" name="bankingDetails[accountNumber]" value="<%= vendor.bankingDetails?.accountNumber || '' %>" required>
+                                                    </div>
+                                                    <div class="col-md-6">
+                                                        <label class="form-label">IFSC Code*</label>
+                                                        <input type="text" class="form-control" name="bankingDetails[ifscCode]" value="<%= vendor.bankingDetails?.ifscCode || '' %>" required>
+                                                    </div>
+                                                    <div class="col-md-6">
+                                                        <label class="form-label">UPI ID</label>
+                                                        <input type="text" class="form-control" name="bankingDetails[upiId]" value="<%= vendor.bankingDetails?.upiId || '' %>">
+                                                    </div>
+                                                    <div class="col-md-6">
+                                                        <label class="form-label">Preferred Payment Mode</label>
+                                                        <input type="text" class="form-control" name="bankingDetails[preferredPaymentMode]" value="<%= vendor.bankingDetails?.preferredPaymentMode || '' %>">
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <!-- Pricing Information -->
+                                            <div class="mb-4">
+                                            <h5 class="mb-3">Pricing Information</h5>
+                                                <div class="row g-3">
+                                                    <div class="col-md-6">
+                                                        <label class="form-label">Pricing Structure</label>
+                                                        <input type="text" class="form-control" name="pricing[pricingStructure]" value="<%= vendor.pricing?.pricingStructure || '' %>">
+                                                    </div>
+                                                    <div class="col-md-6">
+                                                        <label class="form-label">Price Range (₹)</label>
+                                                        <input type="number" class="form-control" name="pricing[priceRange]" value="<%= vendor.pricing?.priceRange || '' %>">
+                                                    </div>
+                                                    <div class="col-md-6">
+                                                        <div class="form-check">
+                                                            <input class="form-check-input" type="checkbox" name="pricing[providingDiscount]" value="true" id="providingDiscount" <%= vendor.pricing?.providingDiscount ? 'checked' : '' %>>
+                                                            <label class="form-check-label" for="providingDiscount">Providing Discount</label>
+                                                        </div>
+                                                    </div>
+                                                    <div class="col-md-6">
+                                                        <label class="form-label">Discount Percentage</label>
+                                                        <input type="number" class="form-control" name="pricing[discountPercentage]" value="<%= vendor.pricing?.discountPercentage || '' %>">
+                                                    </div>
+                                                    <div class="col-md-6">
+                                                        <label class="form-label">Discount Code</label>
+                                                        <input type="text" class="form-control" name="pricing[discountCode]" value="<%= vendor.pricing?.discountCode || '' %>">
+                                                    </div>
+                                                        <div class="col-md-6">
+                                                        <label class="form-label">Cancellation/Refund Policy</label>
+                                                        <input type="text" class="form-control" name="pricing[cancellationRefundPolicy]" value="<%= vendor.pricing?.cancellationRefundPolicy || '' %>">
+                                                    </div>
+                                                    <div class="col-12">
+                                                        <label class="form-label">Additional Notes</label>
+                                                        <textarea class="form-control" name="pricing[additionalNotes]"><%= vendor.pricing?.additionalNotes || '' %></textarea>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <!-- Documents Section -->
+                                            <div class="mb-4">
+                                                <h5 class="mb-3">Documents</h5>
+                                                <div class="row g-3">
+                                                    <div class="col-md-6">
+                                                        <label class="form-label">Profile Photo</label>
+                                                        <% if(vendor.documents?.profilePhoto) { %>
+                                                            <div class="mb-2">
+                                                                <img src="<%= vendor.documents.profilePhoto %>" alt="Profile Photo" class="img-thumbnail" style="max-height: 100px;">
+                                                            </div>
+                                                        <% } %>
+                                                        <input type="file" class="form-control" name="profilePhoto">
+                                                    </div>
+                                                    <!-- <% if(vendor.vendorType === 'business') { %> -->
+                                                    <div class="col-md-6">
+                                                        <label class="form-label">Business Photo</label>
+                                                        <% if(vendor.documents?.businessPhoto) { %>
+                                                        <div class="mb-2">
+                                                            <img src="<%= vendor.documents.businessPhoto %>" alt="Business Photo" class="img-thumbnail" style="max-height: 100px;">
+                                                        </div>
+                                                        <% } %>
+                                                        <input type="file" class="form-control" name="businessPhoto">
+                                                    </div>
+                                                    <!-- <% } %> -->
+                                                    <div class="col-12">
+                                                        <label class="form-label">Required Documents</label>
+                                                        <div class="table-responsive">
+                                                            <table class="table table-bordered">
+                                                                <thead>
+                                                                    <tr>
+                                                                        <th>Document Type</th>
+                                                                        <th>Current File</th>
+                                                                        <th>Upload New</th>
+                                                                    </tr>
+                                                                </thead>
+                                                                <tbody>
+                                                                    <tr>
+                                                                        <td>Aadhar Card (Front)</td>
+                                                                        <td>
+                                                                            <% const aadharFront = vendor.documents?.uploadDocuments?.find(d => d.type === 'Aadhar' && d.name.includes('Front')); %>
+                                                                            <% if(aadharFront) { %>
+                                                                                <a href="<%= aadharFront.file %>" target="_blank">View</a>
+                                                                            <% } else { %>
+                                                                                Not uploaded
+                                                                            <% } %>
+                                                                        </td>
+                                                                        <td><input type="file" class="form-control" name="aadharFront"></td>
+                                                                    </tr>
+                                                                    <tr>
+                                                                        <td>Aadhar Card (Back)</td>
+                                                                        <td>
+                                                                            <% const aadharBack = vendor.documents?.uploadDocuments?.find(d => d.type === 'Aadhar' && d.name.includes('Back')); %>
+                                                                            <% if(aadharBack) { %>
+                                                                                <a href="<%= aadharBack.file %>" target="_blank">View</a>
+                                                                            <% } else { %>
+                                                                                Not uploaded
+                                                                            <% } %>
+                                                                        </td>
+                                                                        <td><input type="file" class="form-control" name="aadharBack"></td>
+                                                                    </tr>
+                                                                    <tr>
+                                                                        <td>PAN Card</td>
+                                                                        <td>
+                                                                            <% const panCard = vendor.documents?.uploadDocuments?.find(d => d.type === 'Pan'); %>
+                                                                            <% if(panCard) { %>
+                                                                                <a href="<%= panCard.file %>" target="_blank">View</a>
+                                                                            <% } else { %>
+                                                                                Not uploaded
+                                                                            <% } %>
+                                                                        </td>
+                                                                        <td><input type="file" class="form-control" name="panCard"></td>
+                                                                    </tr>
+                                                                    <tr>
+                                                                        <td>GSTIN Certificate</td>
+                                                                        <td>
+                                                                            <% const gstin = vendor.documents?.uploadDocuments?.find(d => d.type === 'GSTIN'); %>
+                                                                            <% if(gstin) { %>
+                                                                                <a href="<%= gstin.file %>" target="_blank">View</a>
+                                                                            <% } else { %>
+                                                                                Not uploaded
+                                                                            <% } %>
+                                                                        </td>
+                                                                        <td><input type="file" class="form-control" name="gstin"></td>
+                                                                    </tr>
+                                                                    <tr>
+                                                                        <td>FSSAI Certificate</td>
+                                                                        <td>
+                                                                            <% const fssai = vendor.documents?.uploadDocuments?.find(d => d.type === 'FSSAI'); %>
+                                                                            <% if(fssai) { %>
+                                                                                <a href="<%= fssai.file %>" target="_blank">View</a>
+                                                                            <% } else { %>
+                                                                                Not uploaded
+                                                                            <% } %>
+                                                                        </td>
+                                                                        <td><input type="file" class="form-control" name="fssai"></td>
+                                                                    </tr>
+                                                                    <tr>
+                                                                    <td>Professional Certificates</td>
+                                                                        <td>
+                                                                            <% const certificates = vendor.documents?.uploadDocuments?.find(d => d.type === 'Certificates'); %>
+                                                                            <% if(certificates) { %>
+                                                                                <a href="<%= certificates.file %>" target="_blank">View</a>
+                                                                            <% } else { %>
+                                                                                Not uploaded
+                                                                            <% } %>
+                                                                        </td>
+                                                                        <td><input type="file" class="form-control" name="certificates"></td>
+                                                                    </tr>
+                                                                    <tr>
+                                                                        <td>Portfolio/Sample Work</td>
+                                                                        <td>
+                                                                            <% const portfolio = vendor.documents?.uploadDocuments?.find(d => d.type === 'Portfolio'); %>
+                                                                            <% if(portfolio) { %>
+                                                                            <a href="<%= portfolio.file %>" target="_blank">View</a>
+                                                                            <% } else { %>
+                                                                                Not uploaded
+                                                                            <% } %>
+                                                                        </td>
+                                                                        <td><input type="file" class="form-control" name="portfolio"></td>
+                                                                    </tr>
+                                                                </tbody>
+                                                            </table>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <!-- Agreements Section -->
+                                            <div class="mb-4">
+                                            <h5 class="mb-3">Agreements</h5>
+                                                <div class="row g-3">
+                                                    <div class="col-md-6">
+                                                        <div class="form-check">
+                                                            <input class="form-check-input" type="checkbox" name="agreements[termsAndConditions]" id="termsAndConditions" value="true" <%= vendor.agreements?.termsAndConditions ? 'checked' : '' %>>
+                                                            <label class="form-check-label" for="termsAndConditions">Terms & Conditions Accepted</label>
+                                                        </div>
+                                                    </div>
+                                                    <div class="col-md-6">
+                                                        <div class="form-check">
+                                                            <input class="form-check-input" type="checkbox" name="agreements[authenticityOfDocuments]" id="authenticityOfDocuments" value="true" <%= vendor.agreements?.authenticityOfDocuments ? 'checked' : '' %>>
+                                                            <label class="form-check-label" for="authenticityOfDocuments">Documents Authenticity Verified</label>
+                                                        </div>
+                                                    </div>
+                                                    <div class="col-md-6">
+                                                        <div class="form-check">
+                                                            <input class="form-check-input" type="checkbox" name="agreements[conductBackgroundVerification]" id="conductBackgroundVerification" value="true" <%= vendor.agreements?.conductBackgroundVerification ? 'checked' : '' %>>
+                                                            <label class="form-check-label" for="conductBackgroundVerification">Background Verification Done</label>
+                                                        </div>
+                                                    </div>
+                                                    <div class="col-md-6">
+                                                        <div class="form-check">
+                                                            <input class="form-check-input" type="checkbox" name="agreements[serviceLevelAgreement]" id="serviceLevelAgreement" value="true" <%= vendor.agreements?.serviceLevelAgreement ? 'checked' : '' %>>
+                                                            <label class="form-check-label" for="serviceLevelAgreement">Service Level Agreement Signed</label>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <!-- Form Actions -->
+                                            <div class="d-flex justify-content-end mt-4">
+                                                <button type="button" class="btn btn-outline-secondary me-2" onclick="window.history.back()">Cancel</button>
+                                                <button type="submit" class="btn btn-primary">Update Vendor</button>
+                                            </div>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>   
+                    </div>
+
+                    <%- include('../../../partials/footer') %>
+                    <div class="content-backdrop fade"></div>
+                </div>
+            </div>
+        </div>
+        <div class="layout-overlay layout-menu-toggle"></div>
+    </div>
+</body>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Add new location field
+    let locationCounter = <%= vendor.serviceableLocations?.length || 1 %>;
+    document.getElementById('addLocation').addEventListener('click', function() {
+        const container = document.getElementById('serviceableLocationsContainer');
+        const newEntry = document.createElement('div');
+        newEntry.className = 'location-entry mb-2';
+        newEntry.innerHTML = `
+            <div class="input-group">
+                <input type="text" class="form-control" 
+                       name="serviceableLocations[${locationCounter}][address]" 
+                       placeholder="Address" required>
+                <input type="text" class="form-control" 
+                       name="serviceableLocations[${locationCounter}][location][coordinates]" 
+                       placeholder="lat,long" required>
+                <button type="button" class="btn btn-outline-danger remove-location">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+        `;
+        container.appendChild(newEntry);
+        locationCounter++;
+    });
+
+    // Remove location field
+    document.addEventListener('click', function(e) {
+        if (e.target.classList.contains('remove-location')) {
+            e.target.closest('.location-entry').remove();
+        }
+    });
+
+    // Get current location
+    document.getElementById('getCurrentLocation').addEventListener('click', function() {
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(function(position) {
+                const coordsInput = document.querySelector('input[name="residentialAddress[location][coordinates]"]');
+                coordsInput.value = `${position.coords.latitude},${position.coords.longitude}`;
+            });
+        } else {
+            alert("Geolocation is not supported by this browser.");
+        }
+    });
+});
+</script>
+
+<script>
+
+// Form submission with AJAX
+document.getElementById('vendorEditForm').addEventListener('submit', async function(e) {
+  e.preventDefault();
+  
+  const formData = new FormData(this);
+  
+  try {
+    const response = await fetch(this.action, {
+      method: 'POST',
+      body: formData,
+      headers: {
+        'Accept': 'application/json'
+      }
+    });
+    
+    const result = await response.json();
+    
+    if (response.ok) {
+      Swal.fire({
+        title: 'Success!',
+        text: 'Vendor updated successfully',
+        icon: 'success'
+      }).then(() => {
+        window.location.href = '/vendor';
+      });
+    } else {
+      throw new Error(result.message || 'Failed to update vendor');
+    }
+  } catch (error) {
+    Swal.fire({
+      title: 'Error!',
+      text: error.message,
+      icon: 'error'
+    });
+  }
+});
+</script>
+

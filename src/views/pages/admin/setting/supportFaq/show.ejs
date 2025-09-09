@@ -1,0 +1,174 @@
+<body>
+    <div class="layout-wrapper layout-content-navbar">
+        <div class="layout-container">
+            <%- include('../../../../partials/sideBar') %>
+            <div class="layout-page">
+                <%- include('../../../../partials/header') %>
+                <div class="content-wrapper">
+                    <div class="admin-container">
+                        <div class="admin-header">
+                            <h2>Manage Support Faq</h2>
+                            <a href="/support-faq" class="btn btn-gradient">Back</a>
+                        </div>
+
+                        <div class="row g-4 mb-4">
+                            <div class="col-md-12 col-lg-12">
+                                <div class="card">
+                                    <div class="card-body">
+                                        <p class="card-text"><strong>Q.</strong> <%= faq.question %></p>
+                                        <p class="card-text"><strong>A.</strong> <%= faq.answer %></p>
+                                        <hr>
+                                    
+                                        <h5>Suggested Questions</h5>
+                                        <button class="btn btn-sm btn-primary mb-3 add-nested-suggest" 
+                                                data-parent-id="<%= faq._id %>">
+                                            <i class="bx bx-plus"></i> Add Suggestions
+                                        </button>
+                                    
+                                    <div class="list-group">
+                                            <% faq.suggestQuestions.forEach(suggest => { %>
+                                            <%- include('suggestion-item', {
+                                                suggest,
+                                                currentDepth: currentDepth + 1,
+                                                maxDepth
+                                            }) %>
+                                            <% }); %>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <%- include('../../../../partials/footer') %>
+                    <div class="content-backdrop fade"></div>
+                </div>
+            </div>
+        </div>
+        <div class="layout-overlay layout-menu-toggle"></div>
+    </div>
+
+
+<!-- Suggestion Item Modal -->
+<div class="modal fade" id="suggestionModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <form id="suggestionForm">
+        <input type="hidden" name="parentId" value="">
+        <input type="hidden" name="questionId" value="">
+        <div class="modal-header">
+          <h5 class="modal-title"></h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <div class="mb-3">
+            <label for="editQuestion" class="form-label">Question</label>
+            <input type="text" class="form-control" id="editQuestion" name="question" required>
+          </div>
+          <div class="mb-3">
+            <label for="editAnswer" class="form-label">Answer</label>
+            <textarea class="form-control" id="editAnswer" name="answer" rows="4" required></textarea>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+          <button type="submit" class="btn btn-primary">Save</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+
+
+</body>
+
+<script>
+    $(document).ready(function() {
+        // Initialize modals
+        const suggestionModal = new bootstrap.Modal('#suggestionModal');
+        
+        // Edit suggestion
+        $(document).on('click', '.edit-suggest', function() {
+            const id = $(this).data('id');
+            const question = $(this).data('question');
+            const answer = $(this).data('answer');
+            
+            $('#suggestionForm input[name="questionId"]').val(id);
+            $('#suggestionForm #editQuestion').val(question);
+            $('#suggestionForm #editAnswer').val(answer);
+
+            $('#suggestionModal .modal-title').text('Edit Suggested Question');
+            suggestionModal.show();
+        });
+        
+        // Add new suggestion
+        $(document).on('click', '.add-nested-suggest', function() {
+            const parentId = $(this).data('parent-id');
+            $('#suggestionForm input[name="parentId"]').val(parentId);
+            $('#suggestionForm input[name="questionId"]').val('');
+            $('#suggestionForm #editQuestion').val('');
+            $('#suggestionForm #editAnswer').val('');
+
+            $('#suggestionModal .modal-title').text('Add New Suggested Question');
+            suggestionModal.show();
+        });
+        
+        // Delete suggestion
+        $('.remove-suggest').click(function() {
+            const questionId = $(this).data('id');
+            
+            Swal.fire({
+            title: 'Are you sure?',
+            text: "This will delete the question and all its suggestions!",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#d33',
+            confirmButtonText: 'Yes, delete it!'
+            }).then((result) => {
+            if (result.isConfirmed) {
+                $.ajax({
+                url: `/support-faq/${questionId}`,
+                method: 'DELETE',
+                success: function() {
+                    suggestionModal.hide();
+                    window.location.reload();
+                },
+                error: function() {
+                    Swal.fire('Error', 'Failed to delete', 'error');
+                }
+                });
+            }
+            });
+        });
+        
+        // Save suggestion
+        $('#suggestionForm').submit(function(e) {
+            e.preventDefault();
+            const form = $(this);
+            const submitBtn = form.find('button[type="submit"]');
+            const originalText = submitBtn.html();
+            
+            submitBtn.prop('disabled', true).html(`
+            <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+            Saving...
+            `);
+            
+            $.ajax({
+            url: '/support-faq/save-suggestion',
+            method: 'POST',
+            data: form.serialize(),
+            success: function() {
+                suggestionModal.hide();
+                window.location.reload();
+            },
+            error: function() {
+                Swal.fire('Error', 'Failed to save', 'error');
+            },
+            complete: function() {
+                submitBtn.prop('disabled', false).html(originalText);
+            }
+            });
+        });
+    });
+</script>
