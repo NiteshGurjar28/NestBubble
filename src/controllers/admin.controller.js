@@ -7349,7 +7349,8 @@ const listUberBookings = asyncHandler(async (req, res) => {
     limit = 12,
     status = "",
     liked = "",
-    q = ""
+    q = "",
+    guestId = ""
   } = req.query;
 
   const pageNumber = parseInt(page);
@@ -7358,6 +7359,9 @@ const listUberBookings = asyncHandler(async (req, res) => {
   const filter = {};
   if (status) filter.status = status;
   if (liked !== "") filter.liked = liked === "true";
+  if (guestId && mongoose.Types.ObjectId.isValid(guestId)) {
+    filter.guestId = new mongoose.Types.ObjectId(guestId);
+  }
   if (q) {
     filter.$or = [
       { bookingId: new RegExp(q, "i") },
@@ -7367,7 +7371,7 @@ const listUberBookings = asyncHandler(async (req, res) => {
     ];
   }
 
-  const [bookings, total] = await Promise.all([
+  const [bookings, total, guestOptions] = await Promise.all([
     UberBooking.find(filter)
       .sort({ createdAt: -1 })
       .skip((pageNumber - 1) * limitNumber)
@@ -7375,6 +7379,13 @@ const listUberBookings = asyncHandler(async (req, res) => {
       .populate("guestId", "firstName lastName email mobile")
       .lean(),
     UberBooking.countDocuments(filter),
+    UberBooking.aggregate([
+      { $group: { _id: "$guestId", count: { $sum: 1 } } },
+      { $lookup: { from: "users", localField: "_id", foreignField: "_id", as: "guest" } },
+      { $unwind: "$guest" },
+      { $project: { _id: 1, count: 1, firstName: "$guest.firstName", lastName: "$guest.lastName", email: "$guest.email" } },
+      { $sort: { firstName: 1, lastName: 1 } },
+    ]),
   ]);
 
   return res.render("pages/admin/uber-booking/index", {
@@ -7386,7 +7397,8 @@ const listUberBookings = asyncHandler(async (req, res) => {
       currentPage: pageNumber,
       itemsPerPage: limitNumber,
     },
-    filters: { status, liked, q },
+    filters: { status, liked, q, guestId },
+    guestOptions,
   });
 });
 
@@ -7401,9 +7413,18 @@ const showUberBookingDetails = asyncHandler(async (req, res) => {
     return res.status(404).render("errors", { message: "Uber booking not found" });
   }
 
+  const relatedBookings = await UberBooking.find({
+    guestId: booking.guestId?._id || booking.guestId,
+    _id: { $ne: booking._id },
+  })
+    .sort({ createdAt: -1 })
+    .limit(5)
+    .lean();
+
   return res.render("pages/admin/uber-booking/show", {
     sidebar: "uberBooking",
     booking,
+    relatedBookings,
   });
 });
 

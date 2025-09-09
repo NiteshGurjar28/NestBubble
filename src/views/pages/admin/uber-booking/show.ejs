@@ -32,6 +32,9 @@
                   <div class="col-md-6">
                     <h6>Guest</h6>
                     <div class="mb-2"><strong>Name:</strong> <%= booking?.guestId ? (booking.guestId.firstName + ' ' + booking.guestId.lastName) : '-' %></div>
+                    <% if (booking?.guestId?._id) { %>
+                      <div class="mb-2"><a href="/guest/<%= booking.guestId._id %>/show" class="btn btn-sm btn-outline-secondary">View Guest</a></div>
+                    <% } %>
                     <div class="mb-2"><strong>Email:</strong> <%= booking?.guestId?.email || '-' %></div>
                     <div class="mb-2"><strong>Mobile:</strong> <%= booking?.guestId?.mobile || '-' %></div>
                   </div>
@@ -66,6 +69,35 @@
                     <div class="mt-2"><a href="<%= booking.metadata.deeplink %>" target="_blank" class="btn btn-sm btn-primary">Open Uber</a></div>
                   <% } %>
                 </div>
+
+                <% if ((relatedBookings || []).length > 0) { %>
+                  <hr />
+                  <h6>Other bookings by this guest</h6>
+                  <div class="table-responsive">
+                    <table class="table table-sm">
+                      <thead>
+                        <tr>
+                          <th>ID</th>
+                          <th>Status</th>
+                          <th>Product</th>
+                          <th>Requested</th>
+                          <th></th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <% relatedBookings.forEach(r => { %>
+                          <tr>
+                            <td>#<%= r.bookingId %></td>
+                            <td><span class="badge bg-light text-dark text-uppercase"><%= r.status %></span></td>
+                            <td><%= r?.rideDetails?.productName || r.uberProductId %></td>
+                            <td><%= new Date(r.createdAt).toLocaleString('en-IN') %></td>
+                            <td class="text-end"><a class="btn btn-xs btn-outline-primary" href="/uber-booking/<%= r._id %>/show">View</a></td>
+                          </tr>
+                        <% }) %>
+                      </tbody>
+                    </table>
+                  </div>
+                <% } %>
               </div>
             </div>
           </div>
