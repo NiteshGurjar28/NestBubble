@@ -158,10 +158,9 @@ import {
   razorpayWebhook,
   testPaymentEvent,
   testPaymentProperty,
-  // Uber Booking Admin
+
   listUberBookings,
   showUberBookingDetails,
-  toggleUberBookingLiked,
 
 
 } from "../controllers/admin.controller.js";
@@ -370,17 +369,9 @@ router.route("/test-payment-property").get(isAdmin, testPaymentProperty);
 
 
 // Uber Booking Admin
-router
-  .route("/uber-booking")
-  .get(isAdmin, checkPermission("uber-booking-list"), listUberBookings);
+router.route("/uber-booking").get(isAdmin, checkPermission("uber-booking-list"), listUberBookings);
 
-router
-  .route("/uber-booking/:id/show")
-  .get(isAdmin, checkPermission("uber-booking-show"), showUberBookingDetails);
-
-router
-  .route("/uber-booking/:id/liked")
-  .patch(isAdmin, checkPermission("uber-booking-like"), toggleUberBookingLiked);
+router.route("/uber-booking/:id/show").get(isAdmin, checkPermission("uber-booking-show"), showUberBookingDetails);
 
 
 export default router;

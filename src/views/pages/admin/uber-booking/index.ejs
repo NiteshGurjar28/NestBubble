@@ -23,11 +23,6 @@
                     <option value="<%= s %>" <%= (filters?.status === s) ? 'selected' : '' %>><%= s %></option>
                   <% }) %>
                 </select>
-                <select name="liked" class="form-select me-2" style="min-width: 120px">
-                  <option value="">All</option>
-                  <option value="true" <%= (filters?.liked === 'true') ? 'selected' : '' %>>Liked</option>
-                  <option value="false" <%= (filters?.liked === 'false') ? 'selected' : '' %>>Unliked</option>
-                </select>
                 <button class="btn btn-primary" type="submit">Filter</button>
               </form>
             </div>
@@ -48,9 +43,6 @@
                         <h5 class="card-title mb-1">#<%= b.bookingId %></h5>
                         <span class="badge bg-secondary text-uppercase"><%= b.status %></span>
                       </div>
-                      <button data-id="<%= b._id %>" class="btn btn-sm btn-light toggle-like" title="Toggle like">
-                        <i class="bx bx-heart <%= b.liked ? 'text-danger' : 'text-muted' %>"></i>
-                      </button>
                     </div>
                     <div class="mt-2 d-flex align-items-center justify-content-between">
                       <div class="small text-muted">Guest</div>
@@ -119,28 +111,5 @@
     <div class="layout-overlay layout-menu-toggle"></div>
   </div>
 
-  <script>
-    document.querySelectorAll('.toggle-like').forEach(btn => {
-      btn.addEventListener('click', async () => {
-        const id = btn.getAttribute('data-id');
-        try {
-          const resp = await fetch(`/uber-booking/${id}/liked`, { method: 'PATCH' });
-          const data = await resp.json();
-          if (data?.success) {
-            const icon = btn.querySelector('i');
-            if (data.liked) {
-              icon.classList.add('text-danger');
-              icon.classList.remove('text-muted');
-            } else {
-              icon.classList.remove('text-danger');
-              icon.classList.add('text-muted');
-            }
-          }
-        } catch (e) {
-          console.error('Toggle like failed', e);
-        }
-      });
-    });
-  </script>
 </body>
 
