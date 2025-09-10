@@ -156,6 +156,19 @@ const userSchema = new Schema(
       expiresAt: { type: Date },
       scope: { type: String },
       lastUpdatedAt: { type: Date }
+    },
+    payout: {
+      razorpayContactId: { type: String },
+      razorpayFundAccountId: { type: String },
+      accountType: { type: String, enum: ["bank_account", "vpa"] },
+      bank: {
+        name: { type: String },
+        ifsc: { type: String },
+        account_number: { type: String },
+        beneficiary_name: { type: String }
+      },
+      vpa: { address: { type: String } },
+      lastPayoutAt: { type: Date }
     }
   },
   {

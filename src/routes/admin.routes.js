@@ -158,6 +158,7 @@ import {
   razorpayWebhook,
   testPaymentEvent,
   testPaymentProperty,
+  testWithdrawPage,
 
   listUberBookings,
   showUberBookingDetails,
@@ -366,6 +367,7 @@ router.route("/webhook/stripe").post(  express.raw({ type: 'application/json' })
 router.route("/webhook/razorpay").post(  express.raw({ type: 'application/json' }),razorpayWebhook);
 router.route("/test-payment-event").get(isAdmin, testPaymentEvent);
 router.route("/test-payment-property").get(isAdmin, testPaymentProperty);
+router.route("/test-withdraw").get(isAdmin, testWithdrawPage);
 
 
 // Uber Booking Admin
