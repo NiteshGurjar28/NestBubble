@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Withdraw Test</title>
+    <style>
+      body { font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; padding: 24px; }
+      .card { max-width: 520px; margin: 0 auto; border: 1px solid #e5e7eb; border-radius: 12px; padding: 20px; }
+      label { display: block; font-weight: 600; margin: 12px 0 6px; }
+      input, select { width: 100%; padding: 10px; border:1px solid #d1d5db; border-radius: 8px; }
+      button { margin-top: 16px; width: 100%; background: #111827; color: white; padding: 12px; border-radius: 10px; cursor: pointer; }
+      .row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+      .muted { color: #6b7280; font-size: 12px; }
+      .success { color: #16a34a; }
+      .error { color: #dc2626; }
+      pre { padding: 12px; background: #0b1020; color: #c7d2fe; border-radius: 8px; overflow: auto; }
+    </style>
+  </head>
+  <body>
+    <div class="card">
+      <h2>Wallet Withdraw Test</h2>
+      <p class="muted">Active role: <strong><%= activeRole %></strong> | Endpoint auto-selects guest/host.</p>
+
+      <div class="row">
+        <div>
+          <label>Amount (INR)</label>
+          <input id="amount" type="number" step="0.01" min="1" value="100" />
+        </div>
+        <div>
+          <label>Mode</label>
+          <select id="mode">
+            <option value="IMPS">IMPS</option>
+            <option value="NEFT">NEFT</option>
+            <option value="UPI">UPI</option>
+          </select>
+        </div>
+      </div>
+
+      <label>Purpose</label>
+      <select id="purpose">
+        <option value="payout">Payout</option>
+        <option value="refund">Refund</option>
+        <option value="salary">Salary</option>
+      </select>
+
+      <button id="btnWithdraw">Initiate Withdrawal</button>
+
+      <div id="status" class="muted" style="margin-top: 10px;"></div>
+      <pre id="resp"></pre>
+    </div>
+
+    <script>
+      const statusEl = document.getElementById('status');
+      const respEl = document.getElementById('resp');
+      const btn = document.getElementById('btnWithdraw');
+
+      btn.addEventListener('click', async () => {
+        statusEl.textContent = 'Submitting...';
+        respEl.textContent = '';
+
+        try {
+          const amount = Number(document.getElementById('amount').value);
+          const mode = document.getElementById('mode').value;
+          const purpose = document.getElementById('purpose').value;
+
+          // Decide route by role
+          const role = '<%= activeRole %>';
+          const base = role === 'host' ? '/api/v1/host' : '/api/v1/guest';
+
+          const res = await fetch(`${base}/wallet/withdraw`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'include',
+            body: JSON.stringify({ amount, mode, purpose })
+          });
+          const data = await res.json();
+          if (!res.ok || data.status === false) {
+            statusEl.className = 'error';
+            statusEl.textContent = data.message || 'Failed';
+          } else {
+            statusEl.className = 'success';
+            statusEl.textContent = 'Withdrawal initiated';
+          }
+          respEl.textContent = JSON.stringify(data, null, 2);
+        } catch (e) {
+          statusEl.className = 'error';
+          statusEl.textContent = e.message;
+        }
+      });
+    </script>
+  </body>
+  </html>
+

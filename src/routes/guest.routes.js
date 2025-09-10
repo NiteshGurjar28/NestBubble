@@ -33,6 +33,7 @@ import {
 } from "../controllers/uber.controller.js";
 // import {upload,uploadVideo,handleMulterErrors} from "../middlewares/multer.middleware.js";
 import { verifyJWT, verifyGuestRole, verifyUberAuth } from "../middlewares/auth.middleware.js";
+import { initiateWithdrawal as guestWithdraw, getWalletInfo as guestWalletInfo } from "../controllers/wallet.controller.js";
 
 const router = Router();
 
@@ -54,6 +55,10 @@ router.route("/addEventRating").post(verifyJWT, verifyGuestRole, addEventRating)
 router.route("/getMyReview").get(verifyJWT, verifyGuestRole, getMyReview);
 router.route("/createPaymentEventBookingLink").post(verifyJWT,verifyGuestRole, addEventBooking);
 router.route("/bookEventWithPayment").post(verifyJWT,verifyGuestRole, bookEventWithPayment);
+
+// Wallet
+router.route("/wallet").get(verifyJWT, verifyGuestRole, guestWalletInfo);
+router.route("/wallet/withdraw").post(verifyJWT, verifyGuestRole, guestWithdraw);
 
 // Uber Ride Booking Routes
 router.route("/uber/products").get(verifyJWT, verifyGuestRole, verifyUberAuth, getAvailableProducts);

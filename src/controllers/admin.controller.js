@@ -7339,6 +7339,11 @@ const testPaymentProperty = asyncHandler(async (req, res) => {
   });
 });
 
+const testWithdrawPage = asyncHandler(async (req, res) => {
+  const activeRole = req.admin?.activeRole || "guest";
+  return res.render("withdraw-test", { activeRole });
+});
+
 
 ///// ---------------  Webhook Implementation End-------------------------//
 

@@ -22,6 +22,7 @@ import {
 } from "../controllers/host.controller.js";
 // import {upload,uploadVideo,handleMulterErrors} from "../middlewares/multer.middleware.js";
 import { verifyJWT, verifyHostRole } from "../middlewares/auth.middleware.js";
+import { initiateWithdrawal as hostWithdraw, getWalletInfo as hostWalletInfo } from "../controllers/wallet.controller.js";
 
 const router = Router();
 
@@ -44,5 +45,9 @@ router.route("/cancelEvent").post(verifyJWT, verifyHostRole, cancelEvent);
 router.route("/getEventBookingList/:eventId").get(verifyJWT, verifyHostRole, getEventBookingList);
 router.route("/getEventBookingMembers").get(verifyJWT, verifyHostRole, getEventBookingMembers);
 router.route("/getMyListing").get(verifyJWT, verifyHostRole, getMyListing);
+
+// Wallet
+router.route("/wallet").get(verifyJWT, verifyHostRole, hostWalletInfo);
+router.route("/wallet/withdraw").post(verifyJWT, verifyHostRole, hostWithdraw);
 
 export default router;
